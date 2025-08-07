@@ -1,0 +1,49 @@
+name: Examples
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'examples/**'
+      - 'src/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'examples/**'
+      - 'src/**'
+
+jobs:
+  test-examples:
+    name: Test Examples
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build all examples
+        run: cargo build --examples
+      
+      - name: Test README examples
+        run: cargo test --test readme_examples_test
+      
+      - name: Check each example individually
+        run: |
+          for example in examples/*.rs; do
+            name=$(basename "$example" .rs)
+            echo "Checking example: $name"
+            cargo check --example "$name"
+          done
+        shell: bash

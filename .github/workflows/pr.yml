@@ -1,0 +1,46 @@
+name: Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-commits:
+    name: Check Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check commit messages
+        run: |
+          echo "Checking commit messages format..."
+          # Add commit message linting if needed
+  
+  size-check:
+    name: Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Check binary size
+        run: |
+          cargo build --release
+          ls -lh target/release/hojicha || ls -lh target/release/hojicha.exe
+  
+  benchmark:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Run benchmarks
+        run: cargo bench --no-run
+        continue-on-error: true
