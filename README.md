@@ -1,6 +1,6 @@
 # Hojicha
 
-> Elm Architecture for terminal UIs in Rust, built on [Ratatui](https://github.com/ratatui-org/ratatui)
+> The Elm Architecture for terminal UIs in Rust, built on [Ratatui](https://github.com/ratatui-org/ratatui)
 
 [![Crates.io](https://img.shields.io/crates/v/hojicha.svg)](https://crates.io/crates/hojicha)
 [![Documentation](https://docs.rs/hojicha/badge.svg)](https://docs.rs/hojicha)
