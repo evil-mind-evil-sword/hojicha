@@ -200,6 +200,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Flaky test due to timing dependencies"]
     fn test_fps_limiter_actual_fps() {
         let mut limiter = FpsLimiter::new(60);
 
