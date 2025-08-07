@@ -74,7 +74,7 @@ async fn test_stream_subscription_basic() {
 
     // Run the program in a blocking task
     tokio::task::spawn_blocking(move || {
-        let _ = program.run_with_timeout(Duration::from_secs(2));
+        let _ = program.run_with_timeout(Duration::from_millis(100));
     })
     .await
     .unwrap();
@@ -136,7 +136,7 @@ fn test_multiple_stream_subscriptions() {
     let _sub2 = program.subscribe(stream2);
 
     // Run the program
-    let _ = program.run_with_timeout(Duration::from_secs(2));
+    let _ = program.run_with_timeout(Duration::from_millis(100));
 
     // Should receive values from both streams
     assert_eq!(counter.load(Ordering::SeqCst), 10);
@@ -168,7 +168,7 @@ async fn test_async_stream_subscription() {
 
     // Run the program in a blocking task
     tokio::task::spawn_blocking(move || {
-        let _ = program.run_with_timeout(Duration::from_secs(3));
+        let _ = program.run_with_timeout(Duration::from_millis(100));
     })
     .await
     .unwrap();
@@ -200,7 +200,7 @@ fn test_stream_with_delay() {
     let _subscription = program.subscribe(stream);
 
     // Run the program
-    let _ = program.run_with_timeout(Duration::from_secs(2));
+    let _ = program.run_with_timeout(Duration::from_millis(100));
 
     // Should receive all values despite delays
     let count = counter.load(Ordering::SeqCst);

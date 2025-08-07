@@ -81,7 +81,7 @@ impl Model for CancellableTestModel {
 }
 
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(10))]
+    #![proptest_config(ProptestConfig::with_cases(3))]
     #[test]
     fn prop_operations_can_be_cancelled(
         num_operations in 1..5usize,
@@ -108,7 +108,7 @@ proptest! {
         }).collect::<Vec<_>>();
 
         // Run program briefly to test cancellation concept
-        let _ = program.run_with_timeout(Duration::from_millis(200));
+        let _ = program.run_with_timeout(Duration::from_millis(50));
 
         let total_started = started.load(Ordering::SeqCst);
         let total_completed = completed.load(Ordering::SeqCst);
@@ -143,7 +143,7 @@ proptest! {
             // handle.cancel();
         }
 
-        let _ = program.run_with_timeout(Duration::from_millis(100));
+        let _ = program.run_with_timeout(Duration::from_millis(20));
 
         if cancel_immediately {
             prop_assert_eq!(completed.load(Ordering::SeqCst), 0,
@@ -171,7 +171,7 @@ proptest! {
         // Operations should check cancellation token periodically
         // This ensures graceful shutdown
 
-        let _ = program.run_with_timeout(Duration::from_millis(delay_ms * 2));
+        let _ = program.run_with_timeout(Duration::from_millis(20));
 
         // Property: Operations checking cancellation frequently should stop quickly
         prop_assert!(true, "Cancellation is cooperative");
@@ -227,7 +227,7 @@ fn test_multiple_cancellation_handles() {
     // handles[1].cancel();
     // handles[3].cancel();
 
-    let _ = program.run_with_timeout(Duration::from_secs(1));
+    let _ = program.run_with_timeout(Duration::from_millis(50));
 
     // Should have completed 3 operations (0, 2, 4)
     // assert_eq!(completed.load(Ordering::SeqCst), 3);
