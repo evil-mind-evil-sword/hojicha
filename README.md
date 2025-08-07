@@ -4,7 +4,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/hojicha.svg)](https://crates.io/crates/hojicha)
 [![Documentation](https://docs.rs/hojicha/badge.svg)](https://docs.rs/hojicha)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
 Hojicha is a Rust TUI framework inspired by [Bubbletea](https://github.com/charmbracelet/bubbletea) (Go) and [The Elm Architecture](https://guide.elm-lang.org/architecture/). Build interactive terminal applications using a simple, declarative model-view-update pattern.
 
@@ -211,7 +211,7 @@ Contributions are welcome! Please read our [development guide](docs/DEVELOPMENT.
 
 ## License
 
-MIT - See [LICENSE](LICENSE) for details.
+GPL v3.0 - See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
