@@ -41,11 +41,6 @@ lcov.info
 *.tmp
 *.log
 
-# Local test scripts
-fast_test.sh
-quick_ci_check.sh
-run_ci_locally.sh
-
 # Environment files
 .env
 .env.local
