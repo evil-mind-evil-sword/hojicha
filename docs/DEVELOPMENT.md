@@ -1,4 +1,4 @@
-# Context for Claude
+# Development Context
 
 This document contains key information to help you quickly understand and work with the hojicha project.
 
