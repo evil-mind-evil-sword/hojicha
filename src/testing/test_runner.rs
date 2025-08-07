@@ -1,7 +1,7 @@
 //! Test runner utilities for testing boba applications
 
 use crate::prelude::*;
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
 /// A test runner that provides utilities for testing boba applications

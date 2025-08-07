@@ -3,8 +3,8 @@
 use hojicha::event::{Event, Key, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 
 // Simple test model
 #[derive(Clone)]

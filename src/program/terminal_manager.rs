@@ -3,9 +3,9 @@
 use crate::program::MouseMode;
 use crossterm::{
     execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{Terminal, backend::CrosstermBackend};
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::{self, Stdout};
 
 /// Configuration for terminal setup
@@ -321,13 +321,11 @@ mod tests {
         let mut manager = TerminalManager::new(config).unwrap();
 
         // Draw should not panic in headless mode
-        assert!(
-            manager
-                .draw(|_f| {
-                    // Drawing logic would go here
-                })
-                .is_ok()
-        );
+        assert!(manager
+            .draw(|_f| {
+                // Drawing logic would go here
+            })
+            .is_ok());
     }
 
     #[test]

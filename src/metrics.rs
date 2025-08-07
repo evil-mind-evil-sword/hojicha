@@ -406,7 +406,8 @@ impl MetricsCollector {
 
         trace!(
             "Recorded event: priority={:?}, latency={}μs",
-            priority, latency_us
+            priority,
+            latency_us
         );
     }
 

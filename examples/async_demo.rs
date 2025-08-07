@@ -5,10 +5,10 @@ use hojicha::{
     program::{Program, ProgramOptions},
 };
 use ratatui::{
-    Frame,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph},
+    Frame,
 };
 use std::time::{Duration, Instant};
 

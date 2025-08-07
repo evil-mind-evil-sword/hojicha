@@ -546,8 +546,8 @@ mod tests {
 
     use ratatui::backend::TestBackend;
 
-    use ratatui::Terminal;
     use ratatui::layout::Rect;
+    use ratatui::Terminal;
 
     #[test]
     fn test_textarea_creation() {

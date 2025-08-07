@@ -8,8 +8,8 @@ use hojicha::{
     program::{Program, ProgramOptions},
 };
 use std::sync::{
-    Arc, Barrier,
     atomic::{AtomicUsize, Ordering},
+    Arc, Barrier,
 };
 use std::thread;
 use std::time::{Duration, Instant};
@@ -93,7 +93,7 @@ fn test_async_bridge_sustained_load() {
         if sender.send(Event::User(StressMsg::Data(data))).is_err() {
             break;
         }
-        
+
         // Yield occasionally to allow processing
         if i % 100 == 0 {
             thread::yield_now();
@@ -118,9 +118,11 @@ fn test_async_bridge_sustained_load() {
         "Should process expected data volume (got {})",
         total_bytes
     );
-    
-    println!("Processed {} messages ({} bytes) in {:?}", 
-             total_messages, total_bytes, elapsed);
+
+    println!(
+        "Processed {} messages ({} bytes) in {:?}",
+        total_messages, total_bytes, elapsed
+    );
 }
 
 #[test]
@@ -142,7 +144,7 @@ fn test_async_bridge_burst_handling() {
 
     // Use barrier to coordinate burst start
     let barrier = Arc::new(Barrier::new(6)); // 5 threads + main
-    
+
     // Create burst senders
     let mut handles = vec![];
     for burst_id in 0..5 {
@@ -150,7 +152,7 @@ fn test_async_bridge_burst_handling() {
         let barrier = barrier.clone();
         let handle = thread::spawn(move || {
             barrier.wait(); // Synchronize start
-            
+
             // Each thread sends a burst of 1000 messages
             for i in 0..1000 {
                 let data = vec![(burst_id * 1000 + i) as u8; 50];
@@ -162,7 +164,7 @@ fn test_async_bridge_burst_handling() {
 
     // Start all threads simultaneously
     barrier.wait();
-    
+
     // Run program - will auto-quit after max_messages
     program.run_with_timeout(Duration::from_secs(2)).unwrap();
 
@@ -199,13 +201,13 @@ fn test_async_bridge_many_concurrent_senders() {
     // Create many concurrent senders
     let mut handles = vec![];
     let barrier = Arc::new(Barrier::new(21)); // 20 threads + main
-    
+
     for sender_id in 0..20 {
         let sender = sender.clone();
         let barrier = barrier.clone();
         let handle = thread::spawn(move || {
             barrier.wait(); // Synchronize start
-            
+
             for i in 0..100 {
                 let data = vec![(sender_id * 100 + i) as u8; 10];
                 let _ = sender.send(Event::User(StressMsg::Data(data)));
@@ -220,7 +222,7 @@ fn test_async_bridge_many_concurrent_senders() {
 
     // Start all threads simultaneously
     barrier.wait();
-    
+
     // Run program - will auto-quit after max_messages
     program.run_with_timeout(Duration::from_secs(2)).unwrap();
 
@@ -274,15 +276,21 @@ fn test_async_bridge_memory_stability() {
     let total_messages = messages_clone.load(Ordering::Relaxed);
     let total_bytes = bytes_clone.load(Ordering::Relaxed);
 
-    assert!(total_messages >= 900, "Should handle varied message sizes (got {})", total_messages);
+    assert!(
+        total_messages >= 900,
+        "Should handle varied message sizes (got {})",
+        total_messages
+    );
     assert!(
         total_bytes > 1_000_000,
         "Should process significant data volume (got {})",
         total_bytes
     );
-    
-    println!("Processed {} messages ({} bytes) in {:?}", 
-             total_messages, total_bytes, elapsed);
+
+    println!(
+        "Processed {} messages ({} bytes) in {:?}",
+        total_messages, total_bytes, elapsed
+    );
 }
 
 #[test]
@@ -315,7 +323,7 @@ fn test_async_bridge_channel_overflow_recovery() {
                 let _ = sender.send(Event::User(StressMsg::Error("Channel full".to_string())));
             }
         }
-        
+
         // Yield occasionally
         if i % 1000 == 0 {
             thread::yield_now();
@@ -333,6 +341,9 @@ fn test_async_bridge_channel_overflow_recovery() {
         "Should process messages despite pressure (got {})",
         total_messages
     );
-    
-    println!("Processed {} messages, {} send errors", total_messages, error_count);
+
+    println!(
+        "Processed {} messages, {} send errors",
+        total_messages, error_count
+    );
 }

@@ -3,10 +3,10 @@
 use hojicha::components::{List, Spinner, SpinnerStyle, Table, TextArea, Viewport};
 use insta::assert_snapshot;
 use ratatui::{
-    Terminal,
     backend::TestBackend,
     buffer::Buffer,
     widgets::{Block, Borders},
+    Terminal,
 };
 
 /// Helper to render a component and capture its buffer as a string

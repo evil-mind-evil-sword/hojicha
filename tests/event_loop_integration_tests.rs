@@ -126,7 +126,9 @@ fn test_event_loop_with_async_bridge() {
     let _ = sender.send(Event::User(TestMsg::Quit));
 
     // Run the program
-    program.run_with_timeout(Duration::from_millis(100)).unwrap();
+    program
+        .run_with_timeout(Duration::from_millis(100))
+        .unwrap();
 
     let events = events_clone.lock().unwrap();
     let external_msgs: Vec<_> = events.iter().filter(|e| e.contains("External")).collect();
@@ -160,7 +162,7 @@ fn test_event_loop_concurrent_senders() {
     // Use a barrier to coordinate thread starts
     use std::sync::Barrier;
     let barrier = Arc::new(Barrier::new(4)); // 3 sender threads + main
-    
+
     // Spawn multiple sender threads
     let mut handles = vec![];
     for thread_id in 0..3 {
@@ -179,15 +181,15 @@ fn test_event_loop_concurrent_senders() {
 
     // Start all threads simultaneously
     barrier.wait();
-    
+
     // Wait for all senders to finish
     for handle in handles {
         handle.join().unwrap();
     }
-    
+
     // Send quit after all messages
     let _ = sender.send(Event::User(TestMsg::Quit));
-    
+
     program
         .run_with_timeout(Duration::from_millis(200))
         .unwrap();
@@ -246,7 +248,7 @@ fn test_event_loop_graceful_shutdown() {
         .sender()
         .expect("async bridge should be initialized");
 
-    // Send quit immediately  
+    // Send quit immediately
     let _ = sender.send(Event::User(TestMsg::Quit));
 
     let start = Instant::now();

@@ -1,8 +1,8 @@
 //! Core traits and types for the Elm Architecture
 
 use crate::Event;
-use ratatui::Frame;
 use ratatui::layout::Rect;
+use ratatui::Frame;
 use std::fmt::Debug;
 
 /// Type alias for exec process callback function
@@ -318,7 +318,7 @@ impl<M: Message> Debug for Cmd<M> {
 mod tests {
     use super::*;
     use crate::event::Event;
-    use ratatui::{Frame, layout::Rect};
+    use ratatui::{layout::Rect, Frame};
 
     // Test model
     #[derive(Clone)]

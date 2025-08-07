@@ -8,8 +8,8 @@ use hojicha::{
 };
 use proptest::prelude::*;
 use std::sync::{
-    Arc,
     atomic::{AtomicBool, AtomicUsize, Ordering},
+    Arc,
 };
 use std::time::{Duration, Instant};
 use tokio_util::sync::CancellationToken;
@@ -237,7 +237,7 @@ fn test_multiple_cancellation_handles() {
 fn test_async_cancellation_flow() {
     // Test cancellation flow without creating a Program (to avoid runtime conflicts)
     let rt = tokio::runtime::Runtime::new().unwrap();
-    
+
     rt.block_on(async {
         use tokio::time::timeout;
 

@@ -1,8 +1,8 @@
 //! Tests for program lifecycle management
 
 use hojicha::prelude::*;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -99,7 +99,7 @@ fn test_program_lifecycle_states() {
 fn test_wait_behavior() {
     // This tests the wait() logic without actually running a program
     use std::sync::{Condvar, Mutex};
-    
+
     let running = Arc::new(AtomicBool::new(false));
     let force_quit = Arc::new(AtomicBool::new(false));
     let state_changed = Arc::new((Mutex::new(false), Condvar::new()));
@@ -111,7 +111,7 @@ fn test_wait_behavior() {
     // Simulate wait behavior in a thread
     let handle = thread::spawn(move || {
         let (lock, cvar) = &*state_changed_clone;
-        
+
         // Wait until running
         let mut started = lock.lock().unwrap();
         while !running_clone.load(Ordering::SeqCst) && !force_quit_clone.load(Ordering::SeqCst) {
@@ -128,12 +128,12 @@ fn test_wait_behavior() {
 
     // Simulate program lifecycle
     let (lock, cvar) = &*state_changed;
-    
+
     // Start running
     running.store(true, Ordering::SeqCst);
     *lock.lock().unwrap() = true;
     cvar.notify_all();
-    
+
     // Stop running
     running.store(false, Ordering::SeqCst);
     *lock.lock().unwrap() = true;

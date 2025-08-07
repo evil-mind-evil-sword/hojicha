@@ -7,8 +7,8 @@ use hojicha::{
     program::{MouseMode, Program, ProgramOptions},
 };
 use std::sync::{
-    Arc, Mutex,
     atomic::{AtomicBool, AtomicU32, Ordering},
+    Arc, Mutex,
 };
 use std::thread;
 use std::time::Duration;
@@ -92,10 +92,10 @@ fn test_program_full_lifecycle() {
 
     // Use run_until to run deterministically
     let program = Program::with_options(model, options).unwrap();
-    
-    program.run_until(|model| {
-        model.update_count.load(Ordering::SeqCst) >= 3
-    }).unwrap();
+
+    program
+        .run_until(|model| model.update_count.load(Ordering::SeqCst) >= 3)
+        .unwrap();
 
     // Check that init was called
     assert!(init_called.load(Ordering::SeqCst));
@@ -113,22 +113,25 @@ fn test_program_with_filter() {
         .headless()
         .without_signal_handler();
 
-    let mut program = Program::with_options(model, options)
-        .unwrap()
-        .with_filter(|_model, event| {
-            // Filter out tick messages
-            match &event {
-                Event::User(msg) if msg.contains("tick") => None,
-                _ => Some(event),
-            }
-        });
+    let mut program =
+        Program::with_options(model, options)
+            .unwrap()
+            .with_filter(|_model, event| {
+                // Filter out tick messages
+                match &event {
+                    Event::User(msg) if msg.contains("tick") => None,
+                    _ => Some(event),
+                }
+            });
 
     // Send test messages
     let sender = program.init_async_bridge();
     sender.send(Event::User("normal".to_string())).unwrap();
-    sender.send(Event::User("tick_message".to_string())).unwrap();
+    sender
+        .send(Event::User("tick_message".to_string()))
+        .unwrap();
     sender.send(Event::User("another".to_string())).unwrap();
-    
+
     // Run with short timeout
     program.run_with_timeout(Duration::from_millis(50)).unwrap();
 
@@ -155,7 +158,7 @@ fn test_program_message_sending() {
     for i in 0..5 {
         sender.send(Event::User(format!("msg_{}", i))).unwrap();
     }
-    
+
     // Schedule quit after a short delay to ensure messages are processed
     let quit_sender = sender.clone();
     thread::spawn(move || {
@@ -170,8 +173,11 @@ fn test_program_message_sending() {
     let received = events.lock().unwrap();
     for i in 0..5 {
         let msg = format!("msg_{}", i);
-        assert!(received.iter().any(|e| e.contains(&msg)), 
-                "Should have received message: {}", msg);
+        assert!(
+            received.iter().any(|e| e.contains(&msg)),
+            "Should have received message: {}",
+            msg
+        );
     }
 }
 
@@ -189,17 +195,19 @@ fn test_program_command_execution() {
 
     // Test batch command
     sender.send(Event::User("batch_test".to_string())).unwrap();
-    
+
     // Test sequence command
-    sender.send(Event::User("sequence_test".to_string())).unwrap();
-    
+    sender
+        .send(Event::User("sequence_test".to_string()))
+        .unwrap();
+
     // Schedule quit after a short delay
     let quit_sender = sender.clone();
     thread::spawn(move || {
         thread::sleep(Duration::from_millis(10));
         quit_sender.send(Event::Quit).unwrap();
     });
-    
+
     program.run().unwrap();
 
     // Check that batch and sequence commands were executed
@@ -279,7 +287,7 @@ impl Model for PriorityTestModel {
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
         let total = self.total_count.fetch_add(1, Ordering::SeqCst);
-        
+
         if total >= 10 {
             return None; // Quit after 10 events
         }
@@ -347,11 +355,15 @@ fn test_event_priority_processing() {
         sender.send(Event::User(format!("msg_{}", i))).unwrap(); // Normal priority
     }
     for _ in 0..2 {
-        sender.send(Event::Key(KeyEvent::new(Key::Enter, KeyModifiers::empty()))).unwrap(); // High priority
+        sender
+            .send(Event::Key(KeyEvent::new(Key::Enter, KeyModifiers::empty())))
+            .unwrap(); // High priority
     }
 
     // Run with timeout
-    program.run_with_timeout(Duration::from_millis(100)).unwrap();
+    program
+        .run_with_timeout(Duration::from_millis(100))
+        .unwrap();
 
     // High priority events should be processed first
     assert!(high_count.load(Ordering::SeqCst) > 0);
@@ -382,9 +394,7 @@ impl Model for OptionsTestModel {
 fn test_program_options_all_combinations() {
     // Test with various option combinations
     let test_cases = vec![
-        ProgramOptions::default()
-            .with_alt_screen(false)
-            .headless(),
+        ProgramOptions::default().with_alt_screen(false).headless(),
         ProgramOptions::default()
             .with_mouse_mode(MouseMode::CellMotion)
             .headless(),
@@ -394,22 +404,18 @@ fn test_program_options_all_combinations() {
         ProgramOptions::default()
             .with_focus_reporting(true)
             .headless(),
-        ProgramOptions::default()
-            .with_fps(120)
-            .headless(),
-        ProgramOptions::default()
-            .without_renderer()
-            .headless(),
+        ProgramOptions::default().with_fps(120).headless(),
+        ProgramOptions::default().without_renderer().headless(),
     ];
 
     for options in test_cases {
         let model = OptionsTestModel::default();
         let mut program = Program::with_options(model, options).unwrap();
-        
+
         // Send quit immediately
         let sender = program.init_async_bridge();
         sender.send(Event::Quit).unwrap();
-        
+
         // Should run and exit quickly
         let result = program.run_with_timeout(Duration::from_millis(50));
         assert!(result.is_ok());
@@ -446,7 +452,7 @@ impl Model for MetricsTestModel {
 #[test]
 fn test_program_stats_and_metrics() {
     let model = MetricsTestModel::default();
-    
+
     let options = ProgramOptions::default()
         .headless()
         .without_signal_handler();
@@ -458,14 +464,14 @@ fn test_program_stats_and_metrics() {
     for i in 0..5 {
         sender.send(Event::User(format!("msg_{}", i))).unwrap();
     }
-    
+
     // Get stats before running
     let stats_before = program.event_stats();
     assert_eq!(stats_before.total_events, 0);
 
     // Send quit
     sender.send(Event::Quit).unwrap();
-    
+
     // Run program
     program.run().unwrap();
 
@@ -510,25 +516,25 @@ fn test_program_async_bridge() {
         .without_signal_handler();
 
     let mut program = Program::with_options(model, options).unwrap();
-    
+
     // Initialize async bridge
     let sender = program.init_async_bridge();
-    
+
     // Send messages from "external" source
     sender.send(Event::User("async1".to_string())).unwrap();
     sender.send(Event::User("async2".to_string())).unwrap();
     sender.send(Event::User("async3".to_string())).unwrap();
-    
+
     // Schedule quit after a short delay
     let quit_sender = sender.clone();
     thread::spawn(move || {
         thread::sleep(Duration::from_millis(10));
         quit_sender.send(Event::User("quit".to_string())).unwrap();
     });
-    
+
     // Run program
     program.run().unwrap();
-    
+
     // Verify all messages were received
     let received = messages.lock().unwrap();
     assert_eq!(received.len(), 4);
@@ -542,17 +548,17 @@ fn test_program_async_bridge() {
 #[test]
 fn test_terminal_control_methods() {
     let model = OptionsTestModel::default();
-    
+
     let options = ProgramOptions::default()
         .headless()
         .without_signal_handler();
 
     let mut program = Program::with_options(model, options).unwrap();
-    
+
     // Test terminal control methods (should not panic in headless mode)
     let _ = program.release_terminal();
     let _ = program.restore_terminal();
-    
+
     // Methods should work without error in headless mode
 }
 
@@ -560,19 +566,19 @@ fn test_terminal_control_methods() {
 #[test]
 fn test_program_kill() {
     let model = ControlledModel::new(100); // Would run for a long time
-    
+
     let options = ProgramOptions::default()
         .headless()
         .without_signal_handler();
 
     let program = Program::with_options(model, options).unwrap();
-    
+
     // Kill immediately
     program.kill();
-    
+
     // wait() should return quickly since we killed it
     program.wait();
-    
+
     // Program should have stopped
 }
 
@@ -580,23 +586,23 @@ fn test_program_kill() {
 #[test]
 fn test_queue_resize() {
     let model = OptionsTestModel::default();
-    
+
     let options = ProgramOptions::default()
         .headless()
         .without_signal_handler();
 
     let mut program = Program::with_options(model, options).unwrap();
-    
+
     // Test queue capacity methods
     let initial_capacity = program.queue_capacity();
     assert!(initial_capacity > 0);
-    
+
     // Resize queue
     let result = program.resize_queue(initial_capacity * 2);
     assert!(result.is_ok());
-    
+
     assert_eq!(program.queue_capacity(), initial_capacity * 2);
-    
+
     // Send quit and run
     let sender = program.init_async_bridge();
     sender.send(Event::Quit).unwrap();

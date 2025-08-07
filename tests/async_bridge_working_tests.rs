@@ -3,8 +3,8 @@
 //! These tests verify the async bridge functionality with the new init_async_bridge() API.
 
 use hojicha::prelude::*;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -66,9 +66,11 @@ fn test_simple_timer_messages() {
 
     // Send messages immediately - they should be buffered
     for i in 0..5 {
-        sender.send(Event::User(TestMsg::Data(format!("tick-{}", i)))).unwrap();
+        sender
+            .send(Event::User(TestMsg::Data(format!("tick-{}", i))))
+            .unwrap();
     }
-    
+
     // Schedule quit after a short delay to ensure messages are processed
     let sender_clone = sender.clone();
     thread::spawn(move || {
@@ -196,9 +198,13 @@ fn test_sender_cloning() {
     let sender3 = sender2.clone();
 
     // Use different clones
-    sender1.send(Event::User(TestMsg::Data("from-clone-1".to_string()))).unwrap();
-    sender2.send(Event::User(TestMsg::Data("from-clone-2".to_string()))).unwrap();
-    
+    sender1
+        .send(Event::User(TestMsg::Data("from-clone-1".to_string())))
+        .unwrap();
+    sender2
+        .send(Event::User(TestMsg::Data("from-clone-2".to_string())))
+        .unwrap();
+
     // Schedule quit after a short delay
     thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(10));
@@ -225,9 +231,11 @@ fn test_message_ordering_single_sender() {
 
     // Send messages in order
     for i in 0..5 {
-        sender.send(Event::User(TestMsg::Data(format!("msg-{}", i)))).unwrap();
+        sender
+            .send(Event::User(TestMsg::Data(format!("msg-{}", i))))
+            .unwrap();
     }
-    
+
     // Schedule quit after a short delay
     let quit_sender = sender.clone();
     thread::spawn(move || {
@@ -241,7 +249,7 @@ fn test_message_ordering_single_sender() {
     // Verify all messages were received (order may vary with priority queue)
     let received = messages.lock().unwrap();
     assert!(received.len() >= 5, "Should receive all messages");
-    
+
     // Check that all expected messages are present
     for i in 0..5 {
         let expected = format!("msg-{}", i);
@@ -292,7 +300,7 @@ fn test_rapid_fire_messages() {
     for _ in 0..10 {
         sender.send(Event::User(TestMsg::Increment)).unwrap();
     }
-    
+
     // The model will auto-quit after 10 messages (see line 46)
 
     // Run program
@@ -316,9 +324,9 @@ fn test_async_bridge_with_condition() {
     }
 
     // Run until condition is met
-    program.run_until(|model| {
-        model.message_count.load(Ordering::SeqCst) >= 5
-    }).unwrap();
+    program
+        .run_until(|model| model.message_count.load(Ordering::SeqCst) >= 5)
+        .unwrap();
 
     // Should have processed exactly 5 messages
     assert_eq!(counter.load(Ordering::SeqCst), 5);

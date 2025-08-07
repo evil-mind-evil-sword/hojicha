@@ -1,8 +1,8 @@
 //! Tests for suspend/resume functionality
 
 use hojicha::prelude::*;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::Arc;
 
 #[test]
 fn test_suspend_resume_events() {

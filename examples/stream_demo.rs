@@ -1,15 +1,15 @@
+use futures::stream::{self, StreamExt};
 use hojicha::{
     commands,
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
 };
-use futures::stream::{self, StreamExt};
 use ratatui::{
-    Frame,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph},
+    Frame,
 };
 use std::time::Duration;
 

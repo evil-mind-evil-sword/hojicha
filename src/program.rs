@@ -11,7 +11,7 @@ pub use command_executor::CommandExecutor;
 pub use event_processor::EventProcessor;
 pub use fps_limiter::FpsLimiter;
 pub use priority_event_processor::{
-    EventStats, PriorityConfig, PriorityEventProcessor, get_event_stats,
+    get_event_stats, EventStats, PriorityConfig, PriorityEventProcessor,
 };
 pub use terminal_manager::{TerminalConfig, TerminalManager};
 
@@ -26,7 +26,7 @@ use crate::subscription::Subscription;
 use crossterm::event::{self};
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, mpsc};
+use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -702,16 +702,14 @@ where
             let running = Arc::clone(&self.running);
             let force_quit = Arc::clone(&self.force_quit);
 
-            let input_thread = thread::spawn(move || {
-                loop {
-                    if !running.load(Ordering::SeqCst) || force_quit.load(Ordering::SeqCst) {
-                        break;
-                    }
+            let input_thread = thread::spawn(move || loop {
+                if !running.load(Ordering::SeqCst) || force_quit.load(Ordering::SeqCst) {
+                    break;
+                }
 
-                    if event::poll(Duration::from_millis(100)).unwrap_or(false) {
-                        if let Ok(event) = event::read() {
-                            let _ = crossterm_tx.send(event);
-                        }
+                if event::poll(Duration::from_millis(100)).unwrap_or(false) {
+                    if let Ok(event) = event::read() {
+                        let _ = crossterm_tx.send(event);
                     }
                 }
             });

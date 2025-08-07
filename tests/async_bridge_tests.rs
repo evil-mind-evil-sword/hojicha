@@ -84,10 +84,10 @@ mod property_tests {
             // This test validates that sender is None before init_async_bridge
             // We've already verified this above - the actual program run is not needed
             // since we're testing the API surface, not the runtime behavior
-            
+
             // Run briefly to ensure clean shutdown
             program.run_with_timeout(Duration::from_millis(10)).unwrap();
-            
+
             prop_assert!(true); // Test passed
         }
     }

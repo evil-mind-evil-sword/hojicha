@@ -1,15 +1,15 @@
 //! Property-based tests for async stream integration
 
+use futures::stream::{self, StreamExt};
 use hojicha::{
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
 };
-use futures::stream::{self, StreamExt};
 use proptest::prelude::*;
 use std::sync::{
-    Arc,
     atomic::{AtomicUsize, Ordering},
+    Arc,
 };
 use std::time::Duration;
 
@@ -129,9 +129,9 @@ proptest! {
         // Send values from all three streams interleaved
         use std::sync::Barrier;
         let barrier = Arc::new(Barrier::new(4)); // 3 threads + main
-        
+
         let mut handles = vec![];
-        
+
         let s1 = sender.clone();
         let vals1 = stream1_values.clone();
         let b1 = barrier.clone();
@@ -167,7 +167,7 @@ proptest! {
             }
         });
         handles.push(h3);
-        
+
         // Start all threads simultaneously
         barrier.wait();
 
@@ -297,11 +297,7 @@ async fn test_tokio_stream_integration() {
     .unwrap();
 
     let received = collected.lock().unwrap();
-    assert_eq!(
-        received.len(),
-        5,
-        "Should receive 5 values"
-    );
+    assert_eq!(received.len(), 5, "Should receive 5 values");
 }
 
 #[test]

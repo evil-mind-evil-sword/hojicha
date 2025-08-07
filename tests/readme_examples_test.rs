@@ -133,8 +133,8 @@ fn test_readme_async_event_injection() {
 
 #[tokio::test]
 async fn test_readme_stream_subscription() {
-    use hojicha::program::{Program, ProgramOptions};
     use futures::stream;
+    use hojicha::program::{Program, ProgramOptions};
     use tokio_stream::StreamExt;
 
     let model = AsyncModel { ticks: 0 };
@@ -158,8 +158,8 @@ async fn test_readme_stream_subscription() {
 #[tokio::test]
 async fn test_readme_stream_subscription_with_interval() {
     use hojicha::program::{Program, ProgramOptions};
-    use tokio_stream::StreamExt;
     use tokio_stream::wrappers::IntervalStream;
+    use tokio_stream::StreamExt;
 
     let model = AsyncModel { ticks: 0 };
     let options = ProgramOptions::default().headless();
@@ -185,8 +185,8 @@ async fn test_readme_stream_subscription_with_interval() {
 #[test]
 fn test_readme_cancellable_operations() {
     use hojicha::program::{Program, ProgramOptions};
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
 
     #[derive(Clone)]
     struct CancellableModel;

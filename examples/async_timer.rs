@@ -148,12 +148,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     // Start a fast timer to demonstrate handling high-frequency messages
     let fast_sender = sender.clone();
-    thread::spawn(move || {
-        loop {
-            thread::sleep(Duration::from_millis(100));
-            if fast_sender.send(Event::User(Msg::FastTick)).is_err() {
-                break;
-            }
+    thread::spawn(move || loop {
+        thread::sleep(Duration::from_millis(100));
+        if fast_sender.send(Event::User(Msg::FastTick)).is_err() {
+            break;
         }
     });
 

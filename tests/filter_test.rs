@@ -1,8 +1,8 @@
 //! Tests for message filtering functionality
 
 use hojicha::prelude::*;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 
 #[test]
 fn test_with_filter() {

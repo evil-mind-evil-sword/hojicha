@@ -257,7 +257,7 @@ fn test_priority_under_memory_pressure() {
             // Try to send, some may be dropped due to backpressure
             let _ = producer_sender.send(Event::User(StressMsg::LowPriority(0, i)));
             let _ = producer_sender.send(Event::User(StressMsg::HighPriority(0, i)));
-            
+
             // Don't overwhelm too quickly - allow some processing
             if i % 10 == 0 {
                 thread::yield_now();
@@ -397,7 +397,9 @@ fn test_priority_ordering_verification() {
     let complete_sender = sender.clone();
     thread::spawn(move || {
         thread::sleep(Duration::from_millis(10));
-        complete_sender.send(Event::User(StressMsg::Complete)).unwrap();
+        complete_sender
+            .send(Event::User(StressMsg::Complete))
+            .unwrap();
     });
 
     program.run().unwrap();

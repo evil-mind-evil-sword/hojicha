@@ -154,8 +154,8 @@ impl Backend for MockTerminal {
 mod tests {
     use super::*;
     use ratatui::{
-        Terminal,
         widgets::{Block, Borders, Paragraph},
+        Terminal,
     };
 
     #[test]

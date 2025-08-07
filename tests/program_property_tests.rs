@@ -8,8 +8,8 @@ use hojicha::{
 };
 use proptest::prelude::*;
 use std::sync::{
-    Arc, Mutex,
     atomic::{AtomicBool, AtomicU32, Ordering},
+    Arc, Mutex,
 };
 use std::time::{Duration, Instant};
 

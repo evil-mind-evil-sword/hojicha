@@ -8,8 +8,8 @@ use hojicha::{
 };
 use proptest::prelude::*;
 use std::sync::{
-    Arc, Mutex,
     atomic::{AtomicU32, Ordering},
+    Arc, Mutex,
 };
 use std::time::{Duration, Instant};
 
@@ -265,7 +265,11 @@ impl Model for FallibleModel {
         match event {
             Event::User(Ok(_)) => {
                 let count = self.successes.fetch_add(1, Ordering::SeqCst);
-                if count >= 1 { None } else { Cmd::none() }
+                if count >= 1 {
+                    None
+                } else {
+                    Cmd::none()
+                }
             }
             Event::User(Err(_)) => {
                 self.failures.fetch_add(1, Ordering::SeqCst);
@@ -336,7 +340,11 @@ impl Model for EventTypeModel {
         match event {
             Event::User(_) => {
                 let count = self.user_events.fetch_add(1, Ordering::SeqCst);
-                if count >= 2 { None } else { Cmd::none() }
+                if count >= 2 {
+                    None
+                } else {
+                    Cmd::none()
+                }
             }
             Event::Tick | Event::Resize { .. } | Event::Focus | Event::Blur => {
                 self.system_events.fetch_add(1, Ordering::SeqCst);
@@ -408,7 +416,11 @@ impl Model for NoneCommandModel {
         match event {
             Event::User(Some(_)) => {
                 let count = self.update_count.fetch_add(1, Ordering::SeqCst);
-                if count >= 1 { None } else { Cmd::none() }
+                if count >= 1 {
+                    None
+                } else {
+                    Cmd::none()
+                }
             }
             Event::User(None) => {
                 // This should not happen

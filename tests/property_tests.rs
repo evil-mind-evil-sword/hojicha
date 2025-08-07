@@ -3,8 +3,8 @@
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
 use proptest::prelude::*;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 
 // Property: Any sequence of increment/decrement operations should result in the correct final value
 proptest! {

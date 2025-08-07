@@ -1,14 +1,14 @@
 //! Tests for the Stream subscription API
 
+use futures::stream::{self, StreamExt};
 use hojicha::{
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
 };
-use futures::stream::{self, StreamExt};
 use std::sync::{
-    Arc,
     atomic::{AtomicUsize, Ordering},
+    Arc,
 };
 use std::time::Duration;
 

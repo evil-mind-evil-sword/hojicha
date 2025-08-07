@@ -9,7 +9,7 @@ use hojicha::{
     event::Event,
     program::{Program, ProgramOptions},
 };
-use ratatui::{Frame, layout::Rect};
+use ratatui::{layout::Rect, Frame};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 

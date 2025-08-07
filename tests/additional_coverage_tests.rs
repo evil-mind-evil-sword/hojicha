@@ -1,10 +1,10 @@
 //! Additional tests to improve code coverage
 
+use crossterm::event::{MouseButton, MouseEventKind};
 use hojicha::error::{Error, ErrorContext};
 use hojicha::event::ModifierKey;
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
-use crossterm::event::{MouseButton, MouseEventKind};
 use std::io;
 
 #[derive(Debug, Clone)]

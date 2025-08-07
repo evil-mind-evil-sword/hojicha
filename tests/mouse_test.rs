@@ -26,18 +26,14 @@ fn test_mouse_commands() {
     let _disable = disable_mouse::<()>();
 
     // These commands return None as they're handled by the runtime
-    assert!(
-        enable_mouse_cell_motion::<()>()
-            .test_execute()
-            .unwrap()
-            .is_none()
-    );
-    assert!(
-        enable_mouse_all_motion::<()>()
-            .test_execute()
-            .unwrap()
-            .is_none()
-    );
+    assert!(enable_mouse_cell_motion::<()>()
+        .test_execute()
+        .unwrap()
+        .is_none());
+    assert!(enable_mouse_all_motion::<()>()
+        .test_execute()
+        .unwrap()
+        .is_none());
     assert!(disable_mouse::<()>().test_execute().unwrap().is_none());
 }
 

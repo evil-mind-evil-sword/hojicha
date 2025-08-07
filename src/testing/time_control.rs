@@ -3,8 +3,8 @@
 //! This module provides utilities for controlling time in tests, similar to
 //! Tokio's `time::pause()` functionality.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 /// A controller for virtual time in tests
@@ -61,7 +61,7 @@ impl TimeController {
         if !self.paused.load(Ordering::SeqCst) {
             return Err("Cannot advance time when not paused");
         }
-        
+
         let ms = duration.as_millis() as u64;
         self.current_ms.fetch_add(ms, Ordering::SeqCst);
         Ok(())
@@ -109,7 +109,7 @@ impl TimeController {
 }
 
 /// Global time controller for tests
-static GLOBAL_TIME: once_cell::sync::Lazy<TimeController> = 
+static GLOBAL_TIME: once_cell::sync::Lazy<TimeController> =
     once_cell::sync::Lazy::new(|| TimeController::new_real());
 
 /// Pause global time (for use in tests)
@@ -172,12 +172,12 @@ mod tests {
     #[test]
     fn test_time_controller_pause_advance() {
         let controller = TimeController::new_paused();
-        
+
         assert_eq!(controller.now(), Duration::ZERO);
-        
+
         controller.advance(Duration::from_secs(1)).unwrap();
         assert_eq!(controller.now(), Duration::from_secs(1));
-        
+
         controller.advance(Duration::from_millis(500)).unwrap();
         assert_eq!(controller.now(), Duration::from_millis(1500));
     }
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     fn test_time_controller_cannot_advance_when_running() {
         let controller = TimeController::new_real();
-        
+
         let result = controller.advance(Duration::from_secs(1));
         assert!(result.is_err());
     }
@@ -193,10 +193,10 @@ mod tests {
     #[test]
     fn test_time_scale() {
         let controller = TimeController::new_paused();
-        
+
         controller.set_scale(2.0); // Double speed
         assert!(!controller.paused.load(Ordering::SeqCst));
-        
+
         controller.set_scale(0.0); // Paused
         assert!(controller.paused.load(Ordering::SeqCst));
     }
@@ -204,11 +204,11 @@ mod tests {
     #[tokio::test]
     async fn test_virtual_sleep() {
         let controller = TimeController::new_paused();
-        
+
         let start = controller.now();
         controller.sleep(Duration::from_secs(10)).await;
         let end = controller.now();
-        
+
         // Should have advanced by 10 seconds instantly
         assert_eq!(end - start, Duration::from_secs(10));
     }

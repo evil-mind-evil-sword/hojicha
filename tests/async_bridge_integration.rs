@@ -40,7 +40,11 @@ impl Model for CollectorModel {
             _ => {}
         }
 
-        if self.should_quit { None } else { Cmd::none() }
+        if self.should_quit {
+            None
+        } else {
+            Cmd::none()
+        }
     }
 
     fn view(&self, _frame: &mut Frame, _area: ratatui::layout::Rect) {
