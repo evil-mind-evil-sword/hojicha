@@ -1,0 +1,1325 @@
+warning: unused imports: `KeyEvent` and `KeyModifiers`
+ --> tests/headless_program_test.rs:6:25
+  |
+6 |     event::{Event, Key, KeyEvent, KeyModifiers},
+  |                         ^^^^^^^^  ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variants `Increment`, `Decrement`, and `SetValue` are never constructed
+  --> tests/headless_program_test.rs:40:5
+   |
+39 | enum TestMessage {
+   |      ----------- variants in this enum
+40 |     Increment,
+   |     ^^^^^^^^^
+41 |     Decrement,
+   |     ^^^^^^^^^
+42 |     SetValue(i32),
+   |     ^^^^^^^^
+   |
+   = note: `TestMessage` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `counter`
+  --> tests/refactored_async_bridge_test.rs:61:9
+   |
+61 |     let counter = model.counter.clone();
+   |         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_counter`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variant `Set` is never constructed
+  --> tests/additional_coverage_tests.rs:14:5
+   |
+11 | enum TestMsg {
+   |      ------- variant in this enum
+...
+14 |     Set(i32),
+   |     ^^^
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: struct `TestModel` is never constructed
+  --> tests/additional_coverage_tests.rs:17:8
+   |
+17 | struct TestModel {
+   |        ^^^^^^^^^
+
+warning: variants `Increment`, `Decrement`, `Reset`, `ToggleTimer`, and `ChangeMessage` are never constructed
+  --> examples/getting_started.rs:36:5
+   |
+35 | enum Msg {
+   |      --- variants in this enum
+36 |     Increment,
+   |     ^^^^^^^^^
+37 |     Decrement,
+   |     ^^^^^^^^^
+38 |     Reset,
+   |     ^^^^^
+39 |     ToggleTimer,
+   |     ^^^^^^^^^^^
+40 |     Tick,
+41 |     ChangeMessage,
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `Msg` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: variant `Quit` is never constructed
+  --> examples/stream_demo.rs:25:5
+   |
+23 | enum Msg {
+   |      --- variant in this enum
+24 |     StreamValue(String),
+25 |     Quit,
+   |     ^^^^
+   |
+   = note: `Msg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: fields `0` and `1` are never read
+  --> tests/priority_concurrent_stress_tests.rs:16:18
+   |
+16 |     HighPriority(usize, usize), // (thread_id, sequence)
+   |     ------------ ^^^^^  ^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+   |
+16 -     HighPriority(usize, usize), // (thread_id, sequence)
+16 +     HighPriority((), ()), // (thread_id, sequence)
+   |
+
+warning: fields `0` and `1` are never read
+  --> tests/priority_concurrent_stress_tests.rs:17:20
+   |
+17 |     NormalPriority(usize, usize),
+   |     -------------- ^^^^^  ^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+   |
+17 -     NormalPriority(usize, usize),
+17 +     NormalPriority((), ()),
+   |
+
+warning: fields `0` and `1` are never read
+  --> tests/priority_concurrent_stress_tests.rs:18:17
+   |
+18 |     LowPriority(usize, usize),
+   |     ----------- ^^^^^  ^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+help: consider changing the fields to be of unit type to suppress this warning while preserving the field numbering, or remove the fields
+   |
+18 -     LowPriority(usize, usize),
+18 +     LowPriority((), ()),
+   |
+
+warning: variant `Checkpoint` is never constructed
+  --> tests/priority_concurrent_stress_tests.rs:19:5
+   |
+15 | enum StressMsg {
+   |      --------- variant in this enum
+...
+19 |     Checkpoint(usize), // Thread checkpoint
+   |     ^^^^^^^^^^
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: unused import: `super::*`
+   --> tests/deterministic_test_example.rs:105:9
+    |
+105 |     use super::*;
+    |         ^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` on by default
+
+warning: field `should_quit` is never read
+  --> tests/deterministic_test_example.rs:19:5
+   |
+16 | struct TestModel {
+   |        --------- field in this struct
+...
+19 |     should_quit: Arc<AtomicBool>,
+   |     ^^^^^^^^^^^
+   |
+   = note: `TestModel` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `hojicha` (test "headless_program_test") generated 2 warnings (run `cargo fix --test "headless_program_test"` to apply 1 suggestion)
+warning: `hojicha` (test "refactored_async_bridge_test") generated 1 warning
+warning: `hojicha` (test "additional_coverage_tests") generated 2 warnings
+warning: `hojicha` (example "getting_started") generated 1 warning
+warning: `hojicha` (example "stream_demo") generated 1 warning
+warning: `hojicha` (test "priority_concurrent_stress_tests") generated 4 warnings
+warning: `hojicha` (test "deterministic_test_example") generated 2 warnings (run `cargo fix --test "deterministic_test_example"` to apply 1 suggestion)
+warning: variant `Quit` is never constructed
+  --> examples/cancellable_demo.rs:30:5
+   |
+25 | enum Msg {
+   |      --- variant in this enum
+...
+30 |     Quit,
+   |     ^^^^
+   |
+   = note: `Msg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused import: `AtomicBool`
+  --> tests/cancellable_operations_tests.rs:11:14
+   |
+11 |     atomic::{AtomicBool, AtomicUsize, Ordering},
+   |              ^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Instant`
+  --> tests/cancellable_operations_tests.rs:14:27
+   |
+14 | use std::time::{Duration, Instant};
+   |                           ^^^^^^^
+
+warning: unused variable: `id`
+  --> tests/cancellable_operations_tests.rs:55:53
+   |
+55 |             Event::User(CancelMsg::OperationStarted(id)) => {
+   |                                                     ^^ help: if this is intentional, prefix it with an underscore: `_id`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `id`
+  --> tests/cancellable_operations_tests.rs:59:55
+   |
+59 |             Event::User(CancelMsg::OperationCompleted(id)) => {
+   |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `id`
+  --> tests/cancellable_operations_tests.rs:67:55
+   |
+67 |             Event::User(CancelMsg::OperationCancelled(id)) => {
+   |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `handles`
+   --> tests/cancellable_operations_tests.rs:103:13
+    |
+103 |         let handles = (0..num_operations).map(|i| {
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_handles`
+
+warning: unused variable: `total_completed`
+   --> tests/cancellable_operations_tests.rs:114:13
+    |
+114 |         let total_completed = completed.load(Ordering::SeqCst);
+    |             ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_total_completed`
+
+warning: unused variable: `total_cancelled`
+   --> tests/cancellable_operations_tests.rs:115:13
+    |
+115 |         let total_cancelled = cancelled.load(Ordering::SeqCst);
+    |             ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_total_cancelled`
+
+warning: unused variable: `cancel_after_ms`
+  --> tests/cancellable_operations_tests.rs:88:9
+   |
+88 |         cancel_after_ms in 10..50u64,
+   |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_cancel_after_ms`
+
+warning: variable does not need to be mutable
+   --> tests/cancellable_operations_tests.rs:100:13
+    |
+100 |         let mut program = Program::with_options(model, options).unwrap();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `cancelled`
+   --> tests/cancellable_operations_tests.rs:131:13
+    |
+131 |         let cancelled = Arc::clone(&model.operations_cancelled);
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_cancelled`
+
+warning: unused variable: `num_operations`
+   --> tests/cancellable_operations_tests.rs:126:9
+    |
+126 |         num_operations in 1..10usize,
+    |         ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_num_operations`
+
+warning: variable does not need to be mutable
+   --> tests/cancellable_operations_tests.rs:137:13
+    |
+137 |         let mut program = Program::with_options(model, options).unwrap();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: unused variable: `completed`
+   --> tests/cancellable_operations_tests.rs:163:13
+    |
+163 |         let completed = Arc::clone(&model.operations_completed);
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_completed`
+
+warning: unused variable: `check_interval_ms`
+   --> tests/cancellable_operations_tests.rs:159:9
+    |
+159 |         check_interval_ms in 1..10u64,
+    |         ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_check_interval_ms`
+
+warning: variable does not need to be mutable
+   --> tests/cancellable_operations_tests.rs:169:13
+    |
+169 |         let mut program = Program::with_options(model, options).unwrap();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> tests/cancellable_operations_tests.rs:190:9
+    |
+190 |     let mut program = Program::with_options(model, options).unwrap();
+    |         ----^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: unused variable: `completed`
+   --> tests/cancellable_operations_tests.rs:213:9
+    |
+213 |     let completed = Arc::clone(&model.operations_completed);
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_completed`
+
+warning: variable does not need to be mutable
+   --> tests/cancellable_operations_tests.rs:219:9
+    |
+219 |     let mut program = Program::with_options(model, options).unwrap();
+    |         ----^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variants `OperationStarted`, `OperationCancelled`, `CancelOperation`, and `Quit` are never constructed
+  --> tests/cancellable_operations_tests.rs:39:5
+   |
+38 | enum CancelMsg {
+   |      --------- variants in this enum
+39 |     OperationStarted(usize),
+   |     ^^^^^^^^^^^^^^^^
+40 |     OperationCompleted(usize),
+41 |     OperationCancelled(usize),
+   |     ^^^^^^^^^^^^^^^^^^
+42 |     CancelOperation(usize),
+   |     ^^^^^^^^^^^^^^^
+43 |     Quit,
+   |     ^^^^
+   |
+   = note: `CancelMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `batch_size`
+   --> tests/program_property_tests.rs:177:40
+    |
+177 |     fn prop_batch_commands_all_execute(batch_size in 1usize..10) {
+    |                                        ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_size`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `StreamExt`
+ --> tests/stream_integration_tests.rs:3:29
+  |
+3 | use futures::stream::{self, StreamExt};
+  |                             ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `value_stream`
+  --> tests/stream_integration_tests.rs:79:13
+   |
+79 |         let value_stream = stream::iter(stream_values.into_iter().map(StreamMessage::Value));
+   |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_value_stream`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variant `Tick` is never constructed
+  --> tests/stream_integration_tests.rs:38:5
+   |
+35 | enum StreamMessage {
+   |      ------------- variant in this enum
+...
+38 |     Tick,
+   |     ^^^^
+   |
+   = note: `StreamMessage` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field `message_log` is never read
+  --> src/testing/test_runner.rs:11:5
+   |
+8  | pub struct TestRunner<M: Model> {
+   |            ---------- field in this struct
+...
+11 |     message_log: Arc<Mutex<Vec<Event<M::Message>>>>,
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `batch`
+   --> tests/integration_tests.rs:278:9
+    |
+278 |     let batch = commands::batch::<TestMsg>(vec![
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_batch`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: field `0` is never read
+  --> tests/priority_default_test.rs:12:17
+   |
+12 |     LowPriority(usize),
+   |     ----------- ^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+12 -     LowPriority(usize),
+12 +     LowPriority(()),
+   |
+
+warning: field `0` is never read
+  --> tests/priority_default_test.rs:13:20
+   |
+13 |     NormalPriority(usize),
+   |     -------------- ^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+13 -     NormalPriority(usize),
+13 +     NormalPriority(()),
+   |
+
+warning: field `0` is never read
+  --> tests/priority_default_test.rs:14:18
+   |
+14 |     HighPriority(usize),
+   |     ------------ ^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+14 -     HighPriority(usize),
+14 +     HighPriority(()),
+   |
+
+warning: `hojicha` (example "cancellable_demo") generated 1 warning
+warning: `hojicha` (test "cancellable_operations_tests") generated 20 warnings (run `cargo fix --test "cancellable_operations_tests"` to apply 7 suggestions)
+warning: `hojicha` (test "program_property_tests") generated 1 warning
+warning: `hojicha` (test "stream_integration_tests") generated 3 warnings
+warning: `hojicha` (lib test) generated 1 warning
+warning: `hojicha` (test "integration_tests") generated 1 warning
+warning: `hojicha` (test "priority_default_test") generated 3 warnings
+warning: unused variable: `input`
+   --> tests/program_comprehensive_tests.rs:243:9
+    |
+243 |     let input = MockInput::from_events(vec![
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_input`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variant `Tick` is never constructed
+  --> tests/async_bridge_integration.rs:20:5
+   |
+17 | enum TestMsg {
+   |      ------- variant in this enum
+...
+20 |     Tick,
+   |     ^^^^
+   |
+   = note: `TestMsg` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: struct `TestHarness` is never constructed
+   --> tests/async_bridge_integration.rs:124:8
+    |
+124 | struct TestHarness {
+    |        ^^^^^^^^^^^
+
+warning: associated items `new` and `collected_messages` are never used
+   --> tests/async_bridge_integration.rs:130:8
+    |
+129 | impl TestHarness {
+    | ---------------- associated items in this implementation
+130 |     fn new() -> Self {
+    |        ^^^
+...
+136 |     fn collected_messages(&self) -> Vec<TestMsg> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Duration`
+ --> tests/lifecycle_test.rs:7:5
+  |
+7 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `count_clone`
+   --> tests/event_loop_integration_tests.rs:111:9
+    |
+111 |     let count_clone = Arc::clone(&model.update_count);
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_count_clone`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `count_clone`
+   --> tests/event_loop_integration_tests.rs:152:9
+    |
+152 |     let count_clone = Arc::clone(&model.update_count);
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_count_clone`
+
+warning: field `start_time` is never read
+  --> tests/event_loop_integration_tests.rs:16:5
+   |
+12 | struct EventLoopTestModel {
+   |        ------------------ field in this struct
+...
+16 |     start_time: Instant,
+   |     ^^^^^^^^^^
+   |
+   = note: `EventLoopTestModel` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: variant `AsyncComplete` is never constructed
+  --> tests/event_loop_integration_tests.rs:22:5
+   |
+20 | enum TestMsg {
+   |      ------- variant in this enum
+21 |     Tick,
+22 |     AsyncComplete(String),
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: unused import: `Instant`
+  --> tests/event_command_property_tests.rs:14:27
+   |
+14 | use std::time::{Duration, Instant};
+   |                           ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `tick_ms`
+   --> tests/event_command_property_tests.rs:132:47
+    |
+132 |     fn prop_tick_timing_approximately_correct(tick_ms in 10u64..100) {
+    |                                               ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_tick_ms`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `interval_ms`
+   --> tests/event_command_property_tests.rs:206:38
+    |
+206 |     fn prop_every_maintains_interval(interval_ms in 20u64..100) {
+    |                                      ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_interval_ms`
+
+warning: unused variable: `continued`
+   --> tests/event_command_property_tests.rs:295:13
+    |
+295 |         let continued = Arc::clone(&model.continued_after_error);
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_continued`
+
+warning: unused variable: `error_rate`
+   --> tests/event_command_property_tests.rs:288:42
+    |
+288 |     fn prop_fallible_commands_dont_crash(error_rate in 0.0..1.0) {
+    |                                          ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_error_rate`
+
+warning: unused variable: `user_clone`
+   --> tests/event_command_property_tests.rs:377:13
+    |
+377 |         let user_clone = Arc::clone(&user);
+    |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_user_clone`
+
+warning: use of deprecated method `hojicha::prelude::Buffer::get`: Use Buffer[] or Buffer::cell instead
+  --> tests/snapshot_tests.rs:32:31
+   |
+32 |             let cell = buffer.get(x, y);
+   |                               ^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `hojicha::prelude::Buffer::get`: Use Buffer[] or Buffer::cell instead
+  --> tests/snapshot_tests.rs:49:28
+   |
+49 |             let cell = src.get(src_area.x + x, src_area.y + y);
+   |                            ^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+  --> tests/snapshot_tests.rs:52:30
+   |
+52 |             if dst_x < frame.size().width && dst_y < frame.size().height {
+   |                              ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+  --> tests/snapshot_tests.rs:52:60
+   |
+52 |             if dst_x < frame.size().width && dst_y < frame.size().height {
+   |                                                            ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+  --> tests/snapshot_tests.rs:53:46
+   |
+53 |                 let dst_idx = (dst_y * frame.size().width + dst_x) as usize;
+   |                                              ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+  --> tests/snapshot_tests.rs:67:22
+   |
+67 |         let area = f.size();
+   |                      ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+  --> tests/snapshot_tests.rs:97:22
+   |
+97 |         let area = f.size();
+   |                      ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+   --> tests/snapshot_tests.rs:147:22
+    |
+147 |         let area = f.size();
+    |                      ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+   --> tests/snapshot_tests.rs:169:22
+    |
+169 |         let area = f.size();
+    |                      ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+   --> tests/snapshot_tests.rs:199:22
+    |
+199 |         let area = f.size();
+    |                      ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+   --> tests/snapshot_tests.rs:226:26
+    |
+226 |             let area = f.size();
+    |                          ^^^^
+
+warning: use of deprecated method `ratatui::Frame::<'_>::size`: use .area() as it's the more correct name
+   --> tests/snapshot_tests.rs:263:26
+    |
+263 |             let area = f.size();
+    |                          ^^^^
+
+warning: variant `Quit` is never constructed
+  --> examples/async_demo.rs:26:5
+   |
+23 | enum Msg {
+   |      --- variant in this enum
+...
+26 |     Quit,
+   |     ^^^^
+   |
+   = note: `Msg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `errors_clone`
+   --> tests/async_bridge_stress_tests.rs:307:9
+    |
+307 |     let errors_clone = Arc::clone(&model.errors_count);
+    |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_errors_clone`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: field `0` is never read
+  --> tests/async_bridge_stress_tests.rs:29:11
+   |
+29 |     Error(String),
+   |     ----- ^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+29 -     Error(String),
+29 +     Error(()),
+   |
+
+warning: variants `Burst` and `Quit` are never constructed
+  --> tests/async_bridge_stress_tests.rs:28:5
+   |
+26 | enum StressMsg {
+   |      --------- variants in this enum
+27 |     Data(Vec<u8>),
+28 |     Burst(usize),
+   |     ^^^^^
+29 |     Error(String),
+30 |     Quit,
+   |     ^^^^
+   |
+   = note: `StressMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: unused import: `KeyEvent`
+ --> tests/queue_resizing_test.rs:1:29
+  |
+1 | use hojicha::event::{Event, KeyEvent};
+  |                             ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `i`
+  --> tests/queue_resizing_test.rs:43:9
+   |
+43 |     for i in 0..30 {
+   |         ^ help: if this is intentional, prefix it with an underscore: `_i`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: `hojicha` (test "program_comprehensive_tests") generated 1 warning
+warning: `hojicha` (test "async_bridge_integration") generated 3 warnings
+warning: `hojicha` (test "lifecycle_test") generated 1 warning (run `cargo fix --test "lifecycle_test"` to apply 1 suggestion)
+warning: `hojicha` (test "event_loop_integration_tests") generated 4 warnings
+warning: `hojicha` (test "event_command_property_tests") generated 6 warnings (run `cargo fix --test "event_command_property_tests"` to apply 1 suggestion)
+warning: `hojicha` (test "snapshot_tests") generated 12 warnings
+warning: `hojicha` (example "async_demo") generated 1 warning
+warning: `hojicha` (test "async_bridge_stress_tests") generated 3 warnings
+warning: `hojicha` (test "queue_resizing_test") generated 2 warnings (run `cargo fix --test "queue_resizing_test"` to apply 1 suggestion)
+warning: unused variable: `normal_count`
+   --> tests/program_coverage_tests.rs:331:9
+    |
+331 |     let normal_count = Arc::clone(&model.normal_priority_count);
+    |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_normal_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `low_count`
+   --> tests/program_coverage_tests.rs:332:9
+    |
+332 |     let low_count = Arc::clone(&model.low_priority_count);
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_low_count`
+
+warning: field `sender` is never read
+   --> tests/program_coverage_tests.rs:225:5
+    |
+223 | struct SelfSendingModel {
+    |        ---------------- field in this struct
+224 |     counter: Arc<AtomicU32>,
+225 |     sender: Arc<Mutex<Option<std::sync::mpsc::SyncSender<Event<i32>>>>>,
+    |     ^^^^^^
+    |
+    = note: `SelfSendingModel` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` on by default
+
+warning: variant `Quit` is never constructed
+  --> tests/simple_async_test.rs:19:5
+   |
+17 | enum Msg {
+   |      --- variant in this enum
+18 |     Inc,
+19 |     Quit,
+   |     ^^^^
+   |
+   = note: `Msg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: variant `Quit` is never constructed
+  --> tests/program_unit_tests.rs:21:5
+   |
+18 | enum TestMsg {
+   |      ------- variant in this enum
+...
+21 |     Quit,
+   |     ^^^^
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `i`
+  --> tests/queue_resize_property_tests.rs:29:13
+   |
+29 |         for i in 0..low_events.min(initial_size / 3) {
+   |             ^ help: if this is intentional, prefix it with an underscore: `_i`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `low_before`
+   --> tests/queue_resize_property_tests.rs:124:13
+    |
+124 |         let low_before = low_to_add;
+    |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_low_before`
+
+warning: variable `low_after` is assigned to, but never used
+   --> tests/queue_resize_property_tests.rs:132:17
+    |
+132 |         let mut low_after = 0;
+    |                 ^^^^^^^^^
+    |
+    = note: consider using `_low_after` instead
+
+warning: field `0` is never read
+  --> tests/stream_subscription_tests.rs:22:17
+   |
+22 |     StreamValue(i32),
+   |     ----------- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+22 -     StreamValue(i32),
+22 +     StreamValue(()),
+   |
+
+warning: variant `Quit` is never constructed
+  --> tests/stream_subscription_tests.rs:23:5
+   |
+21 | enum TestMsg {
+   |      ------- variant in this enum
+22 |     StreamValue(i32),
+23 |     Quit,
+   |     ^^^^
+   |
+   = note: `TestMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: unused import: `std::sync::mpsc::TrySendError`
+ --> tests/async_bridge_tests.rs:9:5
+  |
+9 | use std::sync::mpsc::TrySendError;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `std::thread`
+  --> tests/async_bridge_tests.rs:11:5
+   |
+11 | use std::thread;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `proptest::strategy::Strategy`
+  --> tests/async_bridge_tests.rs:58:9
+   |
+58 |     use proptest::strategy::Strategy;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::*`
+   --> tests/async_bridge_tests.rs:127:9
+    |
+127 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> tests/async_bridge_tests.rs:158:9
+    |
+158 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+   --> tests/async_bridge_tests.rs:159:9
+    |
+159 |     use std::time::Instant;
+    |         ^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `messages_received`
+  --> tests/async_bridge_tests.rs:72:17
+   |
+72 |             let messages_received = model.messages_received.clone();
+   |                 ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_messages_received`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `messages_clone`
+  --> tests/async_bridge_tests.rs:73:17
+   |
+73 |             let messages_clone = messages.clone();
+   |                 ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_messages_clone`
+
+warning: variable does not need to be mutable
+  --> tests/async_bridge_tests.rs:76:17
+   |
+76 |             let mut program = Program::with_options(
+   |                 ----^^^^^^^
+   |                 |
+   |                 help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `thread_count`
+  --> tests/async_bridge_tests.rs:99:13
+   |
+99 |             thread_count in 2..10usize,
+   |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_thread_count`
+
+warning: unused variable: `messages_per_thread`
+   --> tests/async_bridge_tests.rs:100:13
+    |
+100 |             messages_per_thread in 10..100usize
+    |             ^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_messages_per_thread`
+
+warning: unused variable: `burst_size`
+   --> tests/async_bridge_tests.rs:113:13
+    |
+113 |             burst_size in 200..500usize
+    |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_burst_size`
+
+warning: variants `Increment`, `Text`, `Sequence`, and `Shutdown` are never constructed
+  --> tests/async_bridge_tests.rs:23:5
+   |
+22 | enum TestMessage {
+   |      ----------- variants in this enum
+23 |     Increment(i32),
+   |     ^^^^^^^^^
+24 |     Text(String),
+   |     ^^^^
+25 |     Sequence(usize),
+   |     ^^^^^^^^
+26 |     Shutdown,
+   |     ^^^^^^^^
+   |
+   = note: `TestMessage` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused imports: `Key` and `commands`
+ --> tests/event_priority_tests.rs:2:5
+  |
+2 |     commands,
+  |     ^^^^^^^^
+3 |     core::{Cmd, Model},
+4 |     event::{Event, Key},
+  |                    ^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `std::collections::VecDeque`
+ --> tests/event_priority_tests.rs:8:5
+  |
+8 | use std::collections::VecDeque;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Duration`
+  --> tests/event_priority_tests.rs:10:5
+   |
+10 | use std::time::Duration;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `messages_received`
+   --> tests/event_priority_tests.rs:101:13
+    |
+101 |         let messages_received = Arc::clone(&model.received_messages);
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_messages_received`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `program`
+   --> tests/event_priority_tests.rs:104:13
+    |
+104 |         let program = Program::with_options(model, options).unwrap();
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_program`
+
+warning: unused variable: `backpressure_triggered`
+   --> tests/event_priority_tests.rs:131:13
+    |
+131 |         let backpressure_triggered = model.backpressure_triggered;
+    |             ^^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_backpressure_triggered`
+
+warning: unused variable: `program`
+   --> tests/event_priority_tests.rs:134:13
+    |
+134 |         let program = Program::with_options(model, options).unwrap();
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_program`
+
+warning: unused variable: `received`
+   --> tests/event_priority_tests.rs:161:13
+    |
+161 |         let received = Arc::clone(&model.received_messages);
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_received`
+
+warning: unused variable: `program`
+   --> tests/event_priority_tests.rs:164:13
+    |
+164 |         let program = Program::with_options(model, options).unwrap();
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_program`
+
+warning: variants `HighPriority`, `LowPriority`, `ProcessedInOrder`, `BackpressureApplied`, and `Quit` are never constructed
+  --> tests/event_priority_tests.rs:21:5
+   |
+20 | enum PriorityMsg {
+   |      ----------- variants in this enum
+21 |     HighPriority(usize),
+   |     ^^^^^^^^^^^^
+22 |     NormalPriority(usize),
+23 |     LowPriority(usize),
+   |     ^^^^^^^^^^^
+24 |     ProcessedInOrder(Vec<(Priority, usize)>),
+   |     ^^^^^^^^^^^^^^^^
+25 |     BackpressureApplied,
+   |     ^^^^^^^^^^^^^^^^^^^
+26 |     Quit,
+   |     ^^^^
+   |
+   = note: `PriorityMsg` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field `max_queue_size` is never read
+  --> tests/event_priority_tests.rs:36:5
+   |
+30 | struct PriorityModel {
+   |        ------------- field in this struct
+...
+36 |     max_queue_size: usize,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `PriorityModel` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `hojicha` (test "program_coverage_tests") generated 3 warnings
+warning: `hojicha` (test "simple_async_test") generated 1 warning
+warning: `hojicha` (test "program_unit_tests") generated 1 warning
+warning: `hojicha` (test "queue_resize_property_tests") generated 3 warnings
+warning: `hojicha` (test "stream_subscription_tests") generated 2 warnings
+warning: `hojicha` (test "async_bridge_tests") generated 13 warnings (run `cargo fix --test "async_bridge_tests"` to apply 7 suggestions)
+warning: `hojicha` (test "event_priority_tests") generated 11 warnings (run `cargo fix --test "event_priority_tests"` to apply 3 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/hojicha-c61c8bcbfa9f799f)
+
+running 228 tests
+test commands::tests::test_alt_screen_commands ... ok
+test commands::tests::test_batch_empty ... ok
+[?2004h[?2004ltest commands::tests::test_batch_with_mixed_types ... ok
+test commands::tests::test_batch_multiple ... ok
+test commands::tests::test_batch_single ... ok
+test commands::tests::test_bracketed_paste_commands ... ok
+test commands::tests::test_clear_commands ... ok
+test commands::tests::test_cursor_commands ... ok
+test commands::tests::test_custom_command ... ok
+test commands::tests::test_custom_fallible_success ... ok
+test commands::tests::test_custom_fallible_error ... ok
+[?1004h[?1004ltest commands::tests::test_every_command ... ok
+test async_handle::tests::test_async_handle_drop_cancels ... ok
+test commands::tests::test_focus_change_commands ... ok
+test commands::tests::test_exec_command ... ok
+test commands::tests::test_mouse_commands ... ok
+test commands::tests::test_sequence_executes_in_order ... ok
+test commands::tests::test_sequence_execution_order ... ok
+]0;Test Title]0;test commands::tests::test_suspend_command ... ok
+test commands::tests::test_tick_command ... ok
+test commands::tests::test_window_title_command ... ok
+test components::keybinding::tests::test_key_binding_builder_pattern ... ok
+test components::keybinding::tests::test_format_key_event_modifiers ... ok
+test components::keybinding::tests::test_format_key_event_special_keys ... ok
+test components::keybinding::tests::test_key_binding_creation ... ok
+test components::keybinding::tests::test_key_binding_default ... ok
+test components::keybinding::tests::test_key_binding_disabled ... ok
+test components::keybinding::tests::test_key_binding_matching ... ok
+test components::keybinding::tests::test_key_binding_multiple_keys ... ok
+test components::keybinding::tests::test_key_formatting ... ok
+test components::keybinding::tests::test_keymap ... ok
+test components::keybinding::tests::test_keymap_all ... ok
+test components::keybinding::tests::test_keymap_get ... ok
+test components::keybinding::tests::test_keymap_help_text ... ok
+test components::keybinding::tests::test_keymap_merge ... ok
+test components::keybinding::tests::test_presets_application ... ok
+test components::keybinding::tests::test_keymap_remove ... ok
+test components::keybinding::tests::test_presets_navigation ... ok
+test commands::tests::test_custom_async_command ... ok
+test components::list::tests::test_list_creation ... ok
+test components::list::tests::test_list_default_options ... ok
+test components::list::tests::test_list_builder_pattern ... ok
+test components::list::tests::test_list_empty_operations ... ok
+test components::list::tests::test_list_ensure_visible ... ok
+test components::list::tests::test_list_modification ... ok
+test components::list::tests::test_list_mouse_support ... ok
+test components::list::tests::test_list_navigation ... ok
+test components::list::tests::test_list_offset_management ... ok
+test components::list::tests::test_list_page_navigation ... ok
+test components::list::tests::test_list_page_navigation_at_boundaries ... ok
+test components::list::tests::test_list_remove_adjusts_selection ... ok
+test components::list::tests::test_list_remove_last_item ... ok
+test components::list::tests::test_list_select_bounds ... ok
+test components::list::tests::test_list_selected_item_mut ... ok
+test components::list::tests::test_list_wrap_around ... ok
+test components::list::tests::test_list_rendering ... ok
+test components::list::tests::test_list_wrap_with_single_navigation ... ok
+test components::spinner::tests::test_all_spinner_styles ... ok
+test components::spinner::tests::test_current_frame_when_stopped ... ok
+test components::spinner::tests::test_spinner_creation ... ok
+test components::spinner::tests::test_spinner_default ... ok
+test components::spinner::tests::test_spinner_frame_wrapping ... ok
+test components::spinner::tests::test_spinner_message ... ok
+test components::spinner::tests::test_spinner_render_zero_area ... ok
+test components::spinner::tests::test_spinner_render_centered ... ok
+test components::spinner::tests::test_spinner_rendering ... ok
+test components::spinner::tests::test_spinner_styles ... ok
+test components::spinner::tests::test_spinner_tick_when_stopped ... ok
+test components::spinner::tests::test_spinner_with_message ... ok
+test components::spinner::tests::test_spinner_with_style ... ok
+test components::spinner::tests::test_spinner_with_style_and_message ... ok
+test components::table::tests::test_table_builder_pattern ... ok
+test components::table::tests::test_table_creation ... ok
+test components::table::tests::test_table_modification ... ok
+test components::table::tests::test_table_navigation ... ok
+test components::table::tests::test_table_offset_management ... ok
+test components::table::tests::test_table_options ... ok
+test components::table::tests::test_table_push_batch ... ok
+test components::table::tests::test_table_remove_edge_cases ... ok
+test components::table::tests::test_table_select_bounds ... ok
+test components::table::tests::test_table_selected_row ... ok
+test components::table::tests::test_table_wrap_around ... ok
+test components::table::tests::test_table_wrap_edge_cases ... ok
+test components::textarea::tests::test_cursor_bounds ... ok
+test components::textarea::tests::test_cursor_movement ... ok
+test components::textarea::tests::test_delete_at_boundaries ... ok
+test components::textarea::tests::test_delete_operations ... ok
+test components::textarea::tests::test_empty_lines ... ok
+test components::textarea::tests::test_focus ... ok
+test components::textarea::tests::test_insert_text ... ok
+test components::textarea::tests::test_multiline_cursor_movement ... ok
+test components::textarea::tests::test_multiline_insert ... ok
+test components::textarea::tests::test_options ... ok
+test components::textarea::tests::test_set_value ... ok
+test components::textarea::tests::test_textarea_creation ... ok
+test components::textarea::tests::test_textarea_default ... ok
+test components::viewport::tests::test_content_management ... ok
+test components::textarea::tests::test_rendering ... ok
+test components::viewport::tests::test_empty_content ... ok
+test components::viewport::tests::test_horizontal_scrolling ... ok
+test components::viewport::tests::test_mouse_events ... ok
+test components::viewport::tests::test_mouse_scrolling ... ok
+test components::viewport::tests::test_options ... ok
+test components::viewport::tests::test_scroll_bounds ... ok
+test components::viewport::tests::test_scrollbar_info ... ok
+test components::viewport::tests::test_scrolling ... ok
+test components::viewport::tests::test_rendering ... ok
+test components::viewport::tests::test_viewport_creation ... ok
+test components::viewport::tests::test_viewport_default ... ok
+test core::tests::test_cmd_creation ... ok
+test core::tests::test_cmd_debug ... ok
+test core::tests::test_cmd_exec_process ... ok
+test core::tests::test_cmd_fallible_error ... ok
+test core::tests::test_cmd_fallible_success ... ok
+test core::tests::test_cmd_none ... ok
+test core::tests::test_model_update ... ok
+test core::tests::test_model_init ... ok
+test error::tests::test_all_error_variants ... ok
+test error::tests::test_bail_macro ... ok
+test error::tests::test_bail_macro_with_format ... ok
+test error::tests::test_channel_error_conversions ... ok
+test error::tests::test_context_error ... ok
+test error::tests::test_custom_error ... ok
+test error::tests::test_default_error_handler ... ok
+test error::tests::test_ensure_macro ... ok
+test error::tests::test_ensure_macro_with_format ... ok
+test error::tests::test_error_context ... ok
+test error::tests::test_error_display ... ok
+test error::tests::test_error_from_io ... ok
+test error::tests::test_error_source_chain ... ok
+test error::tests::test_panic_handler ... ok
+test error::tests::test_with_context ... ok
+test event::tests::test_crossterm_key_conversion ... ok
+test event::tests::test_crossterm_key_conversion_all_keys ... ok
+test event::tests::test_crossterm_mouse_conversion ... ok
+test event::tests::test_enhanced_keys ... ok
+test commands::tests::test_window_size_command ... ok
+test components::table::tests::test_table_rendering ... ok
+test event::tests::test_event_variants ... ok
+test event::tests::test_event_resize_properties ... ok
+test event::tests::test_key_event_creation ... ok
+test event::tests::test_key_event_modifiers ... ok
+test event::tests::test_function_key_properties ... ok
+test async_handle::tests::test_async_handle_abort ... ok
+test event::tests::test_key_variants ... ok
+test event::tests::test_mouse_event_creation ... ok
+test components::spinner::tests::test_spinner_multiple_starts ... ok
+test event::tests::test_non_char_keys ... ok
+test event::tests::test_window_size_creation ... ok
+test event::tests::test_key_event_properties ... ok
+test event::tests::test_event_paste_properties ... ok
+test metrics::tests::test_event_recording ... ok
+test metrics::tests::test_export_formats ... ok
+test metrics::tests::test_metrics_collector_creation ... ok
+test metrics::tests::test_metrics_reset ... ok
+test priority_queue::tests::test_backpressure ... ok
+test priority_queue::tests::test_event_dropping ... ok
+test priority_queue::tests::test_priority_ordering ... ok
+test event::tests::test_key_modifier_combinations ... ok
+test metrics::tests::test_percentile_calculation ... ok
+test event::tests::test_event_user_message_properties ... ok
+test program::command_executor::tests::test_execute_quit_command ... ok
+test event::tests::test_mouse_event_properties ... ok
+test event::tests::test_window_size_properties ... ok
+test program::command_executor::tests::test_execute_custom_command ... ok
+test program::event_processor::tests::test_coalesce_resize_events ... ok
+test program::command_executor::tests::test_execute_none_command ... ok
+test program::event_processor::tests::test_is_quit_event ... ok
+test program::event_processor::tests::test_is_suspend_event ... ok
+test program::event_processor::tests::test_process_focus_events ... ok
+test program::event_processor::tests::test_process_key_event ... ok
+test program::event_processor::tests::test_process_mouse_event ... ok
+test program::event_processor::tests::test_process_paste_event ... ok
+test program::fps_limiter::tests::test_fps_limiter_actual_fps ... ignored, Flaky test due to timing dependencies
+test program::event_processor::tests::test_process_resize_event ... ok
+test program::fps_limiter::tests::test_fps_limiter_creation ... ok
+test program::fps_limiter::tests::test_fps_limiter_default ... ok
+test program::command_executor::tests::test_execute_tick_command ... ok
+test program::fps_limiter::tests::test_fps_limiter_no_limit ... ok
+test program::fps_limiter::tests::test_fps_limiter_high_fps ... ok
+test program::fps_limiter::tests::test_fps_limiter_set_max_fps ... ok
+test async_handle::tests::test_async_handle_cancel ... ok
+test program::fps_limiter::tests::test_fps_limiter_reset ... ok
+test program::fps_limiter::tests::test_fps_limiter_various_fps_values ... ok
+test program::priority_event_processor::tests::test_custom_priority_mapper ... ok
+test program::priority_event_processor::tests::test_event_prioritization ... ok
+test program::priority_event_processor::tests::test_priority_processor_creation ... ok
+test program::priority_event_processor::tests::test_statistics_tracking ... ok
+test program::terminal_manager::tests::test_terminal_config_default ... ok
+test program::terminal_manager::tests::test_terminal_config_variations ... ok
+test program::terminal_manager::tests::test_terminal_manager_cleanup ... ok
+test program::terminal_manager::tests::test_terminal_manager_clear_headless ... ok
+test program::terminal_manager::tests::test_terminal_manager_draw_headless ... ok
+test program::terminal_manager::tests::test_terminal_manager_drop ... ok
+test program::terminal_manager::tests::test_terminal_manager_headless ... ok
+test program::terminal_manager::tests::test_terminal_manager_release_restore ... ok
+test program::terminal_manager::tests::test_terminal_manager_size_headless ... ok
+test program::tests::test_mouse_mode_default ... ok
+test program::tests::test_program_drop ... ok
+test program::tests::test_program_methods ... ok
+test program::tests::test_program_options_all_methods ... ok
+test program::tests::test_program_with_filter ... ok
+test queue_scaling::tests::test_event_rate_tracker ... ok
+test queue_scaling::tests::test_scaling_strategies ... ok
+test program::command_executor::tests::test_execute_batch_commands ... ok
+test program::command_executor::tests::test_multiple_executors ... ok
+test testing::event_recorder::tests::test_event_playback ... ok
+test testing::event_recorder::tests::test_event_recording ... ok
+test testing::event_test_harness::tests::test_event_harness_basic ... ignored, Test harness implementation incomplete
+test testing::event_test_harness::tests::test_priority_harness ... ignored, Test harness implementation incomplete
+test program::command_executor::tests::test_execute_sequence ... ok
+test testing::mock_terminal::tests::test_mock_terminal_cursor ... ok
+test testing::test_backend::tests::test_backend_capture ... ok
+test testing::mock_terminal::tests::test_mock_terminal_basic ... ok
+test testing::test_backend::tests::test_backend_lines ... ok
+test testing::tests::test_harness_basic ... ok
+test testing::time_control::tests::test_macro_paused_time ... ok
+test testing::time_control::tests::test_time_controller_cannot_advance_when_running ... ok
+test testing::time_control::tests::test_time_controller_pause_advance ... ok
+test testing::time_control::tests::test_time_scale ... ok
+test tests::it_works ... ok
+test testing::time_control::tests::test_virtual_sleep ... ok
+test program::fps_limiter::tests::test_fps_limiter_time_until_next_frame ... ok
+test program::fps_limiter::tests::test_fps_limiter_should_render ... ok
+test components::spinner::tests::test_spinner_animation ... ok
+test subscription::tests::test_subscription_cancel ... ok
+test subscription::tests::test_subscription_drop_cancels ... ok
+test program::fps_limiter::tests::test_fps_limiter_low_fps ... ok
+
+test result: ok. 225 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 1.14s
+
+     Running unittests src/main.rs (target/debug/deps/hojicha-7b148d99e265cd55)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/additional_coverage_tests.rs (target/debug/deps/additional_coverage_tests-f3f2229788c35bc7)
+
+running 11 tests
+test tests::test_cmd_variants ... ok
+test tests::test_all_event_variants ... ok
+test tests::test_key_all_variants ... ok
+test tests::test_error_chain ... ok
+test tests::test_error_context ... ok
+test tests::test_error_from_string ... ok
+test tests::test_event_is_methods ... ok
+test tests::test_modifier_key_enum ... ok
+test tests::test_mouse_event_all_fields ... ok
+test tests::test_program_options_all_fields ... ok
+test tests::test_window_size ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/async_bridge_integration.rs (target/debug/deps/async_bridge_integration-6e855f652eaf01eb)
+
+running 7 tests
+test test_channel_capacity_backpressure ... ok
+test test_message_ordering_with_mock_channel ... ok
+test test_usage_pattern_documentation ... ok
+test test_concurrent_senders_with_mock_channel ... ok
+test test_external_message_injection ... ok
+test test_sender_not_available_before_init ... ok
+test test_send_message_before_init_fails ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/async_bridge_stress_tests.rs (target/debug/deps/async_bridge_stress_tests-fbf7b509acf13164)
+
+running 5 tests
+test test_async_bridge_burst_handling ... ignored, Stress test - run with --ignored
+test test_async_bridge_channel_overflow_recovery ... ignored, Stress test - run with --ignored
+test test_async_bridge_many_concurrent_senders ... ignored, Stress test - run with --ignored
+test test_async_bridge_memory_stability ... ignored, Stress test - run with --ignored
+test test_async_bridge_sustained_load ... ignored, Stress test - run with --ignored
+
+test result: ok. 0 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/async_bridge_tests.rs (target/debug/deps/async_bridge_tests-4c39453a4868795f)
+
+running 9 tests
+test benchmarks::bench_message_throughput ... ignored
+test integration_tests::test_multiple_async_sources ... ok
+test integration_tests::test_high_frequency_messages ... ok
+test integration_tests::test_sender_after_receiver_dropped ... ok
+test integration_tests::test_shutdown_with_active_senders ... ok
+test integration_tests::test_simple_timer_integration ... ok
+test property_tests::test_channel_backpressure ... ok
+test property_tests::test_no_message_loss_concurrent ... ok
+test property_tests::test_message_ordering_single_thread ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.79s
+
+     Running tests/async_bridge_working_tests.rs (target/debug/deps/async_bridge_working_tests-ca9ca7b555e25272)
+
+running 8 tests
+test test_high_frequency_messages ... ok
+test test_sender_methods ... ok
+test test_async_bridge_with_condition ... ok
+test test_rapid_fire_messages ... ok
+test test_simple_timer_messages ... ok
+test test_message_ordering_single_sender ... ok
+test test_multiple_concurrent_senders ... ok
+test test_sender_cloning ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/async_simple_test.rs (target/debug/deps/async_simple_test-8ed2d6e3daef8bb8)
+
+running 1 test
+test test_basic_async_bridge ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cancellable_operations_tests.rs (target/debug/deps/cancellable_operations_tests-d303a726bda822ec)
+
+running 7 tests
+test test_cancellation_cleanup ... ok
+test test_async_cancellation_flow ... ok
+test test_cancellation_token_propagation ... ok
+test test_multiple_cancellation_handles ... ok
+test prop_operations_can_be_cancelled ... ok

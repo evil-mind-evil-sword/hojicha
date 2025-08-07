@@ -59,7 +59,15 @@ fn test_deterministic_message_processing() {
         .headless()
         .without_signal_handler();
 
-    let program = Program::with_options(model, options).unwrap();
+    let mut program = Program::with_options(model, options).unwrap();
+    
+    // Initialize async bridge to send messages
+    let sender = program.init_async_bridge();
+    
+    // Send messages to trigger the counter
+    for i in 0..5 {
+        sender.send(Event::User(format!("Message {}", i))).unwrap();
+    }
 
     // Run until condition is met (deterministic)
     program
