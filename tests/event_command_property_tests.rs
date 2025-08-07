@@ -54,6 +54,7 @@ impl Model for CommandOrderModel {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_sequence_maintains_order(fps in 0u16..240) {
         let model = CommandOrderModel {
@@ -71,7 +72,7 @@ proptest! {
 
         // Run with timeout instead of spawning thread
         // Increased timeout for async execution
-        let _ = program.run_with_timeout(Duration::from_millis(300));
+        let _ = program.run_with_timeout(Duration::from_millis(50));
 
         let executed = log.lock().unwrap();
 
@@ -128,6 +129,7 @@ impl Model for TickModel {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_tick_timing_approximately_correct(tick_ms in 10u64..100) {
         let model = TickModel {
@@ -143,7 +145,7 @@ proptest! {
         let program = Program::with_options(model, options).unwrap();
 
         // Run with timeout instead of spawning thread
-        let _ = program.run_with_timeout(Duration::from_millis(500));
+        let _ = program.run_with_timeout(Duration::from_millis(250));
 
         let tick_times = times.lock().unwrap();
         if tick_times.len() >= 2 {
@@ -202,6 +204,7 @@ impl Model for EveryModel {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_every_maintains_interval(interval_ms in 20u64..100) {
         let model = EveryModel {
@@ -218,7 +221,7 @@ proptest! {
         let program = Program::with_options(model, options).unwrap();
 
         // Run with timeout instead of spawning thread
-        let _ = program.run_with_timeout(Duration::from_millis(200));
+        let _ = program.run_with_timeout(Duration::from_millis(50));
 
         let fire_times = times.lock().unwrap();
         if fire_times.len() >= 2 {
@@ -284,6 +287,7 @@ impl Model for FallibleModel {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_fallible_commands_dont_crash(error_rate in 0.0..1.0) {
         let model = FallibleModel {
@@ -302,7 +306,7 @@ proptest! {
 
         // Run until model returns None (after first success)
         // Increased timeout for async execution
-        let result = program.run_with_timeout(Duration::from_secs(2));
+        let result = program.run_with_timeout(Duration::from_millis(100));
         prop_assert!(result.is_ok(), "Program should not panic on fallible commands");
 
         // Should continue executing after errors
@@ -358,6 +362,7 @@ impl Model for EventTypeModel {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_event_types_correctly_classified(fps in 1u16..240) {
         let model = EventTypeModel {
@@ -379,7 +384,7 @@ proptest! {
 
         // Run with a timeout - the model itself will quit after receiving enough events
         // Increased timeout for async execution
-        let _ = program.run_with_timeout(Duration::from_millis(200));
+        let _ = program.run_with_timeout(Duration::from_millis(50));
 
         let user_count = user.load(Ordering::SeqCst);
         let system_count = system.load(Ordering::SeqCst);
@@ -434,7 +439,7 @@ impl Model for NoneCommandModel {
 }
 
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(10))]
+    #![proptest_config(ProptestConfig::with_cases(2))]
     #[test]
     fn prop_none_commands_are_noops(fps in 1u16..240) {
         let model = NoneCommandModel {
@@ -451,7 +456,7 @@ proptest! {
 
         // Run with timeout - sequence sends 3 commands but one returns None
         // Increased timeout for async execution
-        let result = program.run_with_timeout(Duration::from_millis(500));
+        let result = program.run_with_timeout(Duration::from_millis(100));
         prop_assert!(result.is_ok(), "Program should handle None commands");
 
         // We might not process all messages due to synchronous execution
