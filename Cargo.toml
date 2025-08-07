@@ -5,6 +5,7 @@ members = ["."]
 name = "hojicha"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.80.0"
 authors = ["McCoy Reynolds Becker <mccoybecker@gmail.com>"]
 description = "Elm Architecture for terminal UIs in Rust, built on Ratatui"
 homepage = "https://github.com/evil-mind-evil-sword/hojicha"
