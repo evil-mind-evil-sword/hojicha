@@ -157,7 +157,7 @@ impl Default for QueueStats {
 }
 
 /// Time-windowed statistics
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct WindowedStats {
     /// Last 60 seconds (1-second buckets)
     pub last_minute: Vec<BucketStats>,
@@ -166,14 +166,6 @@ pub struct WindowedStats {
     pub last_hour: Vec<BucketStats>,
 }
 
-impl Default for WindowedStats {
-    fn default() -> Self {
-        Self {
-            last_minute: Vec::new(),
-            last_hour: Vec::new(),
-        }
-    }
-}
 
 /// Statistics for a time bucket
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -232,7 +224,7 @@ impl LatencyTracker {
     }
 
     fn percentiles(&self) -> LatencyPercentiles {
-        if self.histogram.len() == 0 {
+        if self.histogram.is_empty() {
             return LatencyPercentiles::default();
         }
 
@@ -405,9 +397,7 @@ impl MetricsCollector {
         self.processing_times.lock().unwrap().push(latency);
 
         trace!(
-            "Recorded event: priority={:?}, latency={}μs",
-            priority,
-            latency_us
+            "Recorded event: priority={priority:?}, latency={latency_us}μs"
         );
     }
 
@@ -614,17 +604,15 @@ impl AdvancedEventStats {
 
     fn to_json(&self) -> String {
         serde_json::to_string_pretty(self)
-            .unwrap_or_else(|e| format!("Failed to serialize metrics: {}", e))
+            .unwrap_or_else(|e| format!("Failed to serialize metrics: {e}"))
     }
 
     fn to_prometheus(&self) -> String {
         let mut output = String::new();
 
         // Basic metrics
-        output.push_str(&format!(
-            "# HELP boba_events_total Total events processed\n"
-        ));
-        output.push_str(&format!("# TYPE boba_events_total counter\n"));
+        output.push_str("# HELP boba_events_total Total events processed\n");
+        output.push_str("# TYPE boba_events_total counter\n");
         output.push_str(&format!(
             "boba_events_total {{}} {}\n",
             self.basic.total_events
@@ -643,20 +631,16 @@ impl AdvancedEventStats {
         ));
 
         // Dropped events
-        output.push_str(&format!(
-            "# HELP boba_events_dropped Total events dropped\n"
-        ));
-        output.push_str(&format!("# TYPE boba_events_dropped counter\n"));
+        output.push_str("# HELP boba_events_dropped Total events dropped\n");
+        output.push_str("# TYPE boba_events_dropped counter\n");
         output.push_str(&format!(
             "boba_events_dropped {{}} {}\n",
             self.basic.dropped_events
         ));
 
         // Latency metrics
-        output.push_str(&format!(
-            "# HELP boba_event_latency_microseconds Event processing latency\n"
-        ));
-        output.push_str(&format!("# TYPE boba_event_latency_microseconds summary\n"));
+        output.push_str("# HELP boba_event_latency_microseconds Event processing latency\n");
+        output.push_str("# TYPE boba_event_latency_microseconds summary\n");
 
         for (priority, stats) in [
             ("high", &self.latency.high_priority),
@@ -686,8 +670,8 @@ impl AdvancedEventStats {
         }
 
         // Throughput metrics
-        output.push_str(&format!("# HELP boba_throughput_rate Events per second\n"));
-        output.push_str(&format!("# TYPE boba_throughput_rate gauge\n"));
+        output.push_str("# HELP boba_throughput_rate Events per second\n");
+        output.push_str("# TYPE boba_throughput_rate gauge\n");
         output.push_str(&format!(
             "boba_throughput_rate {{type=\"current\"}} {}\n",
             self.throughput.current_rate
@@ -698,17 +682,15 @@ impl AdvancedEventStats {
         ));
 
         // Queue metrics
-        output.push_str(&format!("# HELP boba_queue_depth Current queue depth\n"));
-        output.push_str(&format!("# TYPE boba_queue_depth gauge\n"));
+        output.push_str("# HELP boba_queue_depth Current queue depth\n");
+        output.push_str("# TYPE boba_queue_depth gauge\n");
         output.push_str(&format!(
             "boba_queue_depth {{}} {}\n",
             self.queue.current_depth
         ));
 
-        output.push_str(&format!(
-            "# HELP boba_queue_saturation Queue saturation percentage\n"
-        ));
-        output.push_str(&format!("# TYPE boba_queue_saturation gauge\n"));
+        output.push_str("# HELP boba_queue_saturation Queue saturation percentage\n");
+        output.push_str("# TYPE boba_queue_saturation gauge\n");
         output.push_str(&format!(
             "boba_queue_saturation {{}} {}\n",
             self.queue.saturation_percentage

@@ -278,7 +278,7 @@ pub enum ResizeError {
 impl std::fmt::Display for ResizeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ResizeError::InvalidSize(msg) => write!(f, "Invalid size: {}", msg),
+            ResizeError::InvalidSize(msg) => write!(f, "Invalid size: {msg}"),
             ResizeError::WouldDropHighPriorityEvents => {
                 write!(f, "Resize would drop high priority events")
             }

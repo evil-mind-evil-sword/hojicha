@@ -26,7 +26,6 @@ impl CommandExecutor {
     {
         if cmd.is_noop() {
             // NoOp command - do nothing
-            return;
         } else if cmd.is_quit() {
             // Handle quit command by sending a special quit event
             let _ = tx.send(Event::Quit);

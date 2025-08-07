@@ -295,6 +295,7 @@ impl<M: Message> Cmd<M> {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     pub(crate) fn take_every(
         self,
     ) -> Option<(
