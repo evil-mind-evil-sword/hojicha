@@ -166,7 +166,6 @@ pub struct WindowedStats {
     pub last_hour: Vec<BucketStats>,
 }
 
-
 /// Statistics for a time bucket
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BucketStats {
@@ -396,9 +395,7 @@ impl MetricsCollector {
         // Record processing time
         self.processing_times.lock().unwrap().push(latency);
 
-        trace!(
-            "Recorded event: priority={priority:?}, latency={latency_us}μs"
-        );
+        trace!("Recorded event: priority={priority:?}, latency={latency_us}μs");
     }
 
     /// Record a dropped event
