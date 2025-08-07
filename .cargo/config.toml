@@ -1,0 +1,26 @@
+# Cargo configuration for boba
+
+[env]
+# Enable parallel test execution
+RUST_TEST_THREADS = "8"
+# Enable backtraces for debugging test failures
+RUST_BACKTRACE = "1"
+
+[alias]
+# Fast tests - run library tests only (most unit tests)
+test-fast = "test --lib --all-features"
+
+# Run tests excluding slow/stress tests
+test-quick = "test --all-features -- --skip stress --skip slow"
+
+# Run only stress tests (marked with #[ignore])
+test-stress = "test --all-features -- --ignored"
+
+# Run property tests with reduced cases
+test-prop = "test --all-features -- prop_"
+
+# Full check - format, clippy, and tests
+check-all = ["fmt", "clippy", "test"]
+
+# Watch tests (requires cargo-watch)
+watch-test = "watch -x 'test --lib --all-features'"

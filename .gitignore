@@ -1,0 +1,48 @@
+# Rust build artifacts
+/target/
+target/
+
+# Cargo lock for libraries
+# Cargo.lock
+
+# Backup files
+**/*.rs.bk
+*.pdb
+
+# IDE directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+/coverage/
+coverage/
+*.profraw
+*.profdata
+tarpaulin-report.*
+cobertura.xml
+lcov.info
+
+# Test artifacts
+*.orig
+**/*.proptest-regressions
+
+# Documentation
+/doc/
+
+# Temporary files
+/tmp/
+*.tmp
+
+# Environment files
+.env
+.env.local
+
+# Debug files
+*.dSYM/

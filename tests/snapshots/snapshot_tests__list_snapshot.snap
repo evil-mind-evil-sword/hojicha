@@ -1,0 +1,14 @@
+---
+source: tests/snapshot_tests.rs
+expression: output
+---
+┌List Widget─────────────────┐
+│First item                  │
+│Second item                 │
+│Third item                  │
+│Fourth item                 │
+│                            │
+│                            │
+│                            │
+│                            │
+└────────────────────────────┘

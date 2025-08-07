@@ -1,0 +1,12 @@
+---
+source: tests/snapshot_tests.rs
+expression: output
+---
+┌TextArea────────────────────┐
+│┌──────────────────────────┐│
+││Hello, World!             ││
+││This is line 2            ││
+││And line 3.               ││
+││                          ││
+│└──────────────────────────┘│
+└────────────────────────────┘
