@@ -246,14 +246,12 @@ fn test_async_cancellation_flow() {
         let token_clone = token.clone();
 
         let task = tokio::spawn(async move {
-            loop {
-                tokio::select! {
-                    _ = token_clone.cancelled() => {
-                        return "Cancelled";
-                    }
-                    _ = tokio::time::sleep(Duration::from_secs(10)) => {
-                        return "Completed";
-                    }
+            tokio::select! {
+                _ = token_clone.cancelled() => {
+                    "Cancelled"
+                }
+                _ = tokio::time::sleep(Duration::from_secs(10)) => {
+                    "Completed"
                 }
             }
         });
