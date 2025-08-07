@@ -9,8 +9,8 @@ This document contains key information to help you quickly understand and work w
 
 ### Why This Exists
 - Ratatui is great for rendering but lacks application architecture
-- Developers coming from Bubbletea want similar patterns in Rust
-- The Elm Architecture provides predictable state management for TUIs
+- Developers coming from TEA-based systems like `bubbletea` want similar patterns in Rust
+- The Elm Architecture is great and provides predictable state management for TUIs
 
 ## Architecture & Key Concepts
 
