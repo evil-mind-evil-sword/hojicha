@@ -21,6 +21,7 @@ pub mod components;
 pub mod core;
 pub mod error;
 pub mod event;
+pub mod fallible;
 pub mod logging;
 pub mod metrics;
 pub mod priority_queue;

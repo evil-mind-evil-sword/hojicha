@@ -331,6 +331,40 @@ where
     Cmd::fallible(f)
 }
 
+/// Create a fallible command that converts errors to messages
+///
+/// This allows errors to be handled by the model's update method rather than
+/// just being logged.
+///
+/// # Example
+/// ```ignore
+/// fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
+///     match event {
+///         Event::User(Msg::LoadData) => {
+///             fallible_with_error(
+///                 || {
+///                     let data = std::fs::read_to_string("data.json")?;
+///                     Ok(Some(Msg::DataLoaded(data)))
+///                 },
+///                 |err| Msg::ErrorOccurred(err.to_string())
+///             )
+///         }
+///         _ => Cmd::none()
+///     }
+/// }
+/// ```
+pub fn fallible_with_error<M, F, E>(f: F, error_handler: E) -> Cmd<M>
+where
+    M: Message,
+    F: FnOnce() -> crate::Result<Option<M>> + Send + 'static,
+    E: FnOnce(crate::error::Error) -> M + Send + 'static,
+{
+    Cmd::new(move || match f() {
+        Ok(msg) => msg,
+        Err(err) => Some(error_handler(err)),
+    })
+}
+
 /// Execute a command in a subprocess, releasing the terminal while it runs
 ///
 /// This is useful for running interactive programs like editors or shells.
