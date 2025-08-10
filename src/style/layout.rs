@@ -5,7 +5,7 @@
 use super::{ColorProfile, Style};
 use ratatui::{
     layout::{Alignment as RatatuiAlignment, Constraint, Direction, Layout as RatatuiLayout, Rect},
-    widgets::{Block, Borders},
+    widgets::{Block, Borders, Widget},
     Frame,
 };
 
@@ -389,5 +389,156 @@ impl Element for Container {
     fn with_style(mut self, style: Style) -> Self {
         self.style = style;
         self
+    }
+}
+
+/// Place content at a specific position within an area
+///
+/// This function positions content within a given area based on horizontal
+/// and vertical alignment preferences.
+///
+/// # Arguments
+/// * `area` - The area to place content within
+/// * `content_width` - Width of the content to place
+/// * `content_height` - Height of the content to place
+/// * `h_align` - Horizontal alignment
+/// * `v_align` - Vertical alignment
+///
+/// # Returns
+/// A `Rect` representing the positioned content area
+pub fn place_in_area(
+    area: Rect,
+    content_width: u16,
+    content_height: u16,
+    h_align: HAlign,
+    v_align: VAlign,
+) -> Rect {
+    let x = match h_align {
+        HAlign::Left => area.x,
+        HAlign::Center => {
+            if content_width < area.width {
+                area.x + (area.width - content_width) / 2
+            } else {
+                area.x
+            }
+        }
+        HAlign::Right => {
+            if content_width < area.width {
+                area.x + area.width - content_width
+            } else {
+                area.x
+            }
+        }
+    };
+
+    let y = match v_align {
+        VAlign::Top => area.y,
+        VAlign::Center => {
+            if content_height < area.height {
+                area.y + (area.height - content_height) / 2
+            } else {
+                area.y
+            }
+        }
+        VAlign::Bottom => {
+            if content_height < area.height {
+                area.y + area.height - content_height
+            } else {
+                area.y
+            }
+        }
+    };
+
+    Rect {
+        x,
+        y,
+        width: content_width.min(area.width),
+        height: content_height.min(area.height),
+    }
+}
+
+/// Place text horizontally within a given width
+///
+/// Centers, left-aligns, or right-aligns text within the specified width
+/// by adding appropriate padding.
+pub fn place_horizontal(text: &str, width: u16, align: HAlign) -> String {
+    let text_width = text.chars().count();
+    if text_width >= width as usize {
+        return text.chars().take(width as usize).collect();
+    }
+
+    let padding = width as usize - text_width;
+    match align {
+        HAlign::Left => format!("{}{}", text, " ".repeat(padding)),
+        HAlign::Center => {
+            let left_pad = padding / 2;
+            let right_pad = padding - left_pad;
+            format!("{}{}{}", " ".repeat(left_pad), text, " ".repeat(right_pad))
+        }
+        HAlign::Right => format!("{}{}", " ".repeat(padding), text),
+    }
+}
+
+/// Place text vertically within a given height
+///
+/// Positions text at the top, center, or bottom of the specified height
+/// by adding appropriate empty lines.
+pub fn place_vertical(lines: Vec<String>, height: u16, align: VAlign) -> Vec<String> {
+    let content_height = lines.len();
+    if content_height >= height as usize {
+        return lines.into_iter().take(height as usize).collect();
+    }
+
+    let padding = height as usize - content_height;
+    let empty_line = String::new();
+
+    match align {
+        VAlign::Top => {
+            let mut result = lines;
+            for _ in 0..padding {
+                result.push(empty_line.clone());
+            }
+            result
+        }
+        VAlign::Center => {
+            let top_pad = padding / 2;
+            let bottom_pad = padding - top_pad;
+            let mut result = Vec::with_capacity(height as usize);
+            
+            for _ in 0..top_pad {
+                result.push(empty_line.clone());
+            }
+            result.extend(lines);
+            for _ in 0..bottom_pad {
+                result.push(empty_line.clone());
+            }
+            result
+        }
+        VAlign::Bottom => {
+            let mut result = Vec::with_capacity(height as usize);
+            for _ in 0..padding {
+                result.push(empty_line.clone());
+            }
+            result.extend(lines);
+            result
+        }
+    }
+}
+
+/// A positioned element that can be rendered at a specific location
+pub struct PositionedElement<W: Widget> {
+    widget: W,
+    position: Rect,
+}
+
+impl<W: Widget> PositionedElement<W> {
+    /// Create a new positioned element
+    pub fn new(widget: W, position: Rect) -> Self {
+        Self { widget, position }
+    }
+
+    /// Render the positioned element
+    pub fn render(self, frame: &mut Frame) {
+        frame.render_widget(self.widget, self.position);
     }
 }

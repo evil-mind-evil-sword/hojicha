@@ -67,6 +67,26 @@ impl Margin {
     }
 }
 
+/// Text alignment options
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum TextAlign {
+    #[default]
+    Left,
+    Center,
+    Right,
+}
+
+impl TextAlign {
+    /// Convert to Ratatui alignment
+    pub fn to_ratatui(&self) -> ratatui::layout::Alignment {
+        match self {
+            Self::Left => ratatui::layout::Alignment::Left,
+            Self::Center => ratatui::layout::Alignment::Center,
+            Self::Right => ratatui::layout::Alignment::Right,
+        }
+    }
+}
+
 /// Border style configuration
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum BorderStyle {
@@ -104,6 +124,7 @@ pub struct Style {
     height: Option<u16>,
     max_width: Option<u16>,
     max_height: Option<u16>,
+    text_align: TextAlign,
 }
 
 impl Style {
@@ -254,6 +275,30 @@ impl Style {
         self
     }
 
+    /// Set text alignment
+    pub fn align(mut self, alignment: TextAlign) -> Self {
+        self.text_align = alignment;
+        self
+    }
+
+    /// Align text to the left
+    pub fn align_left(mut self) -> Self {
+        self.text_align = TextAlign::Left;
+        self
+    }
+
+    /// Align text to the center
+    pub fn align_center(mut self) -> Self {
+        self.text_align = TextAlign::Center;
+        self
+    }
+
+    /// Align text to the right
+    pub fn align_right(mut self) -> Self {
+        self.text_align = TextAlign::Right;
+        self
+    }
+
     /// Merge with another style (other style takes precedence)
     pub fn merge(mut self, other: &Style) -> Self {
         if other.foreground.is_some() {
@@ -286,6 +331,9 @@ impl Style {
         }
         if other.max_height.is_some() {
             self.max_height = other.max_height;
+        }
+        if other.text_align != TextAlign::Left {
+            self.text_align = other.text_align;
         }
         self
     }
@@ -345,6 +393,11 @@ impl Style {
     /// Get height constraint
     pub fn get_height(&self) -> Option<u16> {
         self.height
+    }
+
+    /// Get text alignment
+    pub fn get_text_align(&self) -> TextAlign {
+        self.text_align
     }
 }
 

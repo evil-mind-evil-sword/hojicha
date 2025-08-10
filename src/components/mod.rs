@@ -4,9 +4,11 @@
 //! including text input, scrollable views, and more.
 
 pub mod button;
+pub mod help;
 pub mod keybinding;
 pub mod list;
 pub mod modal;
+pub mod paginator;
 pub mod progress_bar;
 pub mod spinner;
 pub mod styled_list;
@@ -17,9 +19,11 @@ pub mod textarea;
 pub mod viewport;
 
 pub use button::{Button, ButtonSize, ButtonVariant};
+pub use help::{Help, HelpBuilder, HelpEntry, HelpMode};
 pub use keybinding::{KeyBinding, KeyMap};
 pub use list::{List, ListOptions};
 pub use modal::{Modal, ModalSize};
+pub use paginator::{Paginator, PaginatorStyle};
 pub use progress_bar::{ProgressBar, ProgressStyle};
 pub use spinner::{Spinner, SpinnerStyle};
 pub use styled_list::{ListItemTrait, StyledList};

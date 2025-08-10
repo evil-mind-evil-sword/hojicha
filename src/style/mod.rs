@@ -8,11 +8,11 @@ mod color;
 mod layout;
 mod theme;
 
-pub use builder::{BorderStyle, Margin, Padding, Style, StyleBuilder};
+pub use builder::{BorderStyle, Margin, Padding, Style, StyleBuilder, TextAlign};
 pub use color::{AdaptiveColor, BackgroundMode, Color, ColorProfile};
 pub use layout::{
-    center, join_horizontal, join_vertical, place, Alignment, Element, HAlign, LayoutBuilder,
-    StyledText, VAlign,
+    center, join_horizontal, join_vertical, place, place_horizontal, place_in_area, place_vertical,
+    Alignment, Element, HAlign, LayoutBuilder, PositionedElement, StyledText, VAlign,
 };
 pub use theme::{ColorPalette, Theme, Themed};
 
