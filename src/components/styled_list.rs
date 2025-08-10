@@ -2,8 +2,8 @@
 //!
 //! A scrollable list with selection, filtering, and rich styling options.
 
-use crate::style::{Style, Theme, ColorProfile};
 use crate::event::{Event, Key, KeyEvent};
+use crate::style::{ColorProfile, Style, Theme};
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style as RatatuiStyle},
@@ -11,13 +11,12 @@ use ratatui::{
     widgets::{Block, Borders, List as RatatuiList, ListItem as RatatuiListItem, ListState},
     Frame,
 };
-use std::fmt::Display;
 
 /// List item that can be displayed
 pub trait ListItemTrait: Clone {
     /// Get the display text for this item
     fn display(&self) -> String;
-    
+
     /// Get the search text for filtering (defaults to display text)
     fn search_text(&self) -> String {
         self.display()
@@ -89,9 +88,9 @@ impl<T: ListItemTrait> StyledList<T> {
         if !items.is_empty() {
             state.select(Some(0));
         }
-        
+
         let filtered_items = items.clone();
-        
+
         Self {
             items: items.clone(),
             filtered_items,
@@ -100,16 +99,10 @@ impl<T: ListItemTrait> StyledList<T> {
             state,
             title: None,
             item_style: Style::new(),
-            selected_style: Style::new()
-                .bg(crate::style::Color::blue())
-                .bold(),
-            container_style: Style::new()
-                .border(crate::style::BorderStyle::Normal),
-            title_style: Style::new()
-                .bold(),
-            filter_style: Style::new()
-                .fg(crate::style::Color::yellow())
-                .italic(),
+            selected_style: Style::new().bg(crate::style::Color::blue()).bold(),
+            container_style: Style::new().border(crate::style::BorderStyle::Normal),
+            title_style: Style::new().bold(),
+            filter_style: Style::new().fg(crate::style::Color::yellow()).italic(),
             focused: false,
             show_selection: true,
             selection_indicator: "> ".to_string(),
@@ -146,19 +139,22 @@ impl<T: ListItemTrait> StyledList<T> {
         if self.filter.is_empty() {
             self.filtered_items = self.items.clone();
         } else {
-            self.filtered_items = self.items
+            self.filtered_items = self
+                .items
                 .iter()
-                .filter(|item| {
-                    item.search_text().to_lowercase().contains(&self.filter)
-                })
+                .filter(|item| item.search_text().to_lowercase().contains(&self.filter))
                 .cloned()
                 .collect();
         }
-        
+
         // Reset selection if needed
         if self.filtered_items.is_empty() {
             self.state.select(None);
-        } else if self.state.selected().map_or(true, |i| i >= self.filtered_items.len()) {
+        } else if self
+            .state
+            .selected()
+            .map_or(true, |i| i >= self.filtered_items.len())
+        {
             self.state.select(Some(0));
         }
     }
@@ -171,7 +167,9 @@ impl<T: ListItemTrait> StyledList<T> {
 
     /// Get the currently selected item
     pub fn selected(&self) -> Option<&T> {
-        self.state.selected().and_then(|i| self.filtered_items.get(i))
+        self.state
+            .selected()
+            .and_then(|i| self.filtered_items.get(i))
     }
 
     /// Get the index of the selected item
@@ -198,7 +196,7 @@ impl<T: ListItemTrait> StyledList<T> {
         } else {
             current.saturating_sub(1)
         };
-        
+
         if !self.filtered_items.is_empty() {
             self.state.select(Some(new_index));
         }
@@ -212,7 +210,7 @@ impl<T: ListItemTrait> StyledList<T> {
         } else {
             current + 1
         };
-        
+
         if !self.filtered_items.is_empty() {
             self.state.select(Some(new_index));
         }
@@ -324,15 +322,15 @@ impl<T: ListItemTrait> StyledList<T> {
         if let Some(style) = theme.get_style("list.item") {
             self.item_style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("list.selected") {
             self.selected_style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("list.container") {
             self.container_style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("list.title") {
             self.title_style = style.clone();
         }
@@ -341,43 +339,43 @@ impl<T: ListItemTrait> StyledList<T> {
     /// Render the list
     pub fn render(&mut self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
         // Create list items with styling
-        let items: Vec<RatatuiListItem> = self.filtered_items
+        let items: Vec<RatatuiListItem> = self
+            .filtered_items
             .iter()
             .enumerate()
             .map(|(i, item)| {
                 let is_selected = self.state.selected() == Some(i);
                 let mut text = item.display();
-                
+
                 if is_selected && self.show_selection {
                     text = format!("{}{}", self.selection_indicator, text);
                 }
-                
+
                 let style = if is_selected {
                     self.selected_style.to_ratatui(profile)
                 } else {
                     self.item_style.to_ratatui(profile)
                 };
-                
+
                 RatatuiListItem::new(Line::from(Span::styled(text, style)))
             })
             .collect();
 
         // Create the block with title and filter indicator
         let mut block = Block::default();
-        
+
         if self.container_style.get_border() != &crate::style::BorderStyle::None {
             block = block
                 .borders(Borders::ALL)
                 .border_type(self.container_style.get_border().to_ratatui());
-            
+
             if let Some(border_color) = self.container_style.get_border_color() {
-                let mut border_style = RatatuiStyle::default()
-                    .fg(border_color.to_ratatui(profile));
-                
+                let mut border_style = RatatuiStyle::default().fg(border_color.to_ratatui(profile));
+
                 if self.focused {
                     border_style = border_style.add_modifier(Modifier::BOLD);
                 }
-                
+
                 block = block.border_style(border_style);
             }
         }
@@ -389,11 +387,13 @@ impl<T: ListItemTrait> StyledList<T> {
             } else {
                 title.clone()
             };
-            
-            block = block.title(title_text)
+
+            block = block
+                .title(title_text)
                 .title_style(self.title_style.to_ratatui(profile));
         } else if self.filter_enabled && !self.filter.is_empty() {
-            block = block.title(format!("[filter: {}]", self.filter))
+            block = block
+                .title(format!("[filter: {}]", self.filter))
                 .title_style(self.filter_style.to_ratatui(profile));
         }
 

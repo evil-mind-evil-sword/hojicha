@@ -18,21 +18,18 @@
 
 use hojicha::{
     commands,
-    components::{TextInput, ValidationResult, StyledList},
+    components::{StyledList, TextInput, ValidationResult},
     core::{Cmd, Model},
     event::{Event, Key, KeyEvent},
     program::{Program, ProgramOptions},
-    style::{
-        Color, ColorProfile, Style, Theme,
-        join_vertical, HAlign, StyledText,
-    },
+    style::{join_vertical, Color, ColorProfile, HAlign, Style, StyledText, Theme},
 };
-use std::cell::RefCell;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use std::cell::RefCell;
 
 struct StyleShowcase {
     /// Current theme
@@ -125,7 +122,7 @@ impl StyleShowcase {
             4 => Theme::tokyo_night(),
             _ => Theme::nord(),
         };
-        
+
         self.apply_current_theme();
     }
 
@@ -144,10 +141,10 @@ impl StyleShowcase {
             2 => self.email_input.blur(),
             _ => {}
         }
-        
+
         // Move to next component
         self.focused_component = (self.focused_component + 1) % 3;
-        
+
         // Focus new component
         match self.focused_component {
             0 => self.features_list.borrow_mut().focus(),
@@ -165,14 +162,14 @@ impl StyleShowcase {
             2 => self.email_input.blur(),
             _ => {}
         }
-        
+
         // Move to previous component
         self.focused_component = if self.focused_component == 0 {
             2
         } else {
             self.focused_component - 1
         };
-        
+
         // Focus new component
         match self.focused_component {
             0 => self.features_list.borrow_mut().focus(),
@@ -232,34 +229,26 @@ impl Model for StyleShowcase {
                         self.submit_form();
                     }
                 }
-                Key::Char(c) => {
-                    match self.focused_component {
-                        1 => self.name_input.insert_char(c),
-                        2 => self.email_input.insert_char(c),
-                        _ => {}
-                    }
-                }
-                Key::Backspace => {
-                    match self.focused_component {
-                        1 => self.name_input.delete_char(),
-                        2 => self.email_input.delete_char(),
-                        _ => {}
-                    }
-                }
-                Key::Left => {
-                    match self.focused_component {
-                        1 => self.name_input.move_cursor_left(),
-                        2 => self.email_input.move_cursor_left(),
-                        _ => {}
-                    }
-                }
-                Key::Right => {
-                    match self.focused_component {
-                        1 => self.name_input.move_cursor_right(),
-                        2 => self.email_input.move_cursor_right(),
-                        _ => {}
-                    }
-                }
+                Key::Char(c) => match self.focused_component {
+                    1 => self.name_input.insert_char(c),
+                    2 => self.email_input.insert_char(c),
+                    _ => {}
+                },
+                Key::Backspace => match self.focused_component {
+                    1 => self.name_input.delete_char(),
+                    2 => self.email_input.delete_char(),
+                    _ => {}
+                },
+                Key::Left => match self.focused_component {
+                    1 => self.name_input.move_cursor_left(),
+                    2 => self.email_input.move_cursor_left(),
+                    _ => {}
+                },
+                Key::Right => match self.focused_component {
+                    1 => self.name_input.move_cursor_right(),
+                    2 => self.email_input.move_cursor_right(),
+                    _ => {}
+                },
                 _ => {}
             },
             _ => {}
@@ -272,9 +261,9 @@ impl Model for StyleShowcase {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(5),  // Header
-                Constraint::Min(0),     // Content
-                Constraint::Length(3),  // Footer
+                Constraint::Length(5), // Header
+                Constraint::Min(0),    // Content
+                Constraint::Length(3), // Footer
             ])
             .split(area);
 
@@ -306,8 +295,11 @@ impl StyleShowcase {
             .borders(Borders::ALL)
             .style(header_style.to_ratatui(&self.color_profile))
             .border_style(
-                ratatui::style::Style::default()
-                    .fg(self.theme.colors.primary.to_ratatui(&self.color_profile))
+                ratatui::style::Style::default().fg(self
+                    .theme
+                    .colors
+                    .primary
+                    .to_ratatui(&self.color_profile)),
             );
 
         let paragraph = Paragraph::new(header_text)
@@ -329,7 +321,9 @@ impl StyleShowcase {
             .split(area);
 
         // Left: Features list
-        self.features_list.borrow_mut().render(frame, content_chunks[0], &self.color_profile);
+        self.features_list
+            .borrow_mut()
+            .render(frame, content_chunks[0], &self.color_profile);
 
         // Middle: Color palette
         self.render_color_palette(frame, content_chunks[1]);
@@ -343,8 +337,11 @@ impl StyleShowcase {
             .title(" Color Palette ")
             .borders(Borders::ALL)
             .style(
-                ratatui::style::Style::default()
-                    .fg(self.theme.colors.border.to_ratatui(&self.color_profile))
+                ratatui::style::Style::default().fg(self
+                    .theme
+                    .colors
+                    .border
+                    .to_ratatui(&self.color_profile)),
             );
 
         let inner = block.inner(area);
@@ -367,12 +364,11 @@ impl StyleShowcase {
 
         for (i, (name, color)) in colors.iter().enumerate() {
             if i < color_chunks.len() {
-                let swatch = Paragraph::new(format!(" {} ", name))
-                    .style(
-                        ratatui::style::Style::default()
-                            .bg(color.to_ratatui(&self.color_profile))
-                            .fg(self.theme.colors.background.to_ratatui(&self.color_profile))
-                    );
+                let swatch = Paragraph::new(format!(" {} ", name)).style(
+                    ratatui::style::Style::default()
+                        .bg(color.to_ratatui(&self.color_profile))
+                        .fg(self.theme.colors.background.to_ratatui(&self.color_profile)),
+                );
                 frame.render_widget(swatch, color_chunks[i]);
             }
         }
@@ -383,8 +379,11 @@ impl StyleShowcase {
             .title(" Form Demo ")
             .borders(Borders::ALL)
             .style(
-                ratatui::style::Style::default()
-                    .fg(self.theme.colors.border.to_ratatui(&self.color_profile))
+                ratatui::style::Style::default().fg(self
+                    .theme
+                    .colors
+                    .border
+                    .to_ratatui(&self.color_profile)),
             );
 
         let inner = block.inner(area);
@@ -392,46 +391,54 @@ impl StyleShowcase {
         let form_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(1),  // Label
-                Constraint::Length(3),  // Input
-                Constraint::Length(1),  // Spacing
-                Constraint::Length(1),  // Label
-                Constraint::Length(3),  // Input
-                Constraint::Length(2),  // Submit status
-                Constraint::Min(0),     // Remaining space
+                Constraint::Length(1), // Label
+                Constraint::Length(3), // Input
+                Constraint::Length(1), // Spacing
+                Constraint::Length(1), // Label
+                Constraint::Length(3), // Input
+                Constraint::Length(2), // Submit status
+                Constraint::Min(0),    // Remaining space
             ])
             .margin(1)
             .split(inner);
 
         // Name field label
-        let name_label = Paragraph::new("Name:")
-            .style(
-                ratatui::style::Style::default()
-                    .fg(self.theme.colors.text_secondary.to_ratatui(&self.color_profile))
-            );
+        let name_label = Paragraph::new("Name:").style(
+            ratatui::style::Style::default().fg(self
+                .theme
+                .colors
+                .text_secondary
+                .to_ratatui(&self.color_profile)),
+        );
         frame.render_widget(name_label, form_chunks[0]);
 
         // Name input
-        self.name_input.render(frame, form_chunks[1], &self.color_profile);
+        self.name_input
+            .render(frame, form_chunks[1], &self.color_profile);
 
         // Email field label
-        let email_label = Paragraph::new("Email:")
-            .style(
-                ratatui::style::Style::default()
-                    .fg(self.theme.colors.text_secondary.to_ratatui(&self.color_profile))
-            );
+        let email_label = Paragraph::new("Email:").style(
+            ratatui::style::Style::default().fg(self
+                .theme
+                .colors
+                .text_secondary
+                .to_ratatui(&self.color_profile)),
+        );
         frame.render_widget(email_label, form_chunks[3]);
 
         // Email input
-        self.email_input.render(frame, form_chunks[4], &self.color_profile);
+        self.email_input
+            .render(frame, form_chunks[4], &self.color_profile);
 
         // Submit status
         if self.submitted {
-            let success_msg = Paragraph::new("✓ Form submitted successfully!")
-                .style(
-                    ratatui::style::Style::default()
-                        .fg(self.theme.colors.success.to_ratatui(&self.color_profile))
-                );
+            let success_msg = Paragraph::new("✓ Form submitted successfully!").style(
+                ratatui::style::Style::default().fg(self
+                    .theme
+                    .colors
+                    .success
+                    .to_ratatui(&self.color_profile)),
+            );
             frame.render_widget(success_msg, form_chunks[5]);
         }
     }
@@ -441,7 +448,8 @@ impl StyleShowcase {
             .fg(self.theme.colors.text_secondary.clone())
             .padding_symmetric(0, 1);
 
-        let footer_text = "Tab/Shift+Tab: Focus | F1: Theme | ↑/↓: Navigate | Enter: Submit | Esc: Quit";
+        let footer_text =
+            "Tab/Shift+Tab: Focus | F1: Theme | ↑/↓: Navigate | Enter: Submit | Esc: Quit";
 
         let block = Block::default()
             .borders(Borders::TOP)

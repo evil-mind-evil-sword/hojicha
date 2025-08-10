@@ -2,7 +2,7 @@
 //!
 //! A text input field with validation, placeholder text, and theming support.
 
-use crate::style::{Style, Theme, ColorProfile};
+use crate::style::{ColorProfile, Style, Theme};
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style as RatatuiStyle},
@@ -66,9 +66,7 @@ impl TextInput {
                 .border(crate::style::BorderStyle::Normal)
                 .border_color(crate::style::Color::cyan())
                 .padding_symmetric(0, 1),
-            placeholder_style: Style::new()
-                .fg(crate::style::Color::gray())
-                .dim(),
+            placeholder_style: Style::new().fg(crate::style::Color::gray()).dim(),
             error_style: Style::new()
                 .border(crate::style::BorderStyle::Normal)
                 .border_color(crate::style::Color::red()),
@@ -253,17 +251,15 @@ impl TextInput {
 
         // Create the block with border
         let mut block = Block::default();
-        
+
         if style.get_border() != &crate::style::BorderStyle::None {
             block = block
                 .borders(Borders::ALL)
                 .border_type(style.get_border().to_ratatui());
-            
+
             if let Some(border_color) = style.get_border_color() {
-                block = block.border_style(
-                    RatatuiStyle::default()
-                        .fg(border_color.to_ratatui(profile))
-                );
+                block = block
+                    .border_style(RatatuiStyle::default().fg(border_color.to_ratatui(profile)));
             }
         }
 
@@ -290,7 +286,7 @@ impl TextInput {
         } else {
             // Show value with cursor
             let mut spans = Vec::new();
-            
+
             if self.focused {
                 // Add text before cursor
                 if self.cursor_position > 0 {
@@ -299,14 +295,14 @@ impl TextInput {
                         style.to_ratatui(profile),
                     ));
                 }
-                
+
                 // Add cursor
                 if self.cursor_position < self.value.len() {
                     spans.push(Span::styled(
                         &self.value[self.cursor_position..=self.cursor_position],
                         style.to_ratatui(profile).add_modifier(Modifier::REVERSED),
                     ));
-                    
+
                     // Add text after cursor
                     if self.cursor_position + 1 < self.value.len() {
                         spans.push(Span::styled(
@@ -325,7 +321,7 @@ impl TextInput {
                 // Not focused, just show the value
                 spans.push(Span::styled(&self.value, style.to_ratatui(profile)));
             }
-            
+
             spans
         };
 
@@ -342,11 +338,12 @@ impl TextInput {
                     width: area.width,
                     height: 1,
                 };
-                
-                let error_text = Paragraph::new(Line::from(vec![
-                    Span::styled(error_msg, self.error_style.to_ratatui(profile)),
-                ]));
-                
+
+                let error_text = Paragraph::new(Line::from(vec![Span::styled(
+                    error_msg,
+                    self.error_style.to_ratatui(profile),
+                )]));
+
                 frame.render_widget(error_text, error_area);
             }
         }
@@ -365,15 +362,15 @@ impl TextInput {
         if let Some(style) = theme.get_style("input") {
             self.style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("input.focused") {
             self.focused_style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("input.placeholder") {
             self.placeholder_style = style.clone();
         }
-        
+
         if let Some(style) = theme.get_style("input.error") {
             self.error_style = style.clone();
         }
