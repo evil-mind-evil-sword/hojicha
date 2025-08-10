@@ -1,19 +1,19 @@
 //! Components Gallery - Interactive showcase of all hojicha components
 //!
-//! This example demonstrates all built-in components:
-//! - List: Scrollable lists with selection
-//! - Table: Data tables with headers and scrolling  
-//! - TextArea: Multi-line text editor
-//! - Viewport: Scrollable content viewer
-//! - Spinner: Loading animations
-//! - KeyBinding: Keyboard shortcut display
+//! This example demonstrates all built-in components including styled components:
+//! - Button: Styled buttons with variants
+//! - Modal: Dialog windows
+//! - StyledTable: Data tables with sorting
+//! - ProgressBar: Various progress indicators
+//! - StyledList: Themed scrollable lists
+//! - TextInput: Form input with validation
 //!
 //! Controls:
 //! - Tab: Switch between components
 //! - ↑/↓: Navigate within components
 //! - Enter: Select/activate
-//! - e: Edit mode (in TextArea)
-//! - q: Quit
+//! - Ctrl+T: Change theme
+//! - ESC: Close modal or quit
 
 use hojicha::commands;
 use hojicha::event::Key;

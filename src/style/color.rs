@@ -42,7 +42,7 @@ impl ColorProfile {
         // Check for common environment variables
         let colorterm = std::env::var("COLORTERM").unwrap_or_default();
         let supports_true_color = colorterm.contains("truecolor") || colorterm.contains("24bit");
-        
+
         // Try to detect dark/light mode (this is a heuristic)
         // In practice, this might need more sophisticated detection
         let background_mode = if let Ok(term_program) = std::env::var("TERM_PROGRAM") {
@@ -56,7 +56,7 @@ impl ColorProfile {
         } else {
             BackgroundMode::Dark
         };
-        
+
         Self {
             background_mode,
             supports_true_color,
@@ -118,7 +118,7 @@ impl Color {
         if hex.len() != 6 {
             return Self::Fixed(RatatuiColor::White);
         }
-        
+
         if let Ok(rgb) = u32::from_str_radix(hex, 16) {
             let r = ((rgb >> 16) & 0xff) as u8;
             let g = ((rgb >> 8) & 0xff) as u8;

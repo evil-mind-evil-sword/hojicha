@@ -2,8 +2,8 @@
 //!
 //! Provides an ergonomic, chainable API for building styles.
 
-use ratatui::style::{Style as RatatuiStyle, Modifier};
 use super::color::{Color, ColorProfile};
+use ratatui::style::{Modifier, Style as RatatuiStyle};
 
 /// Padding configuration for styled elements
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -142,6 +142,12 @@ impl Style {
         self
     }
 
+    /// Add underlined modifier (alias for underline)
+    pub fn underlined(mut self) -> Self {
+        self.modifiers |= Modifier::UNDERLINED;
+        self
+    }
+
     /// Add dim modifier
     pub fn dim(mut self) -> Self {
         self.modifiers |= Modifier::DIM;
@@ -156,7 +162,12 @@ impl Style {
 
     /// Set padding on all sides
     pub fn padding(mut self, top: u16, right: u16, bottom: u16, left: u16) -> Self {
-        self.padding = Padding { top, right, bottom, left };
+        self.padding = Padding {
+            top,
+            right,
+            bottom,
+            left,
+        };
         self
     }
 
@@ -180,7 +191,12 @@ impl Style {
 
     /// Set margin on all sides
     pub fn margin(mut self, top: u16, right: u16, bottom: u16, left: u16) -> Self {
-        self.margin = Margin { top, right, bottom, left };
+        self.margin = Margin {
+            top,
+            right,
+            bottom,
+            left,
+        };
         self
     }
 
@@ -277,17 +293,17 @@ impl Style {
     /// Convert to Ratatui style (loses layout information)
     pub fn to_ratatui(&self, profile: &ColorProfile) -> RatatuiStyle {
         let mut style = RatatuiStyle::default();
-        
+
         if let Some(ref fg) = self.foreground {
             style = style.fg(fg.to_ratatui(profile));
         }
-        
+
         if let Some(ref bg) = self.background {
             style = style.bg(bg.to_ratatui(profile));
         }
-        
+
         style = style.add_modifier(self.modifiers);
-        
+
         style
     }
 
@@ -309,6 +325,16 @@ impl Style {
     /// Get border color
     pub fn get_border_color(&self) -> Option<&Color> {
         self.border_color.as_ref()
+    }
+
+    /// Get foreground color
+    pub fn get_foreground(&self) -> Option<&Color> {
+        self.foreground.as_ref()
+    }
+
+    /// Get background color
+    pub fn get_background(&self) -> Option<&Color> {
+        self.background.as_ref()
     }
 
     /// Get width constraint
