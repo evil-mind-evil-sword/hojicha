@@ -616,7 +616,12 @@ impl GalleryModel {
     fn render_progress(&self, frame: &mut Frame, area: ratatui::layout::Rect) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints(vec![Constraint::Length(3); 4])
+            .constraints(vec![
+                Constraint::Length(3),  // Standard Bar
+                Constraint::Length(3),  // Line Progress
+                Constraint::Length(5),  // Sparkline (needs more height)
+                Constraint::Length(3),  // Custom Style
+            ])
             .margin(1)
             .split(area);
 

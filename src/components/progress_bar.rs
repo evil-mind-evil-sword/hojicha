@@ -239,6 +239,11 @@ impl ProgressBar {
 
     /// Render the progress bar
     pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme, profile: &ColorProfile) {
+        // Guard against empty areas
+        if area.width == 0 || area.height == 0 {
+            return;
+        }
+        
         let label_text = self.build_label();
         let progress_color = self.get_progress_color(theme);
 
@@ -266,8 +271,15 @@ impl ProgressBar {
 
             ProgressStyle::Spark => {
                 // Use sparkline for history visualization
+                // Ensure we have some data to display
+                let data = if self.history.is_empty() {
+                    vec![0]
+                } else {
+                    self.history.clone()
+                };
+                
                 let sparkline = Sparkline::default()
-                    .data(&self.history)
+                    .data(&data)
                     .style(Style::new().fg(progress_color).to_ratatui(profile));
 
                 // If we have a label, split the area
@@ -295,15 +307,15 @@ impl ProgressBar {
 
             ProgressStyle::Custom { filled, empty } => {
                 // Custom character-based progress bar
-                let bar_width = area.width as usize;
-                let filled_width = (bar_width as f64 * self.value) as usize;
-                let empty_width = bar_width.saturating_sub(filled_width);
+                let bar_width = area.width.saturating_sub(2) as usize; // Account for borders/padding
+                if bar_width == 0 {
+                    return;
+                }
+                let filled_count = (bar_width as f64 * self.value).min(bar_width as f64) as usize;
+                let empty_count = bar_width.saturating_sub(filled_count);
 
-                let bar_text = format!(
-                    "{}{}",
-                    filled.to_string().repeat(filled_width),
-                    empty.to_string().repeat(empty_width)
-                );
+                let filled_part = filled.to_string().repeat(filled_count);
+                let empty_part = empty.to_string().repeat(empty_count);
 
                 let content = if !label_text.is_empty() {
                     vec![
@@ -313,11 +325,11 @@ impl ProgressBar {
                         )),
                         Line::from(vec![
                             Span::styled(
-                                &bar_text[..filled_width.min(bar_text.len())],
+                                filled_part.clone(),
                                 Style::new().fg(progress_color.clone()).to_ratatui(profile),
                             ),
                             Span::styled(
-                                &bar_text[filled_width.min(bar_text.len())..],
+                                empty_part.clone(),
                                 self.background_style.to_ratatui(profile),
                             ),
                         ]),
@@ -325,11 +337,11 @@ impl ProgressBar {
                 } else {
                     vec![Line::from(vec![
                         Span::styled(
-                            &bar_text[..filled_width.min(bar_text.len())],
+                            filled_part,
                             Style::new().fg(progress_color.clone()).to_ratatui(profile),
                         ),
                         Span::styled(
-                            &bar_text[filled_width.min(bar_text.len())..],
+                            empty_part,
                             self.background_style.to_ratatui(profile),
                         ),
                     ])]
