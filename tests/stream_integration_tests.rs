@@ -100,7 +100,7 @@ proptest! {
         let _ = sender.send(Event::User(StreamMessage::StreamComplete));
 
         // Run program until it stops
-        let _ = program.run_with_timeout(Duration::from_secs(5));
+        let _ = program.run_with_timeout(Duration::from_millis(500));
 
         // Verify all values were received
         let received = collected.lock().unwrap();
@@ -173,7 +173,7 @@ proptest! {
         barrier.wait();
 
         // Run program until it stops
-        let _ = program.run_with_timeout(Duration::from_secs(10));
+        let _ = program.run_with_timeout(Duration::from_millis(500));
 
         let received = collected.lock().unwrap();
         prop_assert_eq!(received.len(), total_expected, "Should receive all values from all streams");
@@ -216,7 +216,7 @@ proptest! {
         }
 
         // Run program with timeout
-        let result = program.run_with_timeout(Duration::from_secs(30));
+        let result = program.run_with_timeout(Duration::from_millis(500));
         prop_assert!(result.is_ok(), "Program should handle burst without panicking");
 
         let received = collected.lock().unwrap();
@@ -255,7 +255,7 @@ proptest! {
         }
 
         // Run program (it will stop after cancel_after messages)
-        let _ = program.run_with_timeout(Duration::from_secs(10));
+        let _ = program.run_with_timeout(Duration::from_millis(500));
 
         let final_count = received_count.load(Ordering::SeqCst);
         let received = collected.lock().unwrap();

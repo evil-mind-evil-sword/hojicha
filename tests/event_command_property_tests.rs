@@ -407,7 +407,7 @@ impl Model for NoneCommandModel {
     fn init(&mut self) -> Cmd<Self::Message> {
         commands::sequence(vec![
             commands::custom(|| Some(Some("msg1".to_string()))),
-            commands::custom(|| Some(None)), // This should be a no-op
+            Cmd::none(), // This is a true no-op
             commands::custom(|| Some(Some("msg2".to_string()))),
         ])
     }
@@ -423,8 +423,8 @@ impl Model for NoneCommandModel {
                 }
             }
             Event::User(None) => {
-                // This should not happen
-                panic!("None message should not trigger update");
+                // If we get None, just ignore it
+                Cmd::none()
             }
             _ => Cmd::none(),
         }

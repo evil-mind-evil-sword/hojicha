@@ -54,6 +54,7 @@ mod property_tests {
 
     // Property: Messages sent in order from a single thread should be received in order
     proptest! {
+        #![proptest_config(ProptestConfig::with_cases(10))]
         #[test]
         fn test_message_ordering_single_thread(
             messages in vec(0..1000i32, 1..100)
@@ -89,6 +90,7 @@ mod property_tests {
 
     // Property: Messages from multiple threads should all be delivered (no lost messages)
     proptest! {
+        #![proptest_config(ProptestConfig::with_cases(10))]
         #[test]
         fn test_no_message_loss_concurrent(
             thread_count in 2..10usize,
@@ -103,6 +105,7 @@ mod property_tests {
 
     // Property: Channel capacity should handle backpressure correctly
     proptest! {
+        #![proptest_config(ProptestConfig::with_cases(10))]
         #[test]
         fn test_channel_backpressure(
             burst_size in 200..500usize

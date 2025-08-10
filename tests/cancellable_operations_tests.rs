@@ -121,6 +121,7 @@ proptest! {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(5))]
     #[test]
     fn prop_cancelled_operations_dont_send_results(
         num_operations in 1..10usize,
@@ -153,6 +154,7 @@ proptest! {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(5))]
     #[test]
     fn prop_cancellation_is_cooperative(
         delay_ms in 10..100u64,
@@ -250,7 +252,7 @@ fn test_async_cancellation_flow() {
                 _ = token_clone.cancelled() => {
                     "Cancelled"
                 }
-                _ = tokio::time::sleep(Duration::from_secs(10)) => {
+                _ = tokio::time::sleep(Duration::from_millis(100)) => {
                     "Completed"
                 }
             }

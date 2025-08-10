@@ -104,7 +104,7 @@ fn test_priority_is_default() {
     });
 
     // Run the program
-    let result = program.run_with_timeout(Duration::from_secs(1));
+    let result = program.run_with_timeout(Duration::from_millis(100));
     assert!(result.is_ok());
 
     // Check that events were processed (not necessarily in strict priority order
@@ -170,7 +170,7 @@ fn test_event_flooding_doesnt_block_quit() {
 
     // Run and verify it quits quickly despite the flood
     let start = std::time::Instant::now();
-    let result = program.run_with_timeout(Duration::from_secs(2));
+    let result = program.run_with_timeout(Duration::from_millis(200));
     let elapsed = start.elapsed();
 
     assert!(result.is_ok());
@@ -214,7 +214,7 @@ fn test_backpressure_handling() {
         let _ = sender.send(Event::User(TestMsg::Quit));
     });
 
-    let result = program.run_with_timeout(Duration::from_secs(1));
+    let result = program.run_with_timeout(Duration::from_millis(100));
     assert!(result.is_ok());
 
     println!("Backpressure test completed successfully");

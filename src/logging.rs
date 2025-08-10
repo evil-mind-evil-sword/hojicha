@@ -132,8 +132,7 @@ pub fn error(message: &str) {
 /// Internal logging function
 fn log(level: LogLevel, message: &str) {
     unsafe {
-        let logger_ptr = &raw const LOGGER;
-        if let Some(ref logger) = *logger_ptr {
+        if let Some(ref logger) = LOGGER {
             if let Ok(mut logger) = logger.lock() {
                 let _ = logger.log(level, message);
             }
