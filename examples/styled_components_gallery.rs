@@ -19,11 +19,10 @@
 use hojicha::{
     components::{
         Button, ButtonSize, ButtonVariant, Column, Modal, ModalSize, ProgressBar, ProgressStyle,
-        StyledList, StyledTable, TextInput,
+        StyledList, StyledTable, TextInput, ValidationResult,
     },
-    event::{Event, Key, KeyEvent, KeyModifiers},
+    prelude::*,
     style::{ColorProfile, Theme},
-    Cmd, Model, Program,
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -33,6 +32,12 @@ use ratatui::{
     Frame,
 };
 use std::time::Duration;
+
+/// Messages for the gallery
+#[derive(Debug, Clone)]
+enum Msg {
+    Tick,
+}
 
 /// Gallery tabs
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -159,14 +164,14 @@ impl GalleryModel {
 
         // Create text input
         let mut text_input = TextInput::new()
-            .with_placeholder("Enter your name...")
+            .placeholder("Enter your name...")
             .with_validation(|s| {
                 if s.is_empty() {
-                    Err("Name cannot be empty".to_string())
+                    ValidationResult::Invalid("Name cannot be empty".to_string())
                 } else if s.len() < 3 {
-                    Err("Name must be at least 3 characters".to_string())
+                    ValidationResult::Invalid("Name must be at least 3 characters".to_string())
                 } else {
-                    Ok(())
+                    ValidationResult::Valid
                 }
             });
         text_input.focus();
@@ -255,14 +260,16 @@ impl GalleryModel {
 }
 
 impl Model for GalleryModel {
-    fn init(&mut self) -> Option<Cmd> {
+    type Message = Msg;
+
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Start a tick timer for progress bar animation
-        Some(Cmd::tick(Duration::from_millis(100)))
+        tick(Duration::from_millis(100), || Msg::Tick)
     }
 
-    fn update(&mut self, event: Event<()>) -> Option<Cmd> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
-            Event::Tick => {
+            Event::User(Msg::Tick) => {
                 // Update progress bars
                 self.progress_timer += 1;
                 let progress = ((self.progress_timer as f64 * 2.0) % 100.0) / 100.0;
@@ -274,17 +281,17 @@ impl Model for GalleryModel {
                     pb.set_progress(adjusted_progress);
                 }
 
-                Some(Cmd::tick(Duration::from_millis(100)))
+                tick(Duration::from_millis(100), || Msg::Tick)
             }
 
-            Event::Key(KeyEvent { key, modifiers, .. }) => {
+            Event::Key(KeyEvent { key, modifiers }) => {
                 // Global keys
                 if modifiers.contains(KeyModifiers::CONTROL) {
                     match key {
-                        Key::Char('c') | Key::Char('q') => return Some(Cmd::quit()),
+                        Key::Char('c') | Key::Char('q') => return quit(),
                         Key::Char('t') => {
                             self.next_theme();
-                            return Some(Cmd::none());
+                            return Cmd::none();
                         }
                         _ => {}
                     }
@@ -295,11 +302,16 @@ impl Model for GalleryModel {
                         if self.modal.is_open() {
                             self.modal.close();
                         } else {
-                            return Some(Cmd::quit());
+                            return quit();
                         }
                     }
-                    Key::Tab => self.next_tab(),
-                    Key::BackTab => self.prev_tab(),
+                    Key::Tab => {
+                        if modifiers.contains(KeyModifiers::SHIFT) {
+                            self.prev_tab();
+                        } else {
+                            self.next_tab();
+                        }
+                    }
                     _ => {
                         // Handle tab-specific keys
                         match self.current_tab {
@@ -349,23 +361,43 @@ impl Model for GalleryModel {
                                         _ => {}
                                     }
                                 }
-                                self.modal.handle_event(event);
+                                self.modal.handle_event(Event::Key(KeyEvent { key, modifiers }));
                             }
 
                             Tab::Tables => {
-                                self.table.handle_event(event);
+                                self.table.handle_event(Event::Key(KeyEvent { key, modifiers }));
                             }
 
                             Tab::Lists => {
-                                self.list.handle_event(event);
+                                self.list.handle_event(Event::Key(KeyEvent { key, modifiers }));
                             }
 
-                            Tab::Forms => {
-                                if key == Key::Enter && !self.text_input.value().is_empty() {
+                            Tab::Forms => match key {
+                                Key::Enter if !self.text_input.value().is_empty() => {
                                     self.form_submitted = true;
-                                } else {
-                                    self.text_input.handle_event(event);
                                 }
+                                Key::Char(c) => {
+                                    self.text_input.insert_char(c);
+                                }
+                                Key::Backspace => {
+                                    self.text_input.delete_char();
+                                }
+                                Key::Delete => {
+                                    self.text_input.delete_char_forward();
+                                }
+                                Key::Left => {
+                                    self.text_input.move_cursor_left();
+                                }
+                                Key::Right => {
+                                    self.text_input.move_cursor_right();
+                                }
+                                Key::Home => {
+                                    self.text_input.move_cursor_start();
+                                }
+                                Key::End => {
+                                    self.text_input.move_cursor_end();
+                                }
+                                _ => {}
                             }
 
                             _ => {}
@@ -373,14 +405,14 @@ impl Model for GalleryModel {
                     }
                 }
 
-                Some(Cmd::none())
+                Cmd::none()
             }
-            _ => Some(Cmd::none()),
+            _ => Cmd::none(),
         }
     }
 
-    fn view(&self, frame: &mut Frame) {
-        let size = frame.area();
+    fn view(&self, frame: &mut Frame, area: Rect) {
+        let size = area;
 
         // Create main layout
         let chunks = Layout::default()
@@ -421,7 +453,8 @@ impl Model for GalleryModel {
 
 impl GalleryModel {
     fn render_header(&self, frame: &mut Frame, area: ratatui::layout::Rect) {
-        let tab_titles: Vec<&str> = Tab::all().iter().map(|t| t.title()).collect();
+        let tabs = Tab::all();
+        let tab_titles: Vec<&str> = tabs.iter().map(|t| t.title()).collect();
         let current_tab_index = Tab::all()
             .iter()
             .position(|t| *t == self.current_tab)
@@ -631,8 +664,9 @@ impl GalleryModel {
     }
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let model = GalleryModel::new();
-    let program = Program::new(model);
-    program.run()
+    let program = Program::new(model)?;
+    program.run()?;
+    Ok(())
 }
