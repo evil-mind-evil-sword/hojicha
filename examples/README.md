@@ -1,6 +1,6 @@
-# Boba Examples
+# Hojicha Examples
 
-This directory contains examples demonstrating various features of the Boba framework.
+This directory contains examples demonstrating various features of the Hojicha framework.
 
 ## Running Examples
 

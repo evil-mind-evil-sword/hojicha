@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Core Concepts
 
-Boba follows The Elm Architecture pattern:
+Hojicha follows The Elm Architecture pattern:
 
 | Concept | Description |
 |---------|-------------|
@@ -83,7 +83,7 @@ Boba follows The Elm Architecture pattern:
 
 ### Async Integration
 
-Boba provides multiple patterns for async operations:
+Hojicha provides multiple patterns for async operations:
 ```rust
 // External event injection
 let sender = program.init_async_bridge();
