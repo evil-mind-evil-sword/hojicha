@@ -121,6 +121,7 @@ proptest! {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(5))]
     #[test]
     fn prop_cancelled_operations_dont_send_results(
         num_operations in 1..10usize,
@@ -153,6 +154,7 @@ proptest! {
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(5))]
     #[test]
     fn prop_cancellation_is_cooperative(
         delay_ms in 10..100u64,

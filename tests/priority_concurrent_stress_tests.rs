@@ -269,7 +269,9 @@ fn test_priority_under_memory_pressure() {
     });
 
     // Run program with timeout
-    program.run_with_timeout(Duration::from_millis(500)).unwrap();
+    program
+        .run_with_timeout(Duration::from_millis(500))
+        .unwrap();
 
     producer.join().unwrap();
 
