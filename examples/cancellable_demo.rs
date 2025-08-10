@@ -27,7 +27,6 @@ enum Msg {
     OperationComplete(usize, String),
     CancelOperation(usize),
     CancelAll,
-    Quit,
 }
 
 impl Model for CancellableDemo {
@@ -112,7 +111,7 @@ impl Model for CancellableDemo {
                 }
                 _ => Cmd::none(),
             },
-            Event::User(Msg::Quit) | Event::Quit => None,
+            Event::Quit => None,
             _ => Cmd::none(),
         }
     }
@@ -181,8 +180,7 @@ impl Model for CancellableDemo {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let model = CancellableDemo {
         messages: Vec::new(),
         active_operations: Vec::new(),
