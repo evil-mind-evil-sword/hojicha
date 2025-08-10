@@ -54,7 +54,10 @@ impl FallibleModel for TestModel {
                 Ok(Cmd::none())
             }
             Event::User(TestMsg::WorkCompleted) => {
-                self.messages_received.lock().unwrap().push("Work completed".to_string());
+                self.messages_received
+                    .lock()
+                    .unwrap()
+                    .push("Work completed".to_string());
                 Ok(Cmd::none())
             }
             _ => Ok(Cmd::none()),
@@ -170,7 +173,7 @@ fn test_error_context_in_fallible_model() {
 
     let mut model = ContextModel { last_error: None };
     model.update(Event::Tick);
-    
+
     assert!(model.last_error.is_some());
     let error = model.last_error.unwrap();
     assert!(error.contains("while processing update"));
@@ -215,7 +218,7 @@ fn test_multiple_error_types() {
     }
 
     let mut model = MultiErrorModel { errors: Vec::new() };
-    
+
     model.update(Event::User(TestMsg::DoWork));
     assert_eq!(model.errors.len(), 1);
     assert!(model.errors[0].contains("io error"));
@@ -241,11 +244,11 @@ fn test_default_fallible_implementation() {
     impl FallibleModel for SimpleModel {}
 
     let mut model = SimpleModel;
-    
+
     // Default try_update should delegate to update
     let _cmd = model.try_update(Event::Tick).unwrap();
     // Default implementation returns Cmd::none()
-    
+
     // Default handle_error should log and return none
     let _cmd = model.handle_error(Error::Model("test".to_string()));
     // Default implementation returns Cmd::none()

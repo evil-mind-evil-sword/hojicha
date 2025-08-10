@@ -38,7 +38,7 @@ pub enum TerminalControlMsg {
 ///     batch(vec![
 ///         fetch_data(),
 ///         start_timer(),
-///     ]))
+///     ])
 /// }
 /// ```
 pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
@@ -247,7 +247,7 @@ pub fn exit_alt_screen<M: Message>() -> Cmd<M> {
 ///     custom_async(|| async {
 ///         let data = fetch_data().await;
 ///         Some(Message::DataFetched(data))
-///     }))
+///     })
 /// }
 /// ```
 pub fn custom_async<M, F, Fut>(f: F) -> Cmd<M>
@@ -298,7 +298,7 @@ where
 ///         // Perform some custom logic
 ///         let result = expensive_computation();
 ///         Some(Message::ComputationComplete(result))
-///     }))
+///     })
 /// }
 /// ```
 pub fn custom<M, F>(f: F) -> Cmd<M>
@@ -320,7 +320,7 @@ where
 ///         // Perform operation that might fail
 ///         let data = std::fs::read_to_string("config.json")?;
 ///         Ok(Some(Message::ConfigLoaded(data)))
-///     }))
+///     })
 /// }
 /// ```
 pub fn custom_fallible<M, F>(f: F) -> Cmd<M>

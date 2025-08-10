@@ -86,14 +86,14 @@ pub trait FallibleModel: Model {
     /// The default implementation logs the error and returns `Cmd::none()`.
     fn handle_error(&mut self, error: Error) -> Cmd<Self::Message> {
         eprintln!("Error in model update: {}", error);
-        
+
         // Print error chain
         let mut current_error: &dyn std::error::Error = &error;
         while let Some(source) = current_error.source() {
             eprintln!("  Caused by: {}", source);
             current_error = source;
         }
-        
+
         Cmd::none()
     }
 
@@ -125,7 +125,7 @@ pub trait FallibleModelExt: FallibleModel {
     /// This method catches panics during update and converts them to errors.
     fn update_with_panic_catching(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         use std::panic;
-        
+
         match panic::catch_unwind(panic::AssertUnwindSafe(|| self.try_update(event))) {
             Ok(Ok(cmd)) => cmd,
             Ok(Err(err)) => self.handle_error(err),
@@ -185,9 +185,7 @@ mod tests {
                     self.success_count += 1;
                     Ok(Cmd::none())
                 }
-                Event::User(TestMsg::Fail) => {
-                    Err(Error::Model("Intentional failure".to_string()))
-                }
+                Event::User(TestMsg::Fail) => Err(Error::Model("Intentional failure".to_string())),
                 Event::User(TestMsg::Panic) => {
                     panic!("Intentional panic!");
                 }

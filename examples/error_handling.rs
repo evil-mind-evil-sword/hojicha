@@ -7,7 +7,10 @@
 //! - Recovering from errors
 
 use hojicha::prelude::*;
-use hojicha::{commands, fallible::{FallibleModel, FallibleModelExt}};
+use hojicha::{
+    commands,
+    fallible::{FallibleModel, FallibleModelExt},
+};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use std::fs;
@@ -91,17 +94,21 @@ impl Model for ErrorHandlingApp {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(3),      // Title
-                Constraint::Min(5),         // Main content
-                Constraint::Length(6),      // Error/Success messages
-                Constraint::Length(12),     // Operation log
-                Constraint::Length(3),      // Help
+                Constraint::Length(3),  // Title
+                Constraint::Min(5),     // Main content
+                Constraint::Length(6),  // Error/Success messages
+                Constraint::Length(12), // Operation log
+                Constraint::Length(3),  // Help
             ])
             .split(area);
 
         // Title
         let title = Paragraph::new("Error Handling Demo")
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )
             .alignment(Alignment::Center)
             .block(Block::default().borders(Borders::ALL));
         frame.render_widget(title, chunks[0]);
@@ -133,8 +140,7 @@ impl Model for ErrorHandlingApp {
                 .style(Style::default().fg(Color::Green))
                 .block(Block::default().borders(Borders::ALL).title("Status"))
         } else {
-            Paragraph::new("Ready")
-                .block(Block::default().borders(Borders::ALL).title("Status"))
+            Paragraph::new("Ready").block(Block::default().borders(Borders::ALL).title("Status"))
         };
         frame.render_widget(message_area, chunks[2]);
 
@@ -155,8 +161,11 @@ impl Model for ErrorHandlingApp {
             })
             .collect();
 
-        let log = List::new(log_items)
-            .block(Block::default().borders(Borders::ALL).title("Operation Log"));
+        let log = List::new(log_items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Operation Log"),
+        );
         frame.render_widget(log, chunks[3]);
 
         // Help
@@ -171,17 +180,28 @@ impl Model for ErrorHandlingApp {
 }
 
 impl FallibleModel for ErrorHandlingApp {
-    fn try_update(&mut self, event: Event<Self::Message>) -> hojicha::error::Result<Cmd<Self::Message>> {
+    fn try_update(
+        &mut self,
+        event: Event<Self::Message>,
+    ) -> hojicha::error::Result<Cmd<Self::Message>> {
         // Clear previous messages
         self.success_message = None;
-        
+
         match event {
             Event::Key(key) => match key.key {
                 Key::Char('q') => Ok(commands::quit()),
-                Key::Char('1') => Ok(commands::custom(|| Some(Msg::LoadFile("Cargo.toml".to_string())))),
-                Key::Char('2') => Ok(commands::custom(|| Some(Msg::LoadFile("nonexistent.txt".to_string())))),
-                Key::Char('3') => Ok(commands::custom(|| Some(Msg::LoadFile("/root/protected.txt".to_string())))),
-                Key::Char('s') => Ok(commands::custom(|| Some(Msg::SaveFile("test_output.txt".to_string())))),
+                Key::Char('1') => Ok(commands::custom(|| {
+                    Some(Msg::LoadFile("Cargo.toml".to_string()))
+                })),
+                Key::Char('2') => Ok(commands::custom(|| {
+                    Some(Msg::LoadFile("nonexistent.txt".to_string()))
+                })),
+                Key::Char('3') => Ok(commands::custom(|| {
+                    Some(Msg::LoadFile("/root/protected.txt".to_string()))
+                })),
+                Key::Char('s') => Ok(commands::custom(|| {
+                    Some(Msg::SaveFile("test_output.txt".to_string()))
+                })),
                 Key::Char('e') => Ok(commands::custom(|| Some(Msg::SimulateError))),
                 Key::Char('c') => Ok(commands::custom(|| Some(Msg::ClearError))),
                 _ => Ok(Cmd::none()),
@@ -195,12 +215,17 @@ impl FallibleModel for ErrorHandlingApp {
                             let content = fs::read_to_string(&path_for_closure)?;
                             Ok(Some(Msg::FileLoaded(content)))
                         },
-                        move |err| Msg::ErrorOccurred(format!("Failed to load '{}': {}", path, err)),
+                        move |err| {
+                            Msg::ErrorOccurred(format!("Failed to load '{}': {}", path, err))
+                        },
                     ))
                 }
                 Msg::FileLoaded(content) => {
                     self.file_content = Some(content.clone());
-                    self.success_message = Some(format!("File loaded successfully ({} bytes)", content.len()));
+                    self.success_message = Some(format!(
+                        "File loaded successfully ({} bytes)",
+                        content.len()
+                    ));
                     self.log_operation("File loaded successfully".to_string());
                     self.error_message = None;
                     Ok(Cmd::none())
@@ -214,7 +239,9 @@ impl FallibleModel for ErrorHandlingApp {
                                 fs::write(&path_for_closure, content)?;
                                 Ok(Some(Msg::FileSaved))
                             },
-                            move |err| Msg::ErrorOccurred(format!("Failed to save '{}': {}", path, err)),
+                            move |err| {
+                                Msg::ErrorOccurred(format!("Failed to save '{}': {}", path, err))
+                            },
                         ))
                     } else {
                         self.error_message = Some("No content to save".to_string());
@@ -229,7 +256,9 @@ impl FallibleModel for ErrorHandlingApp {
                 }
                 Msg::SimulateError => {
                     // Deliberately cause an error to demonstrate error handling
-                    Err(hojicha::error::Error::Model("Simulated error for demonstration".to_string()))
+                    Err(hojicha::error::Error::Model(
+                        "Simulated error for demonstration".to_string(),
+                    ))
                 }
                 Msg::ClearError => {
                     self.error_message = None;
@@ -252,7 +281,7 @@ impl FallibleModel for ErrorHandlingApp {
         let error_msg = format!("{}", error);
         self.error_message = Some(error_msg.clone());
         self.log_operation(format!("Handled error: {}", error_msg));
-        
+
         // We could also convert the error to a message for further processing
         commands::custom(move || Some(Msg::ErrorOccurred(error_msg)))
     }
