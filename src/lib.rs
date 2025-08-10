@@ -28,6 +28,7 @@ pub mod priority_queue;
 pub mod program;
 pub mod queue_scaling;
 pub mod stream_builders;
+pub mod style;
 pub mod subscription;
 
 #[cfg(test)]
