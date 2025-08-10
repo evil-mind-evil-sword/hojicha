@@ -13,7 +13,7 @@
 //! - ↑/↓: Navigate form fields
 //! - Enter: Submit form
 //! - Type to enter text
-//! - q: Quit
+//! - Esc: Quit
 
 use hojicha::{
     commands,
@@ -143,7 +143,7 @@ impl Model for StyleShowcase {
     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::Key(KeyEvent { key, .. }) => match key {
-                Key::Char('q') | Key::Esc => return commands::quit(),
+                Key::Esc => return commands::quit(),
                 Key::Tab => self.switch_theme(),
                 Key::Up => {
                     if self.focused_field > 0 {
@@ -361,7 +361,7 @@ impl StyleShowcase {
             .fg(self.theme.colors.text_secondary.clone())
             .padding_symmetric(0, 1);
 
-        let footer_text = "Tab: Switch theme | ↑/↓: Navigate | Enter: Submit | q: Quit";
+        let footer_text = "Tab: Switch theme | ↑/↓: Navigate | Enter: Submit | Esc: Quit";
 
         let block = Block::default()
             .borders(Borders::TOP)
