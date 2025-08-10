@@ -18,7 +18,7 @@ cargo run --release --example counter
 
 ### Getting Started
 
-- **getting_started** - Your first boba application
+- **getting_started** - Your first hojicha application
   ```bash
   cargo run --example getting_started
   ```
@@ -49,7 +49,7 @@ cargo run --release --example counter
 
 ### Component Examples
 
-- **components_gallery** - Interactive showcase of all boba components
+- **components_gallery** - Interactive showcase of all hojicha components
   ```bash
   cargo run --example components_gallery
   ```

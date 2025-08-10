@@ -5,11 +5,11 @@ use crossterm::event::{Event as CrosstermEvent, KeyEventKind};
 use std::sync::mpsc;
 use std::time::Duration;
 
-/// Processes raw crossterm events into boba events
+/// Processes raw crossterm events into hojicha events
 pub struct EventProcessor;
 
 impl EventProcessor {
-    /// Process a crossterm event into a boba event
+    /// Process a crossterm event into a hojicha event
     pub fn process_crossterm_event(event: CrosstermEvent) -> Option<Event<()>> {
         match event {
             CrosstermEvent::Key(key) if key.kind == KeyEventKind::Press => {
@@ -85,7 +85,7 @@ impl EventProcessor {
                     });
                 }
 
-                // Convert crossterm event to boba event
+                // Convert crossterm event to hojicha event
                 Self::process_crossterm_event(ct_event)
                     .map(|e| unsafe { std::mem::transmute_copy(&e) })
             }

@@ -1,4 +1,4 @@
-//! Layout Showcase - Demonstrates flexible layout patterns with boba
+//! Layout Showcase - Demonstrates flexible layout patterns with hojicha
 //!
 //! This example shows:
 //! - Nested layouts with percentage and fixed constraints

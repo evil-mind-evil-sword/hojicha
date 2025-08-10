@@ -633,36 +633,36 @@ impl AdvancedEventStats {
         let mut output = String::new();
 
         // Basic metrics
-        output.push_str("# HELP boba_events_total Total events processed\n");
-        output.push_str("# TYPE boba_events_total counter\n");
+        output.push_str("# HELP hojicha_events_total Total events processed\n");
+        output.push_str("# TYPE hojicha_events_total counter\n");
         output.push_str(&format!(
-            "boba_events_total {{}} {}\n",
+            "hojicha_events_total {{}} {}\n",
             self.basic.total_events
         ));
         output.push_str(&format!(
-            "boba_events_total {{priority=\"high\"}} {}\n",
+            "hojicha_events_total {{priority=\"high\"}} {}\n",
             self.basic.high_priority_events
         ));
         output.push_str(&format!(
-            "boba_events_total {{priority=\"normal\"}} {}\n",
+            "hojicha_events_total {{priority=\"normal\"}} {}\n",
             self.basic.normal_priority_events
         ));
         output.push_str(&format!(
-            "boba_events_total {{priority=\"low\"}} {}\n",
+            "hojicha_events_total {{priority=\"low\"}} {}\n",
             self.basic.low_priority_events
         ));
 
         // Dropped events
-        output.push_str("# HELP boba_events_dropped Total events dropped\n");
-        output.push_str("# TYPE boba_events_dropped counter\n");
+        output.push_str("# HELP hojicha_events_dropped Total events dropped\n");
+        output.push_str("# TYPE hojicha_events_dropped counter\n");
         output.push_str(&format!(
-            "boba_events_dropped {{}} {}\n",
+            "hojicha_events_dropped {{}} {}\n",
             self.basic.dropped_events
         ));
 
         // Latency metrics
-        output.push_str("# HELP boba_event_latency_microseconds Event processing latency\n");
-        output.push_str("# TYPE boba_event_latency_microseconds summary\n");
+        output.push_str("# HELP hojicha_event_latency_microseconds Event processing latency\n");
+        output.push_str("# TYPE hojicha_event_latency_microseconds summary\n");
 
         for (priority, stats) in [
             ("high", &self.latency.high_priority),
@@ -670,51 +670,51 @@ impl AdvancedEventStats {
             ("low", &self.latency.low_priority),
         ] {
             output.push_str(&format!(
-                "boba_event_latency_microseconds {{priority=\"{}\",quantile=\"0.5\"}} {}\n",
+                "hojicha_event_latency_microseconds {{priority=\"{}\",quantile=\"0.5\"}} {}\n",
                 priority, stats.p50
             ));
             output.push_str(&format!(
-                "boba_event_latency_microseconds {{priority=\"{}\",quantile=\"0.9\"}} {}\n",
+                "hojicha_event_latency_microseconds {{priority=\"{}\",quantile=\"0.9\"}} {}\n",
                 priority, stats.p90
             ));
             output.push_str(&format!(
-                "boba_event_latency_microseconds {{priority=\"{}\",quantile=\"0.95\"}} {}\n",
+                "hojicha_event_latency_microseconds {{priority=\"{}\",quantile=\"0.95\"}} {}\n",
                 priority, stats.p95
             ));
             output.push_str(&format!(
-                "boba_event_latency_microseconds {{priority=\"{}\",quantile=\"0.99\"}} {}\n",
+                "hojicha_event_latency_microseconds {{priority=\"{}\",quantile=\"0.99\"}} {}\n",
                 priority, stats.p99
             ));
             output.push_str(&format!(
-                "boba_event_latency_microseconds {{priority=\"{}\",quantile=\"0.999\"}} {}\n",
+                "hojicha_event_latency_microseconds {{priority=\"{}\",quantile=\"0.999\"}} {}\n",
                 priority, stats.p999
             ));
         }
 
         // Throughput metrics
-        output.push_str("# HELP boba_throughput_rate Events per second\n");
-        output.push_str("# TYPE boba_throughput_rate gauge\n");
+        output.push_str("# HELP hojicha_throughput_rate Events per second\n");
+        output.push_str("# TYPE hojicha_throughput_rate gauge\n");
         output.push_str(&format!(
-            "boba_throughput_rate {{type=\"current\"}} {}\n",
+            "hojicha_throughput_rate {{type=\"current\"}} {}\n",
             self.throughput.current_rate
         ));
         output.push_str(&format!(
-            "boba_throughput_rate {{type=\"peak\"}} {}\n",
+            "hojicha_throughput_rate {{type=\"peak\"}} {}\n",
             self.throughput.peak_rate
         ));
 
         // Queue metrics
-        output.push_str("# HELP boba_queue_depth Current queue depth\n");
-        output.push_str("# TYPE boba_queue_depth gauge\n");
+        output.push_str("# HELP hojicha_queue_depth Current queue depth\n");
+        output.push_str("# TYPE hojicha_queue_depth gauge\n");
         output.push_str(&format!(
-            "boba_queue_depth {{}} {}\n",
+            "hojicha_queue_depth {{}} {}\n",
             self.queue.current_depth
         ));
 
-        output.push_str("# HELP boba_queue_saturation Queue saturation percentage\n");
-        output.push_str("# TYPE boba_queue_saturation gauge\n");
+        output.push_str("# HELP hojicha_queue_saturation Queue saturation percentage\n");
+        output.push_str("# TYPE hojicha_queue_saturation gauge\n");
         output.push_str(&format!(
-            "boba_queue_saturation {{}} {}\n",
+            "hojicha_queue_saturation {{}} {}\n",
             self.queue.saturation_percentage
         ));
 
@@ -1017,8 +1017,8 @@ mod tests {
 
         // Test Prometheus export
         let prometheus = stats.export(ExportFormat::Prometheus);
-        assert!(prometheus.contains("boba_events_total"));
-        assert!(prometheus.contains("boba_event_latency_microseconds"));
+        assert!(prometheus.contains("hojicha_events_total"));
+        assert!(prometheus.contains("hojicha_event_latency_microseconds"));
 
         // Test plain text export
         let text = stats.export(ExportFormat::PlainText);

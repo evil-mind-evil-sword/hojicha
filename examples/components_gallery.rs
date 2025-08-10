@@ -1,4 +1,4 @@
-//! Components Gallery - Interactive showcase of all boba components
+//! Components Gallery - Interactive showcase of all hojicha components
 //!
 //! This example demonstrates all built-in components:
 //! - List: Scrollable lists with selection

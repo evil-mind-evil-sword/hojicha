@@ -287,7 +287,7 @@ proptest! {
 
         let prometheus = collector.export_prometheus();
         prop_assert!(!prometheus.is_empty());
-        prop_assert!(prometheus.contains("boba_events_total"));
+        prop_assert!(prometheus.contains("hojicha_events_total"));
 
         let text = collector.export_text();
         prop_assert!(!text.is_empty());

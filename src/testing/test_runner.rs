@@ -1,10 +1,10 @@
-//! Test runner utilities for testing boba applications
+//! Test runner utilities for testing hojicha applications
 
 use crate::prelude::*;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
-/// A test runner that provides utilities for testing boba applications
+/// A test runner that provides utilities for testing hojicha applications
 pub struct TestRunner<M: Model> {
     program: Program<M>,
     timeout: Option<Duration>,

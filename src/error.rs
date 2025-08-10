@@ -1,14 +1,14 @@
-//! Error handling for the boba framework
+//! Error handling for the hojicha framework
 //!
 //! This module provides a structured approach to error handling throughout the framework.
 
 use std::fmt;
 use std::io;
 
-/// Result type alias for boba operations
+/// Result type alias for hojicha operations
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Main error type for the boba framework
+/// Main error type for the hojicha framework
 #[derive(Debug)]
 pub enum Error {
     /// I/O error (terminal operations, file access, etc.)

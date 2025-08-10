@@ -1,6 +1,6 @@
-//! Getting Started - Your first boba application
+//! Getting Started - Your first hojicha application
 //!
-//! This example demonstrates the basics of the Elm Architecture in boba:
+//! This example demonstrates the basics of the Elm Architecture in hojicha:
 //! - Model: Application state (a counter and message)
 //! - Update: Handle events and update state
 //! - View: Render the UI

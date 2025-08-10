@@ -388,7 +388,7 @@ impl<M: Message> PriorityEventProcessor<M> {
         }
     }
 
-    /// Convert a crossterm event to a boba event
+    /// Convert a crossterm event to a hojicha event
     fn convert_crossterm_event(event: CrosstermEvent) -> Option<Event<()>> {
         match event {
             CrosstermEvent::Key(key) if key.kind == KeyEventKind::Press => {

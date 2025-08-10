@@ -104,7 +104,7 @@ impl ChatApp {
             vec![
                 ChatMessage::new(
                     "Eve".to_string(),
-                    "Anyone using boba for their TUI?".to_string(),
+                    "Anyone using hojicha for their TUI?".to_string(),
                 ),
                 ChatMessage::new("Frank".to_string(), "Yes! It's really nice".to_string()),
             ],

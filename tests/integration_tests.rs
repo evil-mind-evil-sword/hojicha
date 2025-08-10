@@ -1,4 +1,4 @@
-//! Comprehensive integration tests for boba
+//! Comprehensive integration tests for hojicha
 
 use hojicha::{
     commands,

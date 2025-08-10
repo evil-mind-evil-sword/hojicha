@@ -156,8 +156,8 @@ fn test_prometheus_export() {
     collector.record_dropped();
 
     let prometheus = collector.export_prometheus();
-    assert!(prometheus.contains("boba_events_total"));
-    assert!(prometheus.contains("boba_events_dropped"));
+    assert!(prometheus.contains("hojicha_events_total"));
+    assert!(prometheus.contains("hojicha_events_dropped"));
     assert!(prometheus.contains("# TYPE"));
     assert!(prometheus.contains("# HELP"));
 }

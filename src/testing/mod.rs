@@ -1,4 +1,4 @@
-//! Testing utilities for boba applications
+//! Testing utilities for hojicha applications
 //!
 //! This module provides tools for testing TUI applications in headless mode.
 

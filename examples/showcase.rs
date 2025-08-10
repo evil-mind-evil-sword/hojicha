@@ -1,4 +1,4 @@
-//! Comprehensive showcase of all boba components and features
+//! Comprehensive showcase of all hojicha components and features
 //!
 //! This example demonstrates:
 //! - All available components (List, Table, TextArea, Viewport, Spinner)
@@ -88,7 +88,7 @@ The Elm Architecture for Ratatui - A framework for building terminal user interf
 
 Check out the examples directory for usage patterns.
 
-Happy coding with boba! 🧋
+Happy coding with hojicha! 🍵
 "#;
 
         let mut viewport = Viewport::new();

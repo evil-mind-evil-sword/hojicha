@@ -1,4 +1,4 @@
-# Cargo configuration for boba
+# Cargo configuration for hojicha
 
 [env]
 # Enable parallel test execution

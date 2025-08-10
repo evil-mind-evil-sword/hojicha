@@ -1,4 +1,4 @@
-//! Property-based tests for boba
+//! Property-based tests for hojicha
 
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
