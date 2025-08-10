@@ -1,6 +1,6 @@
-//! Example binary for testing Boba
+//! Example binary for testing Hojicha
 
 fn main() {
-    println!("Boba: The Elm Architecture for Ratatui");
+    println!("Hojicha: The Elm Architecture for Ratatui");
     println!("This is a library - see examples/ for usage");
 }

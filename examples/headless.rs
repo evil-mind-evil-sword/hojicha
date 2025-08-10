@@ -1,6 +1,6 @@
 //! Example demonstrating headless mode
 //!
-//! This example shows how to run a Boba program in headless mode,
+//! This example shows how to run a Hojicha program in headless mode,
 //! which is useful for testing or running TUI logic without actual rendering.
 
 use hojicha::{

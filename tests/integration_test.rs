@@ -1,4 +1,4 @@
-//! Integration tests for Boba, inspired by Bubbletea's test suite
+//! Integration tests for Hojicha, inspired by Bubbletea's test suite
 
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};

@@ -86,12 +86,12 @@ impl Model for GettingStarted {
                 Key::Char('m') => {
                     // Cycle through different messages
                     self.message = match self.message.as_str() {
-                        "Hello, Boba! 🧋" => "Welcome to TUI development! 🎨".to_string(),
+                        "Hello, Hojicha! 🍵" => "Welcome to TUI development! 🎨".to_string(),
                         "Welcome to TUI development! 🎨" => {
                             "Elm Architecture is awesome! 🌳".to_string()
                         }
                         "Elm Architecture is awesome! 🌳" => "Happy coding! 💻".to_string(),
-                        _ => "Hello, Boba! 🧋".to_string(),
+                        _ => "Hello, Hojicha! 🍵".to_string(),
                     };
                 }
                 _ => {}
@@ -138,7 +138,7 @@ impl Model for GettingStarted {
             .split(frame.area());
 
         // Title
-        let title = Paragraph::new("🧋 Getting Started with Boba")
+        let title = Paragraph::new("🍵 Getting Started with Hojicha")
             .style(
                 Style::default()
                     .fg(Color::Cyan)
@@ -234,7 +234,7 @@ impl GettingStarted {
     fn new() -> Self {
         Self {
             counter: 0,
-            message: "Hello, Boba! 🧋".to_string(),
+            message: "Hello, Hojicha! 🍵".to_string(),
             timer_running: false,
             ticks: 0,
         }

@@ -195,7 +195,7 @@ impl ComponentsGallery {
     }
 
     fn render_header(&self, frame: &mut Frame, area: Rect) {
-        let title = Paragraph::new("🎨 Boba Components Gallery")
+        let title = Paragraph::new("🎨 Hojicha Components Gallery")
             .block(Block::default().borders(Borders::ALL))
             .style(Style::default().fg(Color::Cyan))
             .alignment(ratatui::layout::Alignment::Center);

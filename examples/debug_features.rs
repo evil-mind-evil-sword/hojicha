@@ -46,7 +46,7 @@ impl Model for DebugModel {
     fn init(&mut self) -> Option<Cmd<Self::Message>> {
         // Set the window title when the app starts
         commands::batch(vec![
-            Some(set_window_title("Boba Debug Features Demo")),
+            Some(set_window_title("Hojicha Debug Features Demo")),
             Some(commands::every(Duration::from_millis(1000), |_| {
                 Message::Tick
             })),
@@ -65,7 +65,7 @@ impl Model for DebugModel {
 
                 // Update window title with counter
                 Some(set_window_title(format!(
-                    "Boba Debug - Count: {}",
+                    "Hojicha Debug - Count: {}",
                     self.counter
                 )))
             }

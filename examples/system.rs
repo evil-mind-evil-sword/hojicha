@@ -104,7 +104,7 @@ impl Model for App {
 
     fn init(&mut self) -> Option<Cmd<Self::Message>> {
         Some(send(Message::ExecuteCommand(
-            "echo 'Boba system example started!'".to_string(),
+            "echo 'Hojicha system example started!'".to_string(),
         )))
     }
 

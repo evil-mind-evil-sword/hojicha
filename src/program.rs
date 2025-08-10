@@ -211,7 +211,7 @@ where
         // Create priority event processor with default config
         let priority_processor = PriorityEventProcessor::new();
 
-        log::info!("Boba program initialized with priority event processing");
+        log::info!("Hojicha program initialized with priority event processing");
 
         Ok(Self {
             model,

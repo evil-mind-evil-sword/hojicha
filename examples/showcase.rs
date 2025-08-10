@@ -66,7 +66,7 @@ impl App {
 
         let textarea = TextArea::new();
 
-        let viewport_content = r#"# Boba Framework
+        let viewport_content = r#"# Hojicha Framework
 
 The Elm Architecture for Ratatui - A framework for building terminal user interfaces.
 
@@ -256,7 +256,7 @@ impl Model for App {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title(" Boba Showcase "),
+                    .title(" Hojicha Showcase "),
             )
             .select(index)
             .style(Style::default().fg(Color::White))
