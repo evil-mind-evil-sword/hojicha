@@ -1,4 +1,4 @@
-use hojicha::event::{Event, KeyEvent};
+use hojicha::event::Event;
 use hojicha::priority_queue::{Priority, PriorityEventQueue, ResizeError};
 use hojicha::queue_scaling::{AutoScaleConfig, QueueAutoScaler, ScalingStrategy};
 

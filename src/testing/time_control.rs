@@ -110,7 +110,7 @@ impl TimeController {
 
 /// Global time controller for tests
 static GLOBAL_TIME: once_cell::sync::Lazy<TimeController> =
-    once_cell::sync::Lazy::new(|| TimeController::new_real());
+    once_cell::sync::Lazy::new(TimeController::new_real);
 
 /// Pause global time (for use in tests)
 pub fn pause() {
@@ -154,6 +154,12 @@ impl PausedTimeGuard {
         let was_paused = GLOBAL_TIME.paused.load(Ordering::SeqCst);
         pause();
         Self { was_paused }
+    }
+}
+
+impl Default for PausedTimeGuard {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

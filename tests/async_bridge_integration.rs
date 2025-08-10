@@ -202,7 +202,7 @@ fn test_concurrent_senders_with_mock_channel() {
 
     // Count received messages
     let mut count = 0;
-    while let Ok(_) = rx.try_recv() {
+    while rx.try_recv().is_ok() {
         count += 1;
     }
 

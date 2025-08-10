@@ -23,17 +23,14 @@ impl Model for TestModel {
     type Message = String;
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        match event {
-            Event::User(msg) => {
-                self.counter.fetch_add(1, Ordering::SeqCst);
-                self.messages.lock().unwrap().push(msg);
+        if let Event::User(msg) = event {
+            self.counter.fetch_add(1, Ordering::SeqCst);
+            self.messages.lock().unwrap().push(msg);
 
-                // Quit after receiving enough messages
-                if self.counter.load(Ordering::SeqCst) >= 5 {
-                    return None; // Quit
-                }
+            // Quit after receiving enough messages
+            if self.counter.load(Ordering::SeqCst) >= 5 {
+                return None; // Quit
             }
-            _ => {}
         }
         Cmd::none()
     }
@@ -60,10 +57,10 @@ fn test_deterministic_message_processing() {
         .without_signal_handler();
 
     let mut program = Program::with_options(model, options).unwrap();
-    
+
     // Initialize async bridge to send messages
     let sender = program.init_async_bridge();
-    
+
     // Send messages to trigger the counter
     for i in 0..5 {
         sender.send(Event::User(format!("Message {}", i))).unwrap();
@@ -110,7 +107,7 @@ fn test_with_virtual_steps() {
 
 #[cfg(test)]
 mod async_tests {
-    use super::*;
+    
     use std::time::Duration;
 
     // For async tests that truly need timing, use tokio's time control
@@ -150,7 +147,7 @@ mod async_tests {
             // Note: tokio::time::advance requires test-util feature
             // which we don't have enabled. In real tests with test-util:
             // tokio::time::advance(Duration::from_secs(1)).await;
-            if let Some(_) = interval.next().await {
+            if (interval.next().await).is_some() {
                 ticks.push(tokio::time::Instant::now());
             }
         }

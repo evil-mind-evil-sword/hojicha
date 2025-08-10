@@ -24,7 +24,7 @@ use crate::error::{Error, Result};
 use crate::event::Event;
 use crate::subscription::Subscription;
 use crossterm::event::{self};
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -34,6 +34,9 @@ use std::time::{Duration, Instant};
 type MessageFilter<M> = Box<
     dyn Fn(&M, Event<<M as Model>::Message>) -> Option<Event<<M as Model>::Message>> + Send + Sync,
 >;
+
+/// Type alias for condition check function
+type ConditionCheck<M> = Box<dyn FnMut(&M) -> bool>;
 
 /// Mouse tracking mode
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -48,7 +51,6 @@ pub enum MouseMode {
 }
 
 /// Options for configuring the program
-#[derive(Default)]
 pub struct ProgramOptions {
     /// Whether to use alternate screen
     pub alt_screen: bool,
@@ -68,11 +70,13 @@ pub struct ProgramOptions {
     pub without_renderer: bool,
     /// Custom output writer
     pub output: Option<Box<dyn Write + Send + Sync>>,
+    /// Custom input reader
+    pub input: Option<Box<dyn Read + Send + Sync>>,
 }
 
 impl ProgramOptions {
     /// Create new default options
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         Self {
             alt_screen: true,
             mouse_mode: MouseMode::None,
@@ -83,6 +87,7 @@ impl ProgramOptions {
             install_signal_handler: true,
             without_renderer: false,
             output: None,
+            input: None,
         }
     }
 
@@ -138,6 +143,25 @@ impl ProgramOptions {
     pub fn with_output(mut self, output: Box<dyn Write + Send + Sync>) -> Self {
         self.output = Some(output);
         self
+    }
+
+    /// Set custom input source
+    pub fn with_input(mut self, input: Box<dyn Read + Send + Sync>) -> Self {
+        self.input = Some(input);
+        self
+    }
+
+    /// Set input from a string (convenience method for testing)
+    pub fn with_input_string(mut self, input: &str) -> Self {
+        use std::io::Cursor;
+        self.input = Some(Box::new(Cursor::new(input.as_bytes().to_vec())));
+        self
+    }
+}
+
+impl Default for ProgramOptions {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -251,6 +275,24 @@ where
     }
 
     /// Force kill the program immediately
+    ///
+    /// This method forcefully terminates the program without any cleanup.
+    /// Unlike `quit()` which sends a quit message through the event loop,
+    /// `kill()` immediately stops execution.
+    ///
+    /// # Use Cases
+    /// - Emergency shutdown when the program is unresponsive
+    /// - Testing scenarios requiring immediate termination
+    /// - Signal handlers that need to stop the program immediately
+    ///
+    /// # Example
+    /// ```ignore
+    /// // In a signal handler or emergency shutdown
+    /// program.kill();
+    /// ```
+    ///
+    /// # Note
+    /// This bypasses normal cleanup procedures. Prefer `quit()` for graceful shutdown.
     pub fn kill(&self) {
         self.force_quit.store(true, Ordering::SeqCst);
         self.running.store(false, Ordering::SeqCst);
@@ -671,7 +713,7 @@ where
     }
 
     /// Run with a condition check
-    fn run_with_condition(self, condition: Option<Box<dyn FnMut(&M) -> bool>>) -> Result<()> {
+    fn run_with_condition(self, condition: Option<ConditionCheck<M>>) -> Result<()> {
         self.run_internal(None, None, condition)
     }
 
@@ -680,7 +722,7 @@ where
         mut self,
         timeout: Option<Duration>,
         start_time: Option<Instant>,
-        mut condition: Option<Box<dyn FnMut(&M) -> bool>>,
+        mut condition: Option<ConditionCheck<M>>,
     ) -> Result<()> {
         // Mark as running
         self.running.store(true, Ordering::SeqCst);

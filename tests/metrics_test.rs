@@ -176,8 +176,10 @@ fn test_text_export() {
 
 #[test]
 fn test_sampling_rate() {
-    let mut config = MetricsConfig::default();
-    config.sampling_rate = 0.5; // Sample 50% of events
+    let config = MetricsConfig {
+        sampling_rate: 0.5, // Sample 50% of events
+        ..Default::default()
+    };
 
     let collector = MetricsCollector::new(config);
 
@@ -195,8 +197,10 @@ fn test_sampling_rate() {
 
 #[test]
 fn test_event_type_tracking() {
-    let mut config = MetricsConfig::default();
-    config.track_by_type = true; // Enable event type tracking
+    let config = MetricsConfig {
+        track_by_type: true, // Enable event type tracking
+        ..Default::default()
+    };
     let collector = MetricsCollector::new(config);
 
     // Record events of different types

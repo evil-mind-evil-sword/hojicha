@@ -205,7 +205,7 @@ impl Model for App {
                 if key.key == Key::Char('q') && key.modifiers.is_empty() {
                     Some(commands::quit())
                 } else if key.key == Key::Esc {
-                    return Some(commands::quit());
+                    Some(commands::quit())
                 } else if key.key == Key::Tab && key.modifiers.is_empty() {
                     self.update(Event::User(Message::TabNext))
                 } else if key.key == Key::Tab && key.modifiers.contains(KeyModifiers::SHIFT) {

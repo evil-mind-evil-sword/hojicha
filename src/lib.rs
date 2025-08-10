@@ -1,5 +1,8 @@
 //! # Hojicha
 //!
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_crate_level_docs)]
+//!
 //! A Rust framework that brings the Elm Architecture to terminal user interfaces,
 //! built on top of [ratatui](https://github.com/ratatui-org/ratatui).
 //!
@@ -18,6 +21,7 @@ pub mod components;
 pub mod core;
 pub mod error;
 pub mod event;
+pub mod logging;
 pub mod metrics;
 pub mod priority_queue;
 pub mod program;
@@ -36,10 +40,11 @@ pub use program::{MouseMode, Program, ProgramOptions};
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::commands::{
-        batch, clear_line, clear_screen, disable_bracketed_paste, disable_focus_change,
-        disable_mouse, enable_bracketed_paste, enable_focus_change, enable_mouse_all_motion,
-        enable_mouse_cell_motion, enter_alt_screen, every, exec, exec_command, exit_alt_screen,
-        hide_cursor, sequence, set_window_title, show_cursor, suspend, tick, window_size,
+        batch, clear_line, clear_screen, custom, custom_async, custom_fallible,
+        disable_bracketed_paste, disable_focus_change, disable_mouse, enable_bracketed_paste,
+        enable_focus_change, enable_mouse_all_motion, enable_mouse_cell_motion, enter_alt_screen,
+        every, exec, exec_command, exit_alt_screen, hide_cursor, interrupt, quit, sequence,
+        set_window_title, show_cursor, suspend, tick, window_size,
     };
     pub use crate::components::{
         KeyBinding, KeyMap, List, ListOptions, Spinner, SpinnerStyle, Table, TableOptions,
@@ -48,6 +53,7 @@ pub mod prelude {
     pub use crate::core::{Cmd, Model};
     pub use crate::error::{Error, ErrorContext, ErrorHandler, Result};
     pub use crate::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, WindowSize};
+    pub use crate::logging::{log_debug, log_error, log_info, log_warn};
     pub use crate::program::{MouseMode, Program, ProgramOptions};
 
     // Re-export error macros

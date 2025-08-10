@@ -8,10 +8,10 @@ use hojicha::{
 };
 use proptest::prelude::*;
 use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
+    atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
 // Model for testing cancellable operations
@@ -97,7 +97,7 @@ proptest! {
             .headless()
             .without_signal_handler();
 
-        let mut program = Program::with_options(model, options).unwrap();
+        let program = Program::with_options(model, options).unwrap();
 
         // Start several long-running operations
         let handles = (0..num_operations).map(|i| {
@@ -134,7 +134,7 @@ proptest! {
             .headless()
             .without_signal_handler();
 
-        let mut program = Program::with_options(model, options).unwrap();
+        let program = Program::with_options(model, options).unwrap();
 
         if cancel_immediately {
             // Operations cancelled immediately shouldn't produce results
@@ -166,7 +166,7 @@ proptest! {
             .headless()
             .without_signal_handler();
 
-        let mut program = Program::with_options(model, options).unwrap();
+        let program = Program::with_options(model, options).unwrap();
 
         // Operations should check cancellation token periodically
         // This ensures graceful shutdown
@@ -187,7 +187,7 @@ fn test_cancellation_token_propagation() {
         .headless()
         .without_signal_handler();
 
-    let mut program = Program::with_options(model, options).unwrap();
+    let program = Program::with_options(model, options).unwrap();
 
     // In the implementation, spawning with cancellation would look like:
     // let handle = program.spawn_cancellable(|token| async move {
@@ -216,7 +216,7 @@ fn test_multiple_cancellation_handles() {
         .headless()
         .without_signal_handler();
 
-    let mut program = Program::with_options(model, options).unwrap();
+    let program = Program::with_options(model, options).unwrap();
 
     // Start multiple operations, cancel only some
     // let handles: Vec<_> = (0..5).map(|i| {

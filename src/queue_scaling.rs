@@ -425,10 +425,15 @@ impl QueueAutoScaler {
 /// Metrics about the auto-scaling behavior
 #[derive(Debug, Clone)]
 pub struct ScalingMetrics {
+    /// Average queue utilization over the monitoring period
     pub average_utilization: f64,
+    /// Peak queue utilization observed
     pub peak_utilization: f64,
+    /// Current event processing rate in events per second
     pub events_per_second: f64,
+    /// Total number of scaling operations performed
     pub scaling_operations: usize,
+    /// Timestamp of the last scaling operation
     pub last_scaling: Option<Instant>,
 }
 

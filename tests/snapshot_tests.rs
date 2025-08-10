@@ -29,7 +29,7 @@ fn buffer_to_string(buffer: &Buffer) -> String {
     let mut result = String::new();
     for y in 0..buffer.area.height {
         for x in 0..buffer.area.width {
-            let cell = buffer.get(x, y);
+            let cell = buffer.cell((x, y)).unwrap_or_default();
             result.push_str(cell.symbol());
         }
         if y < buffer.area.height - 1 {
@@ -46,11 +46,11 @@ fn copy_buffer_to_frame(src: &Buffer, frame: &mut ratatui::Frame, offset_x: u16,
     for y in 0..src_area.height {
         for x in 0..src_area.width {
             // src.get() expects absolute coordinates
-            let cell = src.get(src_area.x + x, src_area.y + y);
+            let cell = src.cell((src_area.x + x, src_area.y + y)).unwrap_or_default();
             let dst_x = offset_x + x;
             let dst_y = offset_y + y;
-            if dst_x < frame.size().width && dst_y < frame.size().height {
-                let dst_idx = (dst_y * frame.size().width + dst_x) as usize;
+            if dst_x < frame.area().width && dst_y < frame.area().height {
+                let dst_idx = (dst_y * frame.area().width + dst_x) as usize;
                 frame.buffer_mut().content[dst_idx] = cell.clone();
             }
         }
@@ -64,7 +64,7 @@ fn test_list_snapshot() {
         let mut list = List::new(items);
         list.select(1); // Select second item
 
-        let area = f.size();
+        let area = f.area();
         let block = Block::default().title("List Widget").borders(Borders::ALL);
 
         // Calculate inner area for the list
@@ -94,7 +94,7 @@ fn test_spinner_snapshot() {
             spinner.tick();
         }
 
-        let area = f.size();
+        let area = f.area();
         let mut buffer = Buffer::empty(area);
         spinner.render(area, &mut buffer);
 
@@ -144,7 +144,7 @@ fn test_table_snapshot() {
         let mut table = Table::new(headers).with_rows(rows);
         table.select(1); // Select Bob's row
 
-        let area = f.size();
+        let area = f.area();
         let block = Block::default().title("Table Widget").borders(Borders::ALL);
 
         let inner = block.inner(area);
@@ -166,7 +166,7 @@ fn test_textarea_snapshot() {
         let mut textarea = TextArea::new();
         textarea.set_value("Hello, World!\nThis is line 2\nAnd line 3.");
 
-        let area = f.size();
+        let area = f.area();
         let block = Block::default().title("TextArea").borders(Borders::ALL);
 
         let inner = block.inner(area);
@@ -196,7 +196,7 @@ fn test_viewport_snapshot() {
         // Scroll down a bit
         viewport.scroll_down(3);
 
-        let area = f.size();
+        let area = f.area();
         let block = Block::default().title("Viewport").borders(Borders::ALL);
 
         let inner = block.inner(area);
@@ -223,7 +223,7 @@ fn test_list_with_selection_snapshot() {
                 list.select(idx);
             }
 
-            let area = f.size();
+            let area = f.area();
             let mut buffer = Buffer::empty(area);
             list.render(area, &mut buffer);
 
@@ -260,7 +260,7 @@ fn test_spinner_styles_snapshot() {
             // Tick to get a frame
             spinner.tick();
 
-            let area = f.size();
+            let area = f.area();
             let mut buffer = Buffer::empty(area);
             spinner.render_centered(area, &mut buffer);
 

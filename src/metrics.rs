@@ -33,11 +33,17 @@ pub struct AdvancedEventStats {
 /// Basic event statistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct BasicStats {
+    /// Total number of events processed
     pub total_events: usize,
+    /// Number of high priority events processed
     pub high_priority_events: usize,
+    /// Number of normal priority events processed
     pub normal_priority_events: usize,
+    /// Number of low priority events processed
     pub low_priority_events: usize,
+    /// Number of events dropped due to queue overflow
     pub dropped_events: usize,
+    /// Number of times backpressure was activated
     pub backpressure_activations: usize,
 }
 
@@ -63,16 +69,27 @@ pub struct LatencyStats {
 /// Latency percentiles in microseconds
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LatencyPercentiles {
+    /// Minimum latency observed
     pub min: u64,
+    /// 50th percentile (median) latency
     pub p50: u64,
+    /// 75th percentile latency
     pub p75: u64,
+    /// 90th percentile latency
     pub p90: u64,
+    /// 95th percentile latency
     pub p95: u64,
+    /// 99th percentile latency
     pub p99: u64,
+    /// 99.9th percentile latency
     pub p999: u64,
+    /// Maximum latency observed
     pub max: u64,
+    /// Mean (average) latency
     pub mean: f64,
+    /// Standard deviation of latency
     pub std_dev: f64,
+    /// Number of latency measurements recorded
     pub count: u64,
 }
 
@@ -169,10 +186,15 @@ pub struct WindowedStats {
 /// Statistics for a time bucket
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BucketStats {
+    /// Unix timestamp in seconds for this bucket
     pub timestamp: u64,
+    /// Number of events processed in this time bucket
     pub events_processed: usize,
+    /// Number of events dropped in this time bucket
     pub events_dropped: usize,
+    /// Average latency in microseconds for this bucket
     pub avg_latency_us: f64,
+    /// 99th percentile latency in microseconds for this bucket
     pub p99_latency_us: u64,
 }
 
@@ -584,8 +606,11 @@ impl MetricsCollector {
 /// Export format for metrics
 #[derive(Debug, Clone, Copy)]
 pub enum ExportFormat {
+    /// Export as JSON format
     Json,
+    /// Export in Prometheus metrics format
     Prometheus,
+    /// Export as plain text
     PlainText,
 }
 

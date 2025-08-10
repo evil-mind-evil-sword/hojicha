@@ -14,15 +14,25 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+/// Type alias for custom priority mapping function
+type PriorityMapper = Arc<dyn Fn(&Event<()>) -> Priority + Send + Sync>;
+
 /// Statistics for monitoring event processing behavior
 #[derive(Debug, Clone, Default)]
 pub struct EventStats {
+    /// Total number of events processed
     pub total_events: usize,
+    /// Number of high priority events processed
     pub high_priority_events: usize,
+    /// Number of normal priority events processed
     pub normal_priority_events: usize,
+    /// Number of low priority events processed
     pub low_priority_events: usize,
+    /// Number of events dropped due to queue overflow
     pub dropped_events: usize,
+    /// Total processing time in milliseconds
     pub processing_time_ms: u128,
+    /// Maximum queue size reached during processing
     pub queue_size_max: usize,
 }
 
@@ -34,7 +44,7 @@ pub struct PriorityConfig {
     /// Whether to log dropped events (default: true)
     pub log_drops: bool,
     /// Custom priority mapper (default: None, uses automatic detection)
-    pub priority_mapper: Option<Arc<dyn Fn(&Event<()>) -> Priority + Send + Sync>>,
+    pub priority_mapper: Option<PriorityMapper>,
 }
 
 impl std::fmt::Debug for PriorityConfig {
@@ -489,11 +499,9 @@ mod tests {
         let config = PriorityConfig {
             max_queue_size: 100,
             log_drops: false,
-            priority_mapper: Some(Arc::new(|event| {
+            priority_mapper: Some(Arc::new(|_event| {
                 // Make everything high priority for testing
-                match event {
-                    _ => Priority::High,
-                }
+                Priority::High
             })),
         };
 

@@ -1,13 +1,10 @@
 use hojicha::{
-    commands,
     core::{Cmd, Model},
-    event::{Event, Key},
+    event::Event,
     program::{Program, ProgramOptions},
 };
 use proptest::prelude::*;
-use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 #[derive(Debug, Clone, PartialEq)]
 enum Priority {
@@ -167,7 +164,7 @@ proptest! {
         // Would send messages and verify they're processed in priority order
         // High (0) -> Normal (1) -> Low (2)
 
-        prop_assert!(messages.len() > 0);
+        prop_assert!(!messages.is_empty());
     }
 }
 

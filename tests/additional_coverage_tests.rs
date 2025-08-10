@@ -73,8 +73,7 @@ mod tests {
 
     #[test]
     fn test_error_from_string() {
-        let error = Error::Custom(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
+        let error = Error::Custom(Box::new(std::io::Error::other(
             "Something went wrong",
         )));
         let error_string = format!("{}", error);

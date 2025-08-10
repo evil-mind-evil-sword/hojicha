@@ -78,7 +78,7 @@ impl<M: Message> EventPlayback<M> {
     }
 
     /// Get the next event in the sequence
-    pub fn next(&mut self) -> Option<Event<M>>
+    pub fn next_event(&mut self) -> Option<Event<M>>
     where
         M: Clone,
     {
@@ -141,11 +141,11 @@ mod tests {
 
         assert!(playback.has_next());
         assert_eq!(
-            playback.next(),
+            playback.next_event(),
             Some(Event::User(TestMsg("first".to_string())))
         );
         assert_eq!(
-            playback.next(),
+            playback.next_event(),
             Some(Event::User(TestMsg("second".to_string())))
         );
         assert!(!playback.has_next());

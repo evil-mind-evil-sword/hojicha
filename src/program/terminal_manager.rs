@@ -11,10 +11,15 @@ use std::io::{self, Stdout};
 /// Configuration for terminal setup
 #[derive(Debug, Clone)]
 pub struct TerminalConfig {
+    /// Whether to use alternate screen buffer
     pub alt_screen: bool,
+    /// Mouse input mode configuration
     pub mouse_mode: MouseMode,
+    /// Whether to enable bracketed paste mode
     pub bracketed_paste: bool,
+    /// Whether to enable terminal focus reporting
     pub focus_reporting: bool,
+    /// Whether to run in headless mode (no terminal setup)
     pub headless: bool,
 }
 

@@ -179,7 +179,7 @@ proptest! {
 
         // Check that we got values from all three ranges
         let has_stream1 = received.iter().any(|&v| v < 100);
-        let has_stream2 = received.iter().any(|&v| v >= 100 && v < 200);
+        let has_stream2 = received.iter().any(|&v| (100..200).contains(&v));
         let has_stream3 = received.iter().any(|&v| v >= 200);
 
         prop_assert!(has_stream1, "Should have values from stream 1");
@@ -220,7 +220,7 @@ proptest! {
 
         let received = collected.lock().unwrap();
         // We should receive most messages (some might be dropped due to channel capacity)
-        prop_assert!(received.len() > 0, "Should receive at least some messages");
+        prop_assert!(!received.is_empty(), "Should receive at least some messages");
         prop_assert!(received.len() <= burst_size, "Should not receive more than sent");
     }
 }

@@ -11,7 +11,7 @@ use std::sync::{
     atomic::{AtomicU32, Ordering},
     Arc, Mutex,
 };
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 // Property: Commands should execute in the correct order (sequence vs batch)
 #[derive(Clone)]
@@ -255,8 +255,7 @@ impl Model for FallibleModel {
         commands::sequence(vec![
             Some(commands::custom(|| Some(Ok("success1".to_string())))),
             Some(commands::custom_fallible(|| {
-                Err(hojicha::Error::from(std::io::Error::new(
-                    std::io::ErrorKind::Other,
+                Err(hojicha::Error::from(std::io::Error::other(
                     "test error",
                 )))
             })),

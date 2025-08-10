@@ -44,20 +44,16 @@ impl EventProcessor {
 
     /// Check if an event is a quit event (Ctrl+Q)
     pub fn is_quit_event<M>(event: &Event<M>) -> bool {
-        if let Event::Key(KeyEvent { key, modifiers }) = event {
-            if let crate::event::Key::Char('q') = key {
-                return modifiers.contains(crossterm::event::KeyModifiers::CONTROL);
-            }
+        if let Event::Key(KeyEvent { key: crate::event::Key::Char('q'), modifiers }) = event {
+            return modifiers.contains(crossterm::event::KeyModifiers::CONTROL);
         }
         false
     }
 
     /// Check if an event is a suspend event (Ctrl+Z)
     pub fn is_suspend_event<M>(event: &Event<M>) -> bool {
-        if let Event::Key(KeyEvent { key, modifiers }) = event {
-            if let crate::event::Key::Char('z') = key {
-                return modifiers.contains(crossterm::event::KeyModifiers::CONTROL);
-            }
+        if let Event::Key(KeyEvent { key: crate::event::Key::Char('z'), modifiers }) = event {
+            return modifiers.contains(crossterm::event::KeyModifiers::CONTROL);
         }
         false
     }

@@ -15,15 +15,12 @@ impl Model for Counter {
     type Message = ();
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        match event {
-            Event::Key(key) => match key.key {
-                Key::Up => self.value += 1,
-                Key::Down => self.value -= 1,
-                Key::Char('q') => return None, // Quit
-                _ => {}
-            },
+        if let Event::Key(key) = event { match key.key {
+            Key::Up => self.value += 1,
+            Key::Down => self.value -= 1,
+            Key::Char('q') => return None, // Quit
             _ => {}
-        }
+        } }
         Cmd::none()
     }
 
@@ -94,14 +91,11 @@ impl Model for AsyncModel {
     type Message = Msg;
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        match event {
-            Event::User(Msg::Tick) => {
-                self.ticks += 1;
-                if self.ticks >= 3 {
-                    return None; // Quit after 3 ticks
-                }
+        if let Event::User(Msg::Tick) = event {
+            self.ticks += 1;
+            if self.ticks >= 3 {
+                return None; // Quit after 3 ticks
             }
-            _ => {}
         }
         Cmd::none()
     }

@@ -37,23 +37,20 @@ impl Model for TestModel {
     type Message = TestMsg;
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        match event {
-            Event::User(msg) => {
-                match &msg {
-                    TestMsg::HighPriority(_) => {
-                        self.high_count.fetch_add(1, Ordering::SeqCst);
-                    }
-                    TestMsg::NormalPriority(_) => {
-                        self.normal_count.fetch_add(1, Ordering::SeqCst);
-                    }
-                    TestMsg::LowPriority(_) => {
-                        self.low_count.fetch_add(1, Ordering::SeqCst);
-                    }
-                    TestMsg::Quit => return None,
+        if let Event::User(msg) = event {
+            match &msg {
+                TestMsg::HighPriority(_) => {
+                    self.high_count.fetch_add(1, Ordering::SeqCst);
                 }
-                self.events_received.push(msg);
+                TestMsg::NormalPriority(_) => {
+                    self.normal_count.fetch_add(1, Ordering::SeqCst);
+                }
+                TestMsg::LowPriority(_) => {
+                    self.low_count.fetch_add(1, Ordering::SeqCst);
+                }
+                TestMsg::Quit => return None,
             }
-            _ => {}
+            self.events_received.push(msg);
         }
 
         // Quit after receiving enough events

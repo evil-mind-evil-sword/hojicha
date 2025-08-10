@@ -36,7 +36,7 @@ impl Model for Counter {
                 Msg::Reset => self.value = 0,
             },
             Event::Key(key) => match key.key {
-                Key::Char('q') | Key::Esc => return Some(hojicha::commands::quit()), // Use explicit quit command
+                Key::Char('q') | Key::Esc => return Some(quit()),
                 Key::Up | Key::Char('k') => self.value += 1,
                 Key::Down | Key::Char('j') => self.value -= 1,
                 Key::Char('r') => self.value = 0,

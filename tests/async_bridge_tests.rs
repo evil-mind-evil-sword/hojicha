@@ -6,9 +6,7 @@
 
 use hojicha::prelude::*;
 use proptest::prelude::*;
-use std::sync::mpsc::TrySendError;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::Duration;
 
 // Test model for async bridge tests
@@ -30,18 +28,15 @@ impl Model for TestModel {
     type Message = TestMessage;
 
     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        match event {
-            Event::User(msg) => {
-                // Record all messages received
-                self.messages_received.lock().unwrap().push(msg.clone());
+        if let Event::User(msg) = event {
+            // Record all messages received
+            self.messages_received.lock().unwrap().push(msg.clone());
 
-                match msg {
-                    TestMessage::Increment(n) => self.counter += n,
-                    TestMessage::Shutdown => return None,
-                    _ => {}
-                }
+            match msg {
+                TestMessage::Increment(n) => self.counter += n,
+                TestMessage::Shutdown => return None,
+                _ => {}
             }
-            _ => {}
         }
         Cmd::none()
     }
@@ -55,7 +50,7 @@ impl Model for TestModel {
 mod property_tests {
     use super::*;
     use proptest::collection::vec;
-    use proptest::strategy::Strategy;
+    
 
     // Property: Messages sent in order from a single thread should be received in order
     proptest! {
@@ -73,7 +68,7 @@ mod property_tests {
             let messages_clone = messages.clone();
 
             // Create program but don't run it yet
-            let mut program = Program::with_options(
+            let program = Program::with_options(
                 model,
                 ProgramOptions::default().headless()
             ).unwrap();
@@ -124,7 +119,7 @@ mod property_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    use super::*;
+    
 
     #[test]
     fn test_simple_timer_integration() {
@@ -155,8 +150,8 @@ mod integration_tests {
 
 #[cfg(test)]
 mod benchmarks {
-    use super::*;
-    use std::time::Instant;
+    
+    
 
     #[test]
     #[ignore] // Run with --ignored flag

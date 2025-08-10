@@ -3,7 +3,7 @@
 use hojicha::{
     commands,
     core::{Cmd, Model},
-    event::{Event, Key, KeyEvent, KeyModifiers},
+    event::{Event, Key},
     program::{Program, ProgramOptions},
 };
 use std::sync::{Arc, Mutex};

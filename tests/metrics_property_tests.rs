@@ -224,7 +224,7 @@ proptest! {
         // Our simple deterministic sampling should sample every N events
         // where N = 1/sampling_rate
         let sample_every = (1.0 / sampling_rate) as usize;
-        let expected_sampled = (total_events + sample_every - 1) / sample_every; // ceiling division
+        let expected_sampled = total_events.div_ceil(sample_every); // ceiling division
 
         // The actual count should be close to expected (within 10% or at least 1)
         let tolerance = (expected_sampled as f64 * 0.1).max(1.0) as usize;

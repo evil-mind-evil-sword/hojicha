@@ -99,6 +99,7 @@ impl Default for KeyBinding {
 /// Collection of key bindings organized by name
 #[derive(Debug, Clone, Default)]
 pub struct KeyMap {
+    /// Map of named key bindings
     pub bindings: HashMap<String, KeyBinding>,
 }
 

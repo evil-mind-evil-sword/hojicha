@@ -8,15 +8,25 @@ use std::time::Duration;
 /// Special message types for terminal control
 #[derive(Debug, Clone)]
 pub enum TerminalControlMsg {
+    /// Hide the terminal cursor from view
     HideCursor,
+    /// Show the terminal cursor
     ShowCursor,
+    /// Enter the alternate screen buffer (like vim/less use)
     EnterAltScreen,
+    /// Exit the alternate screen buffer and return to main screen
     ExitAltScreen,
+    /// Set the terminal window title to the given string
     SetWindowTitle(String),
+    /// Enable mouse tracking for cell motion (only when button pressed)
     EnableMouseCellMotion,
+    /// Enable mouse tracking for all motion events (including hover)
     EnableMouseAllMotion,
+    /// Disable all mouse tracking
     DisableMouse,
+    /// Clear the entire screen
     ClearScreen,
+    /// Clear the current line
     ClearLine,
 }
 
