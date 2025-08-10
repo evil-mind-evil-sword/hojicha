@@ -71,7 +71,7 @@ fn test_simple_async_bridge() {
         println!("Sender done");
     });
 
-    program.run_with_timeout(Duration::from_secs(1)).unwrap();
+    program.run_with_timeout(Duration::from_millis(100)).unwrap();
 
     let final_count = count_clone.load(Ordering::Relaxed);
     println!("Final count: {}", final_count);

@@ -102,7 +102,7 @@ fn test_async_bridge_sustained_load() {
 
     // Run program - will auto-quit after max_messages
     let start = Instant::now();
-    program.run_with_timeout(Duration::from_secs(5)).unwrap();
+    program.run_with_timeout(Duration::from_millis(500)).unwrap();
     let elapsed = start.elapsed();
 
     let total_messages = messages_clone.load(Ordering::Relaxed);
@@ -166,7 +166,7 @@ fn test_async_bridge_burst_handling() {
     barrier.wait();
 
     // Run program - will auto-quit after max_messages
-    program.run_with_timeout(Duration::from_secs(2)).unwrap();
+    program.run_with_timeout(Duration::from_millis(200)).unwrap();
 
     // Wait for all burst senders
     for handle in handles {
@@ -224,7 +224,7 @@ fn test_async_bridge_many_concurrent_senders() {
     barrier.wait();
 
     // Run program - will auto-quit after max_messages
-    program.run_with_timeout(Duration::from_secs(2)).unwrap();
+    program.run_with_timeout(Duration::from_millis(200)).unwrap();
 
     for handle in handles {
         handle.join().unwrap();
@@ -270,7 +270,7 @@ fn test_async_bridge_memory_stability() {
     }
 
     let start = Instant::now();
-    program.run_with_timeout(Duration::from_secs(3)).unwrap();
+    program.run_with_timeout(Duration::from_millis(300)).unwrap();
     let elapsed = start.elapsed();
 
     let total_messages = messages_clone.load(Ordering::Relaxed);
@@ -331,7 +331,7 @@ fn test_async_bridge_channel_overflow_recovery() {
     }
 
     // Run program - will auto-quit after max_messages
-    program.run_with_timeout(Duration::from_secs(2)).unwrap();
+    program.run_with_timeout(Duration::from_millis(200)).unwrap();
 
     let total_messages = messages_clone.load(Ordering::Relaxed);
 

@@ -250,7 +250,7 @@ fn test_async_cancellation_flow() {
                 _ = token_clone.cancelled() => {
                     "Cancelled"
                 }
-                _ = tokio::time::sleep(Duration::from_secs(10)) => {
+                _ = tokio::time::sleep(Duration::from_millis(100)) => {
                     "Completed"
                 }
             }
