@@ -21,12 +21,12 @@ fn test_send_message() {
     impl Model for SendModel {
         type Message = Msg;
 
-        fn init(&mut self) -> Option<Cmd<Self::Message>> {
+        fn init(&mut self) -> Cmd<Self::Message> {
             // Send an internal message on init
-            Some(Cmd::new(|| Some(Msg::Internal)))
+            Cmd::new(|| Some(Msg::Internal))
         }
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             if let Event::User(msg) = msg {
                 match msg {
                     Msg::External(n) => {
@@ -37,7 +37,7 @@ fn test_send_message() {
                     }
                 }
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}
@@ -73,7 +73,7 @@ fn test_window_size_event() {
     impl Model for SizeModel {
         type Message = Msg;
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             match msg {
                 Event::Resize { width, height } => {
                     self.width = width;
@@ -85,7 +85,7 @@ fn test_window_size_event() {
                 }
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, frame: &mut Frame, area: Rect) {
@@ -132,13 +132,13 @@ fn test_focus_blur_events() {
     impl Model for FocusModel {
         type Message = Msg;
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             match msg {
                 Event::Focus => self.has_focus = true,
                 Event::Blur => self.has_focus = false,
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

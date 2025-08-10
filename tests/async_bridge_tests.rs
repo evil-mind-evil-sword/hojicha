@@ -4,6 +4,7 @@
 //! into the synchronous event loop while maintaining ordering guarantees
 //! and handling concurrent access correctly.
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use proptest::prelude::*;
 use std::sync::{Arc, Mutex};
@@ -27,14 +28,14 @@ enum TestMessage {
 impl Model for TestModel {
     type Message = TestMessage;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             // Record all messages received
             self.messages_received.lock().unwrap().push(msg.clone());
 
             match msg {
                 TestMessage::Increment(n) => self.counter += n,
-                TestMessage::Shutdown => return None,
+                TestMessage::Shutdown => return commands::quit(),
                 _ => {}
             }
         }
@@ -50,7 +51,6 @@ impl Model for TestModel {
 mod property_tests {
     use super::*;
     use proptest::collection::vec;
-    
 
     // Property: Messages sent in order from a single thread should be received in order
     proptest! {
@@ -119,7 +119,6 @@ mod property_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    
 
     #[test]
     fn test_simple_timer_integration() {
@@ -150,8 +149,6 @@ mod integration_tests {
 
 #[cfg(test)]
 mod benchmarks {
-    
-    
 
     #[test]
     #[ignore] // Run with --ignored flag

@@ -15,6 +15,7 @@
 //! - e: Edit mode (in TextArea)
 //! - q: Quit
 
+use hojicha::commands;
 use hojicha::event::Key;
 use hojicha::prelude::*;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -34,14 +35,14 @@ struct ComponentsGallery {
 impl Model for ComponentsGallery {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(tick(std::time::Duration::from_millis(100), || Msg::Tick))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        tick(std::time::Duration::from_millis(100), || Msg::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::Key(key_event) => match key_event.key {
-                Key::Char('q') | Key::Esc => return None,
+                Key::Char('q') | Key::Esc => return commands::quit(),
                 Key::Tab => {
                     self.selected_tab = (self.selected_tab + 1) % 5;
                 }
@@ -58,7 +59,7 @@ impl Model for ComponentsGallery {
             }
             _ => {}
         }
-        None
+        Cmd::none()
     }
 
     fn view(&self, frame: &mut Frame, _area: Rect) {

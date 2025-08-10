@@ -34,17 +34,17 @@ impl InitOrderModel {
 impl Model for InitOrderModel {
     type Message = ();
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.init_called.store(true, Ordering::SeqCst);
-        Some(commands::custom(|| Some(())))
+        commands::custom(|| Some(()))
     }
 
-    fn update(&mut self, _: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, _: Event<Self::Message>) -> Cmd<Self::Message> {
         if !self.init_called.load(Ordering::SeqCst) {
             self.init_before_update.store(false, Ordering::SeqCst);
         }
         self.update_called.store(true, Ordering::SeqCst);
-        None // Quit immediately
+        commands::quit() // Quit immediately
     }
 
     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
@@ -91,23 +91,23 @@ struct MessageOrderModel {
 impl Model for MessageOrderModel {
     type Message = u32;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Send a sequence of messages
         commands::sequence(vec![
-            Some(commands::custom(|| Some(1))),
-            Some(commands::custom(|| Some(2))),
-            Some(commands::custom(|| Some(3))),
-            Some(commands::custom(|| Some(4))),
-            Some(commands::custom(|| Some(5))),
+            commands::custom(|| Some(1)),
+            commands::custom(|| Some(2)),
+            commands::custom(|| Some(3)),
+            commands::custom(|| Some(4)),
+            commands::custom(|| Some(5)),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             self.messages_received.lock().unwrap().push(msg);
             let count = self.message_count.fetch_add(1, Ordering::SeqCst);
             if count >= 4 {
-                return None; // Quit after receiving 5 messages
+                return commands::quit(); // Quit after receiving 5 messages
             }
         }
         Cmd::none()
@@ -150,20 +150,20 @@ struct BatchExecutionModel {
 impl Model for BatchExecutionModel {
     type Message = String;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::batch(vec![
-            Some(commands::custom(|| Some("batch1".to_string()))),
-            Some(commands::custom(|| Some("batch2".to_string()))),
-            Some(commands::custom(|| Some("batch3".to_string()))),
+            commands::custom(|| Some("batch1".to_string())),
+            commands::custom(|| Some("batch2".to_string())),
+            commands::custom(|| Some("batch3".to_string())),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             self.commands_executed.lock().unwrap().push(msg);
             let count = self.quit_after.fetch_add(1, Ordering::SeqCst);
             if count >= 2 {
-                return None;
+                return commands::quit();
             }
         }
         Cmd::none()
@@ -207,14 +207,14 @@ struct FpsModel {
 impl Model for FpsModel {
     type Message = ();
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Keep the program running for a bit
-        Some(commands::tick(Duration::from_millis(200), || ()))
+        commands::tick(Duration::from_millis(200), || ())
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
-            Event::Tick => None, // Quit on tick
+            Event::Tick => commands::quit(), // Quit on tick
             _ => Cmd::none(),
         }
     }
@@ -272,26 +272,26 @@ struct QuitModel {
 impl Model for QuitModel {
     type Message = ();
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::sequence(vec![
-            Some(commands::custom(|| Some(()))),
-            Some(commands::custom(|| Some(()))),
-            Some(commands::quit()),
-            Some(commands::custom(|| Some(()))), // Should not execute
+            commands::custom(|| Some(())),
+            commands::custom(|| Some(())),
+            commands::quit(),
+            commands::custom(|| Some(())), // Should not execute
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         let count = self.update_count.fetch_add(1, Ordering::SeqCst);
 
         match event {
             Event::Quit => {
                 self.quit_sent.store(true, Ordering::SeqCst);
-                None
+                Cmd::none()
             }
             _ => {
                 if count > 10 {
-                    None // Safety: quit if we process too many events
+                    commands::quit() // Safety: quit if we process too many events
                 } else {
                     Cmd::none()
                 }
@@ -345,21 +345,21 @@ struct FilterModel {
 impl Model for FilterModel {
     type Message = u32;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::batch(vec![
-            Some(commands::custom(|| Some(1))),
-            Some(commands::custom(|| Some(2))),
-            Some(commands::custom(|| Some(3))),
-            Some(commands::custom(|| Some(4))),
-            Some(commands::custom(|| Some(5))),
+            commands::custom(|| Some(1)),
+            commands::custom(|| Some(2)),
+            commands::custom(|| Some(3)),
+            commands::custom(|| Some(4)),
+            commands::custom(|| Some(5)),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             self.allowed_events.lock().unwrap().push(msg);
             if msg >= 5 {
-                return None;
+                return commands::quit();
             }
         }
         Cmd::none()
@@ -429,11 +429,11 @@ proptest! {
         struct StateModel;
         impl Model for StateModel {
             type Message = ();
-            fn init(&mut self) -> Option<Cmd<Self::Message>> {
-                Some(commands::quit())
+            fn init(&mut self) -> Cmd<Self::Message> {
+                commands::quit()
             }
-            fn update(&mut self, _: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-                None
+            fn update(&mut self, _: Event<Self::Message>) -> Cmd<Self::Message> {
+                Cmd::none()
             }
             fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
         }

@@ -1,7 +1,8 @@
-//! Example of deterministic testing without real time delays
-//!
-//! This demonstrates how to test async behavior without using thread::sleep
-//! or other timing-dependent patterns.
+use hojicha::commands;
+// Example of deterministic testing without real time delays
+//
+// This demonstrates how to test async behavior without using thread::sleep
+// or other timing-dependent patterns.
 
 use hojicha::{
     core::{Cmd, Model},
@@ -22,14 +23,14 @@ struct TestModel {
 impl Model for TestModel {
     type Message = String;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             self.counter.fetch_add(1, Ordering::SeqCst);
             self.messages.lock().unwrap().push(msg);
 
             // Quit after receiving enough messages
             if self.counter.load(Ordering::SeqCst) >= 5 {
-                return None; // Quit
+                return commands::quit(); // Quit
             }
         }
         Cmd::none()
@@ -107,12 +108,11 @@ fn test_with_virtual_steps() {
 
 #[cfg(test)]
 mod async_tests {
-    
+
     use std::time::Duration;
 
     // For async tests that truly need timing, use tokio's time control
     #[tokio::test]
-    #[ignore = "Requires tokio with time feature"]
     async fn test_with_controlled_time() {
         // Time is paused - we can advance it manually
 
@@ -131,7 +131,6 @@ mod async_tests {
     }
 
     #[tokio::test]
-    #[ignore = "Requires tokio with time feature"]
     async fn test_intervals_deterministically() {
         use futures::StreamExt;
         use tokio::time::{interval, Duration};

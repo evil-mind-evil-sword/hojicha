@@ -27,12 +27,11 @@ enum TestMsg {
 impl Model for EventLoopTestModel {
     type Message = TestMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        let tick_cmd = commands::tick(Duration::from_millis(10), || TestMsg::Tick);
-        Some(tick_cmd)
+    fn init(&mut self) -> Cmd<Self::Message> {
+        commands::tick(Duration::from_millis(10), || TestMsg::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         let mut count = self.update_count.lock().unwrap();
         *count += 1;
         let current_count = *count;
@@ -43,16 +42,16 @@ impl Model for EventLoopTestModel {
         // Quit after specified number of updates
         if let Some(quit_after) = self.should_quit_after {
             if current_count >= quit_after {
-                return None; // Quit
+                return commands::quit(); // Quit
             }
         }
 
         match event {
             Event::User(TestMsg::Tick) => {
                 // Schedule next tick
-                Some(commands::tick(Duration::from_millis(10), || TestMsg::Tick))
+                commands::tick(Duration::from_millis(10), || TestMsg::Tick)
             }
-            Event::User(TestMsg::Quit) => None,
+            Event::User(TestMsg::Quit) => commands::quit(),
             Event::User(TestMsg::AsyncComplete(msg)) => {
                 events.push(format!("Async: {}", msg));
                 Cmd::none()

@@ -79,16 +79,14 @@ impl LayoutDemo {
 impl Model for LayoutDemo {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(commands::every(Duration::from_millis(100), |_| {
-            Message::Tick
-        }))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        commands::every(Duration::from_millis(100), |_| Message::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::Key(key) => match key.key {
-                Key::Char('q') | Key::Esc => return Some(commands::quit()),
+                Key::Char('q') | Key::Esc => return commands::quit(),
                 Key::Tab | Key::Right => self.next_layout(),
                 Key::Left => self.prev_layout(),
                 _ => {}
@@ -103,7 +101,7 @@ impl Model for LayoutDemo {
             _ => {}
         }
 
-        None
+        Cmd::none()
     }
 
     fn view(&self, frame: &mut Frame, area: Rect) {

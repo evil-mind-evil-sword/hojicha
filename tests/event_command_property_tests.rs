@@ -23,19 +23,19 @@ struct CommandOrderModel {
 impl Model for CommandOrderModel {
     type Message = String;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Test both sequence and batch
         commands::sequence(vec![
-            Some(commands::custom(|| Some("seq1".to_string()))),
+            commands::custom(|| Some("seq1".to_string())),
             commands::batch(vec![
-                Some(commands::custom(|| Some("batch1".to_string()))),
-                Some(commands::custom(|| Some("batch2".to_string()))),
+                commands::custom(|| Some("batch1".to_string())),
+                commands::custom(|| Some("batch2".to_string())),
             ]),
-            Some(commands::custom(|| Some("seq2".to_string()))),
+            commands::custom(|| Some("seq2".to_string())),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             self.execution_log.lock().unwrap().push(msg.clone());
             self.execution_times
@@ -44,7 +44,7 @@ impl Model for CommandOrderModel {
                 .push(std::time::Instant::now());
 
             if msg == "seq2" {
-                return None; // Quit after last message
+                return commands::quit(); // Quit after last message
             }
         }
         Cmd::none()
@@ -101,11 +101,11 @@ struct TickModel {
 impl Model for TickModel {
     type Message = ();
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(commands::tick(Duration::from_millis(50), || ()))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        commands::tick(Duration::from_millis(50), || ())
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(()) => {
                 self.tick_times
@@ -116,9 +116,9 @@ impl Model for TickModel {
 
                 if count < 3 {
                     // Schedule another tick
-                    Some(commands::tick(Duration::from_millis(50), || ()))
+                    commands::tick(Duration::from_millis(50), || ())
                 } else {
-                    None // Quit after 4 ticks
+                    commands::quit() // Quit after 4 ticks
                 }
             }
             _ => Cmd::none(),
@@ -176,12 +176,12 @@ struct EveryModel {
 impl Model for EveryModel {
     type Message = ();
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         *self.start_time.lock().unwrap() = Some(std::time::Instant::now());
-        Some(commands::every(Duration::from_millis(30), |_| ()))
+        commands::every(Duration::from_millis(30), |_| ())
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(()) => {
                 self.fire_times
@@ -191,7 +191,7 @@ impl Model for EveryModel {
                 let count = self.fire_count.fetch_add(1, Ordering::SeqCst);
 
                 if count >= 3 {
-                    None // Quit after 4 fires
+                    commands::quit() // Quit after 4 fires
                 } else {
                     Cmd::none()
                 }
@@ -251,24 +251,22 @@ struct FallibleModel {
 impl Model for FallibleModel {
     type Message = Result<String, String>;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::sequence(vec![
-            Some(commands::custom(|| Some(Ok("success1".to_string())))),
-            Some(commands::custom_fallible(|| {
-                Err(hojicha::Error::from(std::io::Error::other(
-                    "test error",
-                )))
-            })),
-            Some(commands::custom(|| Some(Ok("success2".to_string())))),
+            commands::custom(|| Some(Ok("success1".to_string()))),
+            commands::custom_fallible(|| {
+                Err(hojicha::Error::from(std::io::Error::other("test error")))
+            }),
+            commands::custom(|| Some(Ok("success2".to_string()))),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Ok(_)) => {
                 let count = self.successes.fetch_add(1, Ordering::SeqCst);
                 if count >= 1 {
-                    None
+                    commands::quit()
                 } else {
                     Cmd::none()
                 }
@@ -327,24 +325,22 @@ struct EventTypeModel {
 impl Model for EventTypeModel {
     type Message = String;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::batch(vec![
-            Some(commands::custom(|| Some("user1".to_string()))),
-            Some(commands::tick(Duration::from_millis(10), || {
-                "tick".to_string()
-            })),
-            Some(commands::custom(|| Some("user2".to_string()))),
+            commands::custom(|| Some("user1".to_string())),
+            commands::tick(Duration::from_millis(10), || "tick".to_string()),
+            commands::custom(|| Some("user2".to_string())),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         self.total_events.fetch_add(1, Ordering::SeqCst);
 
         match event {
             Event::User(_) => {
                 let count = self.user_events.fetch_add(1, Ordering::SeqCst);
                 if count >= 2 {
-                    None
+                    commands::quit()
                 } else {
                     Cmd::none()
                 }
@@ -408,20 +404,20 @@ struct NoneCommandModel {
 impl Model for NoneCommandModel {
     type Message = Option<String>;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         commands::sequence(vec![
-            Some(commands::custom(|| Some(Some("msg1".to_string())))),
-            Some(commands::custom(|| Some(None))), // This should be a no-op
-            Some(commands::custom(|| Some(Some("msg2".to_string())))),
+            commands::custom(|| Some(Some("msg1".to_string()))),
+            commands::custom(|| Some(None)), // This should be a no-op
+            commands::custom(|| Some(Some("msg2".to_string()))),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Some(_)) => {
                 let count = self.update_count.fetch_add(1, Ordering::SeqCst);
                 if count >= 1 {
-                    None
+                    commands::quit()
                 } else {
                     Cmd::none()
                 }

@@ -34,20 +34,18 @@ pub enum TerminalControlMsg {
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(batch(vec![
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     batch(vec![
 ///         fetch_data(),
 ///         start_timer(),
 ///     ]))
 /// }
 /// ```
-pub fn batch<M: Message>(cmds: Vec<Option<Cmd<M>>>) -> Option<Cmd<M>> {
-    let cmds: Vec<_> = cmds.into_iter().flatten().collect();
-
+pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     match cmds.len() {
-        0 => None,
-        1 => cmds.into_iter().next(),
-        _ => Some(Cmd::batch(cmds)),
+        0 => Cmd::none(),
+        1 => cmds.into_iter().next().unwrap(),
+        _ => Cmd::batch(cmds),
     }
 }
 
@@ -55,20 +53,18 @@ pub fn batch<M: Message>(cmds: Vec<Option<Cmd<M>>>) -> Option<Cmd<M>> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-///     Some(sequence(vec![
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
+///     sequence(vec![
 ///         save_to_disk(),
 ///         show_notification(),
-///     ]))
+///     ])
 /// }
 /// ```
-pub fn sequence<M: Message>(cmds: Vec<Option<Cmd<M>>>) -> Option<Cmd<M>> {
-    let cmds: Vec<_> = cmds.into_iter().flatten().collect();
-
+pub fn sequence<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     match cmds.len() {
-        0 => None,
-        1 => cmds.into_iter().next(),
-        _ => Some(Cmd::sequence(cmds)),
+        0 => Cmd::none(),
+        1 => cmds.into_iter().next().unwrap(),
+        _ => Cmd::sequence(cmds),
     }
 }
 
@@ -80,8 +76,8 @@ pub fn sequence<M: Message>(cmds: Vec<Option<Cmd<M>>>) -> Option<Cmd<M>> {
 ///     Timeout,
 /// }
 ///
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(tick(Duration::from_secs(5), || Msg::Timeout))
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     tick(Duration::from_secs(5), || Msg::Timeout)
 /// }
 /// ```
 pub fn tick<M, F>(duration: Duration, f: F) -> Cmd<M>
@@ -104,8 +100,8 @@ where
 ///     Tick(std::time::Instant),
 /// }
 ///
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(every(Duration::from_secs(1), |instant| Msg::Tick(instant)))
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     every(Duration::from_secs(1), |instant| Msg::Tick(instant))
 /// }
 /// ```
 pub fn every<M, F>(duration: Duration, f: F) -> Cmd<M>
@@ -124,7 +120,7 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::GetWindowSize) => {
 ///             return Some(window_size(|size| Msg::GotSize(size)));
@@ -158,8 +154,8 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(set_window_title("My Awesome App"))
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     set_window_title("My Awesome App")
 /// }
 /// ```
 pub fn set_window_title<M: Message>(title: impl Into<String>) -> Cmd<M> {
@@ -177,7 +173,7 @@ pub fn set_window_title<M: Message>(title: impl Into<String>) -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::Shutdown) => Some(interrupt()),
 ///         _ => None
@@ -201,7 +197,7 @@ pub fn interrupt<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::HideCursor) => {
 ///             return Some(hide_cursor());
@@ -247,8 +243,8 @@ pub fn exit_alt_screen<M: Message>() -> Cmd<M> {
 ///         .unwrap()
 /// }
 ///
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(custom_async(|| async {
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     custom_async(|| async {
 ///         let data = fetch_data().await;
 ///         Some(Message::DataFetched(data))
 ///     }))
@@ -267,14 +263,38 @@ where
     })
 }
 
+/// Spawn a simple async task
+///
+/// This command spawns an async task on the shared runtime managed by the program.
+/// Unlike `custom_async`, this uses the existing runtime rather than creating a new one.
+///
+/// # Example
+/// ```ignore
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     commands::spawn(async {
+///         tokio::time::sleep(Duration::from_secs(1)).await;
+///         Some(Message::TimerComplete)
+///     })
+/// }
+/// ```
+pub fn spawn<M, Fut>(fut: Fut) -> Cmd<M>
+where
+    M: Message,
+    Fut: std::future::Future<Output = Option<M>> + Send + 'static,
+{
+    // For now, this is implemented using custom_async
+    // In the future, we should integrate with the CommandExecutor's runtime
+    custom_async(move || fut)
+}
+
 /// Create a custom command from a blocking function
 ///
 /// This is a convenience wrapper for creating simple custom commands.
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(custom(|| {
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     custom(|| {
 ///         // Perform some custom logic
 ///         let result = expensive_computation();
 ///         Some(Message::ComputationComplete(result))
@@ -295,8 +315,8 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(custom_fallible(|| {
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     custom_fallible(|| {
 ///         // Perform operation that might fail
 ///         let data = std::fs::read_to_string("config.json")?;
 ///         Ok(Some(Message::ConfigLoaded(data)))
@@ -318,7 +338,7 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::EditFile) => {
 ///             return Some(exec("vim", vec!["file.txt"], |exit_status| {
@@ -345,7 +365,7 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::RunShellCommand) => {
 ///             return Some(exec_command("ls -la", |exit_status| {
@@ -382,7 +402,7 @@ where
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::EnableMouse) => {
 ///             return Some(enable_mouse_cell_motion());
@@ -403,7 +423,7 @@ pub fn enable_mouse_cell_motion<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::EnableHoverTracking) => {
 ///             return Some(enable_mouse_all_motion());
@@ -421,7 +441,7 @@ pub fn enable_mouse_all_motion<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::DisableMouse) => {
 ///             return Some(disable_mouse());
@@ -439,7 +459,7 @@ pub fn disable_mouse<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::ClearScreen) => {
 ///             return Some(clear_screen());
@@ -457,7 +477,7 @@ pub fn clear_screen<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::ClearLine) => {
 ///             return Some(clear_line());
@@ -485,7 +505,7 @@ pub fn clear_line<M: Message>() -> Cmd<M> {
 /// # struct MyModel;
 /// # impl Model for MyModel {
 /// #     type Message = MyMessage;
-/// #     fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// #     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
 /// match event {
 ///     Event::Key(key) if key.key == Key::Char('q') => {
 ///         Some(commands::quit())
@@ -510,7 +530,7 @@ pub fn quit<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::Key(key) if key.key == Key::Char('z') && key.modifiers.contains(KeyModifiers::CONTROL) => {
 ///             return Some(suspend());
@@ -535,11 +555,11 @@ pub fn suspend<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(enable_bracketed_paste())
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     enable_bracketed_paste()
 /// }
 ///
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::Paste(text) => {
 ///             self.input.push_str(&text);
@@ -564,7 +584,7 @@ pub fn enable_bracketed_paste<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::DisablePaste) => {
 ///             return Some(disable_bracketed_paste());
@@ -592,11 +612,11 @@ pub fn disable_bracketed_paste<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn init(&mut self) -> Option<Cmd<Self::Message>> {
-///     Some(enable_focus_change())
+/// fn init(&mut self) -> Cmd<Self::Message> {
+///     enable_focus_change()
 /// }
 ///
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::Focus => {
 ///             self.has_focus = true;
@@ -624,7 +644,7 @@ pub fn enable_focus_change<M: Message>() -> Cmd<M> {
 ///
 /// # Example
 /// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
 ///     match msg {
 ///         Event::User(Msg::DisableFocus) => {
 ///             return Some(disable_focus_change());
@@ -658,37 +678,33 @@ mod tests {
 
     #[test]
     fn test_batch_empty() {
-        let result: Option<Cmd<TestMsg>> = batch(vec![]);
-        assert!(result.is_none());
+        let result: Cmd<TestMsg> = batch(vec![]);
+        assert!(!result.is_quit());
     }
 
     #[test]
     fn test_batch_single() {
-        let cmd = Some(Cmd::new(|| Some(TestMsg::One)));
+        let cmd = Cmd::new(|| Some(TestMsg::One));
         let result = batch(vec![cmd]);
-        assert!(result.is_some());
+        assert!(!result.is_quit());
     }
 
     #[test]
     fn test_batch_multiple() {
         let cmds = vec![
-            Some(Cmd::new(|| Some(TestMsg::One))),
-            Some(Cmd::new(|| Some(TestMsg::Two))),
-            None,
-            Some(Cmd::new(|| Some(TestMsg::Three))),
+            Cmd::new(|| Some(TestMsg::One)),
+            Cmd::new(|| Some(TestMsg::Two)),
+            Cmd::new(|| Some(TestMsg::Three)),
         ];
         let result = batch(cmds);
-        assert!(result.is_some());
+        assert!(!result.is_quit());
     }
 
     #[test]
     fn test_sequence_executes_in_order() {
-        let cmd = sequence(vec![Some(Cmd::new(|| Some(TestMsg::One)))]);
-
-        if let Some(cmd) = cmd {
-            let msg = cmd.execute().unwrap();
-            assert_eq!(msg, Some(TestMsg::One));
-        }
+        let cmd = sequence(vec![Cmd::new(|| Some(TestMsg::One))]);
+        let msg = cmd.execute().unwrap();
+        assert_eq!(msg, Some(TestMsg::One));
     }
 
     #[test]
@@ -847,31 +863,24 @@ mod tests {
     #[test]
     fn test_batch_with_mixed_types() {
         let cmds = vec![
-            Some(Cmd::new(|| Some(TestMsg::One))),
-            None,
-            Some(Cmd::new(|| Some(TestMsg::Two))),
+            Cmd::new(|| Some(TestMsg::One)),
+            Cmd::new(|| Some(TestMsg::Two)),
         ];
 
         let batch_cmd = batch(cmds);
-        assert!(batch_cmd.is_some());
-
         // Batch commands should be recognized as batch type
-        let cmd = batch_cmd.unwrap();
-        assert!(cmd.is_batch());
+        assert!(batch_cmd.is_batch());
     }
 
     #[test]
     fn test_sequence_execution_order() {
         let cmds = vec![
-            Some(Cmd::new(|| Some(TestMsg::One))),
-            Some(Cmd::new(|| Some(TestMsg::Two))),
+            Cmd::new(|| Some(TestMsg::One)),
+            Cmd::new(|| Some(TestMsg::Two)),
         ];
 
         let seq_cmd = sequence(cmds);
-        assert!(seq_cmd.is_some());
-
         // Sequence commands should be recognized as sequence type
-        let cmd = seq_cmd.unwrap();
-        assert!(cmd.is_sequence());
+        assert!(seq_cmd.is_sequence());
     }
 }

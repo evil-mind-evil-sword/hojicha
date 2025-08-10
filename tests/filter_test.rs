@@ -21,7 +21,7 @@ fn test_with_filter() {
     impl Model for FilterModel {
         type Message = Msg;
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             if let Event::User(msg) = msg {
                 match msg {
                     Msg::Allowed => {
@@ -32,7 +32,7 @@ fn test_with_filter() {
                     }
                 }
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}
@@ -94,8 +94,8 @@ fn test_filter_key_events() {
     impl Model for NoQuitModel {
         type Message = Msg;
 
-        fn update(&mut self, _msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-            None
+        fn update(&mut self, _msg: Event<Self::Message>) -> Cmd<Self::Message> {
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

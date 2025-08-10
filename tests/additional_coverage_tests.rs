@@ -1,6 +1,7 @@
 //! Additional tests to improve code coverage
 
 use crossterm::event::{MouseButton, MouseEventKind};
+use hojicha::commands;
 use hojicha::error::{Error, ErrorContext};
 use hojicha::event::ModifierKey;
 use hojicha::prelude::*;
@@ -21,11 +22,11 @@ struct TestModel {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(Cmd::new(|| Some(TestMsg::Set(0))))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        Cmd::new(|| Some(TestMsg::Set(0)))
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => match msg {
                 TestMsg::Inc => {
@@ -41,8 +42,8 @@ impl Model for TestModel {
                     Cmd::none()
                 }
             },
-            Event::Key(key) if key.key == Key::Char('q') => None, // Quit
-            Event::Quit => None,
+            Event::Key(key) if key.key == Key::Char('q') => commands::quit(), // Quit
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -73,9 +74,7 @@ mod tests {
 
     #[test]
     fn test_error_from_string() {
-        let error = Error::Custom(Box::new(std::io::Error::other(
-            "Something went wrong",
-        )));
+        let error = Error::Custom(Box::new(std::io::Error::other("Something went wrong")));
         let error_string = format!("{}", error);
         assert!(error_string.contains("Something went wrong"));
     }
@@ -192,9 +191,9 @@ mod tests {
         let cmd: Cmd<TestMsg> = Cmd::fallible(|| Err(Error::Command("test error".to_string())));
         assert!(cmd.test_execute().is_err());
 
-        // Test Cmd::none - it returns Some(Cmd) not None
-        let cmd: Option<Cmd<TestMsg>> = Cmd::none();
-        assert!(cmd.is_some());
+        // Test Cmd::none - it returns Cmd not Option<Cmd>
+        let cmd: Cmd<TestMsg> = Cmd::none();
+        assert!(!cmd.is_quit());
     }
 
     #[test]

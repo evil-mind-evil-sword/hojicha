@@ -2,6 +2,7 @@
 //!
 //! These tests verify the async bridge functionality with the new init_async_bridge() API.
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -26,7 +27,7 @@ enum TestMsg {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(TestMsg::Data(s)) => {
                 self.messages.lock().unwrap().push(s);
@@ -37,14 +38,14 @@ impl Model for TestModel {
             }
             Event::User(TestMsg::Quit) => {
                 *self.should_quit.lock().unwrap() = true;
-                return None;
+                return commands::quit();
             }
             _ => {}
         }
 
         // Auto-quit after receiving enough messages for tests
         if self.message_count.load(Ordering::SeqCst) >= 10 {
-            return None;
+            return commands::quit();
         }
 
         Cmd::none()

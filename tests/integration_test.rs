@@ -1,4 +1,5 @@
-//! Integration tests for Hojicha, inspired by Bubbletea's test suite
+use hojicha::commands;
+// Integration tests for Hojicha, inspired by Bubbletea's test suite
 
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
@@ -41,28 +42,28 @@ enum TestMsg {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        None
+    fn init(&mut self) -> Cmd<Self::Message> {
+        Cmd::none()
     }
 
-    fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
         match msg {
             Event::User(TestMsg::Increment) => {
                 self.counter.fetch_add(1, Ordering::SeqCst);
-                None
+                Cmd::none()
             }
             Event::User(TestMsg::Panic) => {
                 panic!("Testing panic behavior");
             }
             Event::User(TestMsg::Quit) | Event::Quit => {
                 // In a real implementation, we'd signal quit
-                None
+                Cmd::none()
             }
             Event::Key(key) if key.key == Key::Char('q') => {
                 // Quit on 'q' key
-                None
+                Cmd::none()
             }
-            _ => None,
+            _ => commands::quit(),
         }
     }
 
@@ -104,24 +105,23 @@ fn test_model_panic() {
 #[test]
 fn test_batch_commands() {
     let cmds = vec![
-        Some(Cmd::new(|| Some(TestMsg::Increment))),
-        Some(Cmd::new(|| Some(TestMsg::Increment))),
-        None,
+        Cmd::new(|| Some(TestMsg::Increment)),
+        Cmd::new(|| Some(TestMsg::Increment)),
     ];
 
     let batched = batch(cmds);
-    assert!(batched.is_some());
+    assert!(!batched.is_quit());
 }
 
 #[test]
 fn test_sequence_commands() {
     let cmds = vec![
-        Some(Cmd::new(|| Some(TestMsg::Increment))),
-        Some(Cmd::new(|| Some(TestMsg::Quit))),
+        Cmd::new(|| Some(TestMsg::Increment)),
+        Cmd::new(|| Some(TestMsg::Quit)),
     ];
 
     let sequenced = sequence(cmds);
-    assert!(sequenced.is_some());
+    assert!(!sequenced.is_quit());
 }
 
 #[test]

@@ -2,6 +2,7 @@
 //!
 //! This shows how to use the async bridge to send messages from external threads.
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use std::thread;
@@ -25,13 +26,13 @@ enum Msg {
 impl Model for TimerApp {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.start_time = Some(Instant::now());
         self.events.push("App initialized".to_string());
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::Tick) => {
                 self.tick_count += 1;
@@ -59,7 +60,7 @@ impl Model for TimerApp {
                 // This demonstrates high-frequency messages
             }
             Event::Key(key) => match key.key {
-                Key::Char('q') | Key::Esc => return None,
+                Key::Char('q') | Key::Esc => return commands::quit(),
                 Key::Char('c') => {
                     self.events.clear();
                     self.events.push("Events cleared".to_string());

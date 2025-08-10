@@ -26,17 +26,17 @@ enum TestMsg {
 impl Model for StreamTestModel {
     type Message = TestMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(TestMsg::StreamValue(_)) => {
                 let count = self.received.fetch_add(1, Ordering::SeqCst) + 1;
                 if count >= 10 {
-                    None // Quit after 10 messages
+                    hojicha::commands::quit() // Quit after 10 messages
                 } else {
                     Cmd::none()
                 }
             }
-            Event::User(TestMsg::Quit) => None,
+            Event::User(TestMsg::Quit) => hojicha::commands::quit(),
             _ => Cmd::none(),
         }
     }

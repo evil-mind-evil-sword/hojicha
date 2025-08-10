@@ -38,13 +38,13 @@ impl ControlledModel {
 impl Model for ControlledModel {
     type Message = String;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.init_called.store(true, Ordering::SeqCst);
         // Return a command that sends a message
-        Some(commands::custom(|| Some("init_message".to_string())))
+        commands::custom(|| Some("init_message".to_string()))
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         let count = self.update_count.fetch_add(1, Ordering::SeqCst);
 
         // Record the event
@@ -53,24 +53,22 @@ impl Model for ControlledModel {
 
         // Check if we should quit
         if count >= self.should_quit_after.load(Ordering::SeqCst) {
-            return None; // Quit
+            return commands::quit(); // Quit
         }
 
         match event {
             Event::User(msg) if msg == "generate_tick" => {
-                Some(commands::tick(Duration::from_millis(1), || {
-                    "tick_message".to_string()
-                }))
+                commands::tick(Duration::from_millis(1), || "tick_message".to_string())
             }
             Event::User(msg) if msg == "batch_test" => commands::batch(vec![
-                Some(commands::custom(|| Some("batch1".to_string()))),
-                Some(commands::custom(|| Some("batch2".to_string()))),
+                commands::custom(|| Some("batch1".to_string())),
+                commands::custom(|| Some("batch2".to_string())),
             ]),
             Event::User(msg) if msg == "sequence_test" => commands::sequence(vec![
-                Some(commands::custom(|| Some("seq1".to_string()))),
-                Some(commands::custom(|| Some("seq2".to_string()))),
+                commands::custom(|| Some("seq1".to_string())),
+                commands::custom(|| Some("seq2".to_string())),
             ]),
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -228,23 +226,23 @@ struct SelfSendingModel {
 impl Model for SelfSendingModel {
     type Message = i32;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Send initial message
-        Some(commands::custom(|| Some(1)))
+        commands::custom(|| Some(1))
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(n) if n < 5 => {
                 self.counter.fetch_add(1, Ordering::SeqCst);
                 // Send next message
-                Some(commands::custom(move || Some(n + 1)))
+                commands::custom(move || Some(n + 1))
             }
             Event::User(5) => {
                 self.counter.fetch_add(1, Ordering::SeqCst);
-                None // Quit after 5
+                commands::quit() // Quit after 5
             }
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -285,11 +283,11 @@ struct PriorityTestModel {
 impl Model for PriorityTestModel {
     type Message = String;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         let total = self.total_count.fetch_add(1, Ordering::SeqCst);
 
         if total >= 10 {
-            return None; // Quit after 10 events
+            return commands::quit(); // Quit after 10 events
         }
 
         match event {
@@ -378,9 +376,9 @@ struct OptionsTestModel {
 impl Model for OptionsTestModel {
     type Message = ();
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -431,17 +429,17 @@ struct MetricsTestModel {
 impl Model for MetricsTestModel {
     type Message = String;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(_) => {
                 let count = self.message_count.fetch_add(1, Ordering::SeqCst);
                 if count >= 10 {
-                    None // Quit after 10 messages
+                    commands::quit() // Quit after 10 messages
                 } else {
                     Cmd::none()
                 }
             }
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -488,17 +486,17 @@ struct AsyncTestModel {
 impl Model for AsyncTestModel {
     type Message = String;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => {
                 self.async_messages.lock().unwrap().push(msg.clone());
                 if msg == "quit" {
-                    None
+                    commands::quit()
                 } else {
                     Cmd::none()
                 }
             }
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }

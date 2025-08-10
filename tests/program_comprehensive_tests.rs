@@ -3,6 +3,7 @@
 //! These tests use mock I/O, property-based testing, and careful test design
 //! to achieve high coverage of the program.rs module.
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
 use proptest::prelude::*;
@@ -145,19 +146,19 @@ impl TestModel {
 impl Model for TestModel {
     type Message = TestMessage;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.events.lock().unwrap().push("init".to_string());
 
         let commands = self.commands_to_send.lock().unwrap();
         if !commands.is_empty() {
             let msg = commands[0].clone();
-            Some(Cmd::new(move || Some(msg)))
+            Cmd::new(move || Some(msg))
         } else {
-            None
+            Cmd::none()
         }
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         let count = self.update_count.fetch_add(1, Ordering::SeqCst) + 1;
 
         // Record the event
@@ -179,16 +180,16 @@ impl Model for TestModel {
 
         // Handle messages
         match event {
-            Event::User(TestMessage::Quit) => return None,
-            Event::Key(key) if key.key == Key::Char('q') => return None,
-            Event::Key(key) if key.key == Key::Esc => return None,
+            Event::User(TestMessage::Quit) => return commands::quit(),
+            Event::Key(key) if key.key == Key::Char('q') => return commands::quit(),
+            Event::Key(key) if key.key == Key::Esc => return commands::quit(),
             _ => {}
         }
 
         // Auto-quit after N updates if configured
         if let Some(quit_after) = self.quit_after {
             if count >= quit_after {
-                return None;
+                return commands::quit();
             }
         }
 
@@ -196,7 +197,7 @@ impl Model for TestModel {
         let commands = self.commands_to_send.lock().unwrap();
         if commands.len() > 1 && count <= commands.len() {
             let msg = commands[count.min(commands.len() - 1)].clone();
-            Some(Cmd::new(move || Some(msg)))
+            Cmd::new(move || Some(msg))
         } else {
             Cmd::none()
         }
@@ -406,21 +407,21 @@ fn test_update_returns_none_quits() {
 
     // Simulate quit event
     let result = model.update(Event::User(TestMessage::Quit));
-    assert!(result.is_none());
+    assert!(result.is_quit());
 
     // Simulate 'q' key
     let result = model.update(Event::Key(KeyEvent {
         key: Key::Char('q'),
         modifiers: KeyModifiers::empty(),
     }));
-    assert!(result.is_none());
+    assert!(result.is_quit());
 
     // Simulate Esc key
     let result = model.update(Event::Key(KeyEvent {
         key: Key::Esc,
         modifiers: KeyModifiers::empty(),
     }));
-    assert!(result.is_none());
+    assert!(result.is_quit());
 }
 
 // Test concurrent access patterns

@@ -26,6 +26,7 @@ pub mod metrics;
 pub mod priority_queue;
 pub mod program;
 pub mod queue_scaling;
+pub mod stream_builders;
 pub mod subscription;
 
 #[cfg(test)]
@@ -44,7 +45,7 @@ pub mod prelude {
         disable_bracketed_paste, disable_focus_change, disable_mouse, enable_bracketed_paste,
         enable_focus_change, enable_mouse_all_motion, enable_mouse_cell_motion, enter_alt_screen,
         every, exec, exec_command, exit_alt_screen, hide_cursor, interrupt, quit, sequence,
-        set_window_title, show_cursor, suspend, tick, window_size,
+        set_window_title, show_cursor, spawn, suspend, tick, window_size,
     };
     pub use crate::components::{
         KeyBinding, KeyMap, List, ListOptions, Spinner, SpinnerStyle, Table, TableOptions,

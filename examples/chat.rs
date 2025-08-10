@@ -208,17 +208,15 @@ impl ChatApp {
 impl Model for ChatApp {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(commands::every(Duration::from_millis(100), |_| {
-            Message::Tick
-        }))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        commands::every(Duration::from_millis(100), |_| Message::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::Key(key) => match key.key {
                 Key::Char('q') if !self.input.is_focused() => {
-                    return Some(commands::quit());
+                    return commands::quit();
                 }
                 Key::Tab => {
                     // Switch to next channel
@@ -231,7 +229,7 @@ impl Model for ChatApp {
                 Key::Esc => {
                     // Clear input or exit if empty
                     if self.input.value().is_empty() {
-                        return Some(commands::quit());
+                        return commands::quit();
                     } else {
                         self.input.set_value("");
                     }
@@ -255,7 +253,7 @@ impl Model for ChatApp {
             _ => {}
         }
 
-        None
+        Cmd::none()
     }
 
     fn view(&self, frame: &mut Frame, area: Rect) {

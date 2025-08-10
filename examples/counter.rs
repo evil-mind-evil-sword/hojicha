@@ -23,12 +23,12 @@ enum Msg {
 impl Model for Counter {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // No initial command
-        None
+        Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => match msg {
                 Msg::Increment => self.value += 1,
@@ -36,7 +36,7 @@ impl Model for Counter {
                 Msg::Reset => self.value = 0,
             },
             Event::Key(key) => match key.key {
-                Key::Char('q') | Key::Esc => return Some(quit()),
+                Key::Char('q') | Key::Esc => return quit(),
                 Key::Up | Key::Char('k') => self.value += 1,
                 Key::Down | Key::Char('j') => self.value -= 1,
                 Key::Char('r') => self.value = 0,
@@ -44,7 +44,7 @@ impl Model for Counter {
             },
             _ => {}
         }
-        None
+        Cmd::none()
     }
 
     fn view(&self, frame: &mut Frame, area: Rect) {

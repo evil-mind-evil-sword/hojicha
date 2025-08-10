@@ -41,12 +41,12 @@ struct Counter {
 impl Model for Counter {
     type Message = ();
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::Key(key) => match key.key {
                 Key::Up => self.value += 1,
                 Key::Down => self.value -= 1,
-                Key::Char('q') => return None, // Quit
+                Key::Char('q') => return commands::quit(), // Quit
                 _ => {}
             },
             _ => {}

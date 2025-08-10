@@ -45,19 +45,19 @@ impl Model for GettingStarted {
     type Message = Msg;
 
     /// Initialize the model - called once at startup
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // We don't need any initial commands
-        None
+        Cmd::none()
     }
 
     /// Handle events and update the model
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             // Handle keyboard events
             Event::Key(key_event) => match key_event.key {
                 Key::Char('q') | Key::Esc => {
                     // Returning None quits the application
-                    return Some(commands::quit());
+                    return commands::quit();
                 }
                 Key::Up | Key::Char('k') => {
                     self.counter += 1;
@@ -72,7 +72,7 @@ impl Model for GettingStarted {
                     if self.timer_running {
                         self.message = "Timer started! 🏃".to_string();
                         // Start sending tick messages every 100ms
-                        return Some(tick(std::time::Duration::from_millis(100), || Msg::Tick));
+                        return tick(std::time::Duration::from_millis(100), || Msg::Tick);
                     } else {
                         self.message = "Timer stopped! ⏸️".to_string();
                     }
@@ -103,7 +103,7 @@ impl Model for GettingStarted {
                     if self.timer_running {
                         self.ticks += 1;
                         // Continue ticking
-                        return Some(tick(std::time::Duration::from_millis(100), || Msg::Tick));
+                        return tick(std::time::Duration::from_millis(100), || Msg::Tick);
                     }
                 }
                 _ => {} // Other messages handled above
@@ -118,7 +118,7 @@ impl Model for GettingStarted {
         }
 
         // Continue running without side effects
-        None
+        Cmd::none()
     }
 
     /// Render the UI

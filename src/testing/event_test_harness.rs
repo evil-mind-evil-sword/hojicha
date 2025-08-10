@@ -42,7 +42,9 @@ where
             has_quit: false,
         };
 
-        harness.execute_command(init_cmd);
+        if !init_cmd.is_noop() {
+            harness.execute_command(init_cmd);
+        }
 
         harness
     }
@@ -102,18 +104,15 @@ where
     }
 
     /// Execute a command synchronously
-    fn execute_command(&mut self, cmd: Option<Cmd<M::Message>>) {
+    fn execute_command(&mut self, cmd: Cmd<M::Message>) {
         // For testing, we execute commands synchronously
         // In real program, these would be scheduled
-        match cmd {
-            Some(_cmd) => {
-                // Execute the command - this is a simplified version
-                // In reality, commands are more complex
-                self.event_queue.push_back(Event::Tick);
-            }
-            None => {
-                self.has_quit = true;
-            }
+        if cmd.is_quit() {
+            self.has_quit = true;
+        } else if !cmd.is_noop() {
+            // Execute the command - this is a simplified version
+            // In reality, commands are more complex
+            self.event_queue.push_back(Event::Tick);
         }
     }
 
@@ -181,7 +180,9 @@ where
             has_quit: false,
         };
 
-        harness.execute_command(init_cmd);
+        if !init_cmd.is_noop() {
+            harness.execute_command(init_cmd);
+        }
 
         harness
     }
@@ -233,16 +234,13 @@ where
         true
     }
 
-    fn execute_command(&mut self, cmd: Option<Cmd<M::Message>>) {
-        match cmd {
-            Some(_cmd) => {
-                // For simplicity, we just add a tick event
-                // Real implementation would execute the command
-                self.send_with_priority(Event::Tick, TestPriority::Normal);
-            }
-            None => {
-                self.has_quit = true;
-            }
+    fn execute_command(&mut self, cmd: Cmd<M::Message>) {
+        if cmd.is_quit() {
+            self.has_quit = true;
+        } else if !cmd.is_noop() {
+            // For simplicity, we just add a tick event
+            // Real implementation would execute the command
+            self.send_with_priority(Event::Tick, TestPriority::Normal);
         }
     }
 
@@ -274,14 +272,14 @@ mod tests {
     impl Model for TestModel {
         type Message = String;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::User(msg) => {
                     self.messages.lock().unwrap().push(msg);
                     self.counter.fetch_add(1, Ordering::SeqCst);
 
                     if self.counter.load(Ordering::SeqCst) >= 5 {
-                        None // Quit after 5 messages
+                        crate::commands::quit() // Quit after 5 messages
                     } else {
                         Cmd::none() // Continue without command
                     }
@@ -294,7 +292,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Test harness implementation incomplete"]
     fn test_event_harness_basic() {
         let model = TestModel {
             messages: Arc::new(Mutex::new(Vec::new())),
@@ -320,7 +317,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Test harness implementation incomplete"]
+    #[ignore = "Priority harness needs more work"]
     fn test_priority_harness() {
         let model = TestModel {
             messages: Arc::new(Mutex::new(Vec::new())),

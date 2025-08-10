@@ -102,25 +102,25 @@ impl App {
 impl Model for App {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(send(Message::ExecuteCommand(
+    fn init(&mut self) -> Cmd<Self::Message> {
+        send(Message::ExecuteCommand(
             "echo 'Hojicha system example started!'".to_string(),
-        )))
+        ))
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Message::ExecuteCommand(cmd)) => {
                 if self.is_executing {
                     self.last_error = Some("Already executing a command".to_string());
-                    return None;
+                    return Cmd::none();
                 }
 
                 self.current_command = Some(cmd.clone());
                 self.is_executing = true;
 
                 let cmd_for_closure = cmd.clone();
-                Some(commands::exec("sh", vec!["-c", &cmd], move |exit_code| {
+                commands::exec("sh", vec!["-c", &cmd], move |exit_code| {
                     let code = exit_code.unwrap_or(-1);
                     let output = format!("Command exited with code: {code}");
                     Message::CommandComplete {
@@ -128,7 +128,7 @@ impl Model for App {
                         output,
                         exit_code: code,
                     }
-                }))
+                })
             }
             Event::User(Message::CommandComplete {
                 command,
@@ -142,67 +142,67 @@ impl Model for App {
                     output,
                     exit_code,
                 });
-                None
+                Cmd::none()
             }
             Event::User(Message::ErrorOccurred { context, error }) => {
                 self.error_count += 1;
                 self.last_error = Some(error.clone());
                 self.log_event(SystemEvent::Error { context, error });
-                None
+                Cmd::none()
             }
             Event::User(Message::SimulateError) => {
                 // Simulate an error
-                Some(send(Message::ErrorOccurred {
+                send(Message::ErrorOccurred {
                     context: "SimulateError".to_string(),
                     error: "Simulated error for demonstration".to_string(),
-                }))
+                })
             }
             Event::User(Message::ClearLog) => {
                 self.events.clear();
                 self.last_error = None;
-                None
+                Cmd::none()
             }
-            Event::User(Message::Quit) => Some(commands::quit()),
+            Event::User(Message::Quit) => commands::quit(),
             Event::Key(key) => match key.key {
-                Key::Char('q') if key.modifiers.is_empty() => Some(commands::quit()),
-                Key::Esc => Some(commands::quit()),
-                Key::Char('c') if key.modifiers.is_empty() => Some(send(Message::ClearLog)),
-                Key::Char('e') if key.modifiers.is_empty() => Some(send(Message::SimulateError)),
+                Key::Char('q') if key.modifiers.is_empty() => commands::quit(),
+                Key::Esc => commands::quit(),
+                Key::Char('c') if key.modifiers.is_empty() => send(Message::ClearLog),
+                Key::Char('e') if key.modifiers.is_empty() => send(Message::SimulateError),
                 Key::Char('1') if key.modifiers.is_empty() => {
-                    Some(send(Message::ExecuteCommand("ls -la".to_string())))
+                    send(Message::ExecuteCommand("ls -la".to_string()))
                 }
                 Key::Char('2') if key.modifiers.is_empty() => {
-                    Some(send(Message::ExecuteCommand("pwd".to_string())))
+                    send(Message::ExecuteCommand("pwd".to_string()))
                 }
                 Key::Char('3') if key.modifiers.is_empty() => {
-                    Some(send(Message::ExecuteCommand("date".to_string())))
+                    send(Message::ExecuteCommand("date".to_string()))
                 }
                 Key::Char('4') if key.modifiers.is_empty() => {
-                    Some(send(Message::ExecuteCommand("echo $SHELL".to_string())))
+                    send(Message::ExecuteCommand("echo $SHELL".to_string()))
                 }
                 Key::Char('5') if key.modifiers.is_empty() => {
-                    Some(send(Message::ExecuteCommand("false".to_string())))
+                    send(Message::ExecuteCommand("false".to_string()))
                 }
-                Key::Char('6') if key.modifiers.is_empty() => Some(send(Message::ExecuteCommand(
+                Key::Char('6') if key.modifiers.is_empty() => send(Message::ExecuteCommand(
                     "sleep 2 && echo 'Done sleeping'".to_string(),
-                ))),
-                _ => None,
+                )),
+                _ => Cmd::none(),
             },
             Event::Suspend => {
                 self.suspend_count += 1;
                 self.log_event(SystemEvent::Suspended);
-                None
+                Cmd::none()
             }
             Event::Resume => {
                 self.log_event(SystemEvent::Resumed);
-                None
+                Cmd::none()
             }
             Event::Resize { width, height } => {
                 self.window_size = (width, height);
                 self.log_event(SystemEvent::WindowResized { width, height });
-                None
+                Cmd::none()
             }
-            _ => None,
+            _ => Cmd::none(),
         }
     }
 

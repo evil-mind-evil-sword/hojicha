@@ -29,7 +29,8 @@ fn buffer_to_string(buffer: &Buffer) -> String {
     let mut result = String::new();
     for y in 0..buffer.area.height {
         for x in 0..buffer.area.width {
-            let cell = buffer.cell((x, y)).unwrap_or_default();
+            let default_cell = ratatui::buffer::Cell::default();
+            let cell = buffer.cell((x, y)).unwrap_or(&default_cell);
             result.push_str(cell.symbol());
         }
         if y < buffer.area.height - 1 {
@@ -46,7 +47,10 @@ fn copy_buffer_to_frame(src: &Buffer, frame: &mut ratatui::Frame, offset_x: u16,
     for y in 0..src_area.height {
         for x in 0..src_area.width {
             // src.get() expects absolute coordinates
-            let cell = src.cell((src_area.x + x, src_area.y + y)).unwrap_or_default();
+            let default_cell = ratatui::buffer::Cell::default();
+            let cell = src
+                .cell((src_area.x + x, src_area.y + y))
+                .unwrap_or(&default_cell);
             let dst_x = offset_x + x;
             let dst_y = offset_y + y;
             if dst_x < frame.area().width && dst_y < frame.area().height {

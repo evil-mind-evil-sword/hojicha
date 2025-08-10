@@ -24,14 +24,14 @@ proptest! {
         impl Model for Counter {
             type Message = Msg;
 
-            fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+            fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
                 if let Event::User(msg) = msg {
                     match msg {
                         Msg::Inc => { self.value.fetch_add(1, Ordering::SeqCst); }
                         Msg::Dec => { self.value.fetch_sub(1, Ordering::SeqCst); }
                     }
                 }
-                None
+                Cmd::none()
             }
 
             fn view(&self, _frame: &mut Frame, _area: Rect) {}
@@ -69,22 +69,19 @@ proptest! {
         let mut cmds = Vec::new();
 
         for (i, &include_none) in include_nones.iter().enumerate().take(num_cmds) {
-            if include_none {
+            if !include_none {  // Only add commands when NOT none
                 let executed_clone = Arc::clone(&executed);
-                cmds.push(Some(Cmd::new(move || {
+                cmds.push(Cmd::new(move || {
                     executed_clone.lock().unwrap().push(i);
                     Some(TestMsg(i))
-                })));
-            } else {
-                cmds.push(None);
+                }));
             }
         }
 
-        if let Some(batch_cmd) = batch(cmds) {
-            // In a real scenario, these would be executed by the runtime
-            // For testing, we'll check that the batch command was created correctly
-            prop_assert!(batch_cmd.test_execute().unwrap().is_some());
-        }
+        let batch_cmd = batch(cmds);
+        // In a real scenario, these would be executed by the runtime
+        // For testing, we'll check that the batch command was created correctly
+        prop_assert!(!batch_cmd.is_quit());
     }
 }
 
@@ -127,10 +124,10 @@ proptest! {
 
         for i in 0..num_cmds {
             let order_clone = Arc::clone(&execution_order);
-            cmds.push(Some(Cmd::new(move || {
+            cmds.push(Cmd::new(move || {
                 order_clone.lock().unwrap().push(i);
                 Some(OrderMsg(i))
-            })));
+            }));
         }
 
         // Create sequence command

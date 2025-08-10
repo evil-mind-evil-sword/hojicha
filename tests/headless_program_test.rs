@@ -46,7 +46,7 @@ enum TestMessage {
 impl Model for TestModel {
     type Message = TestMessage;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.log("Model initialized".to_string());
         self.commands_executed
             .lock()
@@ -54,27 +54,25 @@ impl Model for TestModel {
             .push("init".to_string());
 
         // Return a command that will produce a message
-        Some(commands::tick(Duration::from_millis(10), || {
-            TestMessage::Tick
-        }))
+        commands::tick(Duration::from_millis(10), || TestMessage::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(TestMessage::Increment) => {
                 self.counter += 1;
                 self.log(format!("Incremented to {}", self.counter));
-                None
+                Cmd::none()
             }
             Event::User(TestMessage::Decrement) => {
                 self.counter -= 1;
                 self.log(format!("Decremented to {}", self.counter));
-                None
+                Cmd::none()
             }
             Event::User(TestMessage::SetValue(v)) => {
                 self.counter = v;
                 self.log(format!("Set value to {}", v));
-                None
+                Cmd::none()
             }
             Event::User(TestMessage::Tick) => {
                 self.log("Tick received".to_string());
@@ -82,17 +80,17 @@ impl Model for TestModel {
                     .lock()
                     .unwrap()
                     .push("tick_handled".to_string());
-                Some(commands::quit())
+                commands::quit()
             }
             Event::Key(key) if key.key == Key::Char('q') => {
                 self.log("Quit key pressed".to_string());
-                Some(commands::quit())
+                commands::quit()
             }
             Event::Quit => {
                 self.log("Quit event received".to_string());
-                None
+                commands::quit()
             }
-            _ => None,
+            _ => commands::quit(),
         }
     }
 

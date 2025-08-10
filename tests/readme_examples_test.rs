@@ -1,5 +1,6 @@
 //! Tests for all examples shown in README.md
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use std::thread;
@@ -14,13 +15,15 @@ struct Counter {
 impl Model for Counter {
     type Message = ();
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        if let Event::Key(key) = event { match key.key {
-            Key::Up => self.value += 1,
-            Key::Down => self.value -= 1,
-            Key::Char('q') => return None, // Quit
-            _ => {}
-        } }
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+        if let Event::Key(key) = event {
+            match key.key {
+                Key::Up => self.value += 1,
+                Key::Down => self.value -= 1,
+                Key::Char('q') => return commands::quit(), // Quit
+                _ => {}
+            }
+        }
         Cmd::none()
     }
 
@@ -43,7 +46,7 @@ fn test_readme_counter_example() {
         key: Key::Up,
         modifiers: crossterm::event::KeyModifiers::empty(),
     }));
-    assert!(result.is_some());
+    assert!(!result.is_quit());
     assert_eq!(counter.value, 1);
 
     // Test decrement
@@ -51,7 +54,7 @@ fn test_readme_counter_example() {
         key: Key::Down,
         modifiers: crossterm::event::KeyModifiers::empty(),
     }));
-    assert!(result.is_some());
+    assert!(!result.is_quit());
     assert_eq!(counter.value, 0);
 
     // Test quit
@@ -59,7 +62,7 @@ fn test_readme_counter_example() {
         key: Key::Char('q'),
         modifiers: crossterm::event::KeyModifiers::empty(),
     }));
-    assert!(result.is_none()); // Should quit
+    assert!(result.is_quit()); // Should quit
 }
 
 #[test]
@@ -90,11 +93,11 @@ struct AsyncModel {
 impl Model for AsyncModel {
     type Message = Msg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(Msg::Tick) = event {
             self.ticks += 1;
             if self.ticks >= 3 {
-                return None; // Quit after 3 ticks
+                return commands::quit(); // Quit after 3 ticks
             }
         }
         Cmd::none()
@@ -188,7 +191,7 @@ fn test_readme_cancellable_operations() {
     impl Model for CancellableModel {
         type Message = String;
 
-        fn update(&mut self, _event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, _event: Event<Self::Message>) -> Cmd<Self::Message> {
             Cmd::none()
         }
 

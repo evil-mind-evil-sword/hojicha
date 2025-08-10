@@ -33,11 +33,11 @@ enum StressMsg {
 impl Model for StressTestModel {
     type Message = StressMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(StressMsg::Data(bytes)) => {
                 self.messages_received.fetch_add(1, Ordering::Relaxed);
@@ -45,7 +45,7 @@ impl Model for StressTestModel {
                     .fetch_add(bytes.len(), Ordering::Relaxed);
 
                 if self.messages_received.load(Ordering::Relaxed) >= self.max_messages {
-                    return None; // Quit
+                    return hojicha::commands::quit(); // Quit
                 }
                 Cmd::none()
             }
@@ -57,7 +57,7 @@ impl Model for StressTestModel {
                 self.errors_count.fetch_add(1, Ordering::Relaxed);
                 Cmd::none()
             }
-            Event::User(StressMsg::Quit) => None,
+            Event::User(StressMsg::Quit) => hojicha::commands::quit(),
             Event::Tick => {
                 // Don't quit on tick events, just continue
                 Cmd::none()

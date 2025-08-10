@@ -1,4 +1,5 @@
 use hojicha::{
+    commands,
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
@@ -36,11 +37,11 @@ struct PriorityModel {
 impl Model for PriorityModel {
     type Message = PriorityMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(PriorityMsg::HighPriority(id)) => {
                 self.high_priority_count += 1;
@@ -71,7 +72,7 @@ impl Model for PriorityModel {
                 }
                 Cmd::none()
             }
-            Event::User(PriorityMsg::Quit) | Event::Quit => None,
+            Event::User(PriorityMsg::Quit) | Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }

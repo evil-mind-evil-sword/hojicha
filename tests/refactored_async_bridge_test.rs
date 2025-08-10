@@ -3,6 +3,7 @@
 //! This shows how to test async message passing deterministically
 
 use hojicha::{
+    commands,
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
@@ -27,7 +28,7 @@ struct TestModel {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(TestMsg::Increment) => {
                 self.counter.fetch_add(1, Ordering::SeqCst);
@@ -35,7 +36,7 @@ impl Model for TestModel {
             Event::User(TestMsg::Data(s)) => {
                 self.messages.lock().unwrap().push(s);
             }
-            Event::User(TestMsg::Quit) | Event::Quit => return None,
+            Event::User(TestMsg::Quit) | Event::Quit => return commands::quit(),
             _ => {}
         }
         Cmd::none()
@@ -173,7 +174,6 @@ fn test_message_ordering_deterministic() {
 
 // For truly async operations, use tokio's test utilities
 #[tokio::test]
-#[ignore = "Requires tokio with time feature"]
 async fn test_async_with_controlled_time() {
     use std::time::Duration;
     use tokio::time::interval;

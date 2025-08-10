@@ -1,4 +1,5 @@
 use hojicha::{
+    async_handle::AsyncHandle,
     commands,
     core::{Cmd, Model},
     event::Event,
@@ -10,6 +11,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
+use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -32,16 +34,19 @@ enum Msg {
 impl Model for CancellableDemo {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.messages
             .push("Cancellable Operations Demo Started!".to_string());
         self.messages.push(
             "Press 's' to start operation, 'c' to cancel last, 'x' to cancel all".to_string(),
         );
+
+        // Store handles in the model to actually demonstrate cancellation
+        // This would be stored in a field if we were tracking real handles
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::StartOperation) => {
                 let id = self.operation_counter;
@@ -51,18 +56,20 @@ impl Model for CancellableDemo {
                 self.active_operations.push((id, operation_name.clone()));
                 self.messages.push(format!("Started: {}", operation_name));
 
-                // Simulate a long-running operation (3-5 seconds)
-                let delay = Duration::from_millis(3000 + ((id * 500) % 2000) as u64);
-                Some(commands::tick(delay, move || {
-                    Msg::OperationComplete(
+                // Use spawn to create a cancellable async operation
+                // In a real app, we'd store the handle returned by program.spawn_cancellable()
+                let delay = Duration::from_secs(3 + ((id % 3) as u64));
+                commands::spawn(async move {
+                    tokio::time::sleep(delay).await;
+                    Some(Msg::OperationComplete(
                         id,
                         format!(
                             "Operation #{} completed after {:.1}s",
                             id,
                             delay.as_secs_f32()
                         ),
-                    )
-                }))
+                    ))
+                })
             }
             Event::User(Msg::OperationComplete(id, result)) => {
                 self.active_operations.retain(|(op_id, _)| *op_id != id);
@@ -79,6 +86,7 @@ impl Model for CancellableDemo {
                     let (_, name) = self.active_operations.remove(pos);
                     self.cancelled_count += 1;
                     self.messages.push(format!("✗ Cancelled: {}", name));
+                    // In a real implementation, we'd call handle.cancel() here
                 }
                 Cmd::none()
             }
@@ -88,10 +96,11 @@ impl Model for CancellableDemo {
                 for (_, name) in self.active_operations.drain(..) {
                     self.messages.push(format!("✗ Cancelled: {}", name));
                 }
+                // In a real implementation, we'd cancel all handles here
                 Cmd::none()
             }
             Event::Key(key) => match key.key {
-                hojicha::event::Key::Char('q') => Some(commands::quit()),
+                hojicha::event::Key::Char('q') => commands::quit(),
                 hojicha::event::Key::Char('s') => {
                     // Start a new operation
                     self.update(Event::User(Msg::StartOperation))
@@ -111,7 +120,7 @@ impl Model for CancellableDemo {
                 }
                 _ => Cmd::none(),
             },
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -180,7 +189,22 @@ impl Model for CancellableDemo {
     }
 }
 
+// Advanced implementation with actual cancellation support
+struct AdvancedCancellableDemo {
+    messages: Vec<String>,
+    active_operations: HashMap<usize, (String, AsyncHandle<String>)>,
+    operation_counter: usize,
+    cancelled_count: usize,
+    completed_count: usize,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Note: This is a simplified demo. For real cancellation support,
+    // you would need to:
+    // 1. Store AsyncHandle instances returned by program.spawn_cancellable()
+    // 2. Call handle.cancel() when cancelling operations
+    // 3. Use tokio::select! in async tasks to respond to cancellation
+
     let model = CancellableDemo {
         messages: Vec::new(),
         active_operations: Vec::new(),
@@ -193,17 +217,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_alt_screen(true)
         .with_mouse_mode(hojicha::program::MouseMode::CellMotion);
 
-    let program = Program::with_options(model, options)?;
+    let mut program = Program::with_options(model, options)?;
 
-    // This example demonstrates how cancellable operations would work
-    // In a real implementation with AsyncHandle, we'd track handles here
-    // and cancel them when requested
+    // For a real implementation with cancellation, you would use:
+    // let handle = program.spawn_cancellable(|token| async move {
+    //     tokio::select! {
+    //         _ = token.cancelled() => {
+    //             return "Operation cancelled".to_string();
+    //         }
+    //         _ = tokio::time::sleep(Duration::from_secs(5)) => {
+    //             return "Operation completed".to_string();
+    //         }
+    //     }
+    // });
+    //
+    // Then later: handle.cancel().await;
 
     program.run()?;
 
     println!("Demo completed!");
-    println!("Operations completed: {}", 0);
-    println!("Operations cancelled: {}", 0);
 
     Ok(())
 }

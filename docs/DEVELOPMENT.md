@@ -18,8 +18,8 @@ This document contains key information to help you quickly understand and work w
 ```rust
 trait Model {
     type Message;
-    fn init(&mut self) -> Option<Cmd<Self::Message>>;
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>>;
+    fn init(&mut self) -> Cmd<Self::Message>;
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message>;
     fn view(&self, frame: &mut Frame, area: Rect);
 }
 ```
@@ -27,9 +27,8 @@ trait Model {
 ### Event System
 - **Event<M>** enum wraps all possible events (Key, Mouse, Resize, Focus, User messages, Quit)
 - Events flow: Terminal → Program → Model.update() → Commands → New Events
-- Two ways to quit:
-  - Return `None` from update (traditional pattern)
-  - Return `Some(commands::quit())` (explicit command)
+- One way to quit:
+  - Return `commands::quit()` from update (explicit command)
 
 ### Command System
 - **Cmd<M>** represents side effects that produce messages

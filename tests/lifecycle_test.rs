@@ -1,5 +1,6 @@
 //! Tests for program lifecycle management
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
@@ -18,13 +19,13 @@ fn test_program_quit() {
     impl Model for QuitModel {
         type Message = Msg;
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             match msg {
                 Event::Quit => {
                     self.quit_received.store(true, Ordering::SeqCst);
-                    None // Return None to signal quit
+                    commands::quit() // Return quit command
                 }
-                _ => None,
+                _ => Cmd::none(),
             }
         }
 
@@ -64,20 +65,20 @@ fn test_program_lifecycle_states() {
     impl Model for LifecycleModel {
         type Message = Msg;
 
-        fn init(&mut self) -> Option<Cmd<Self::Message>> {
+        fn init(&mut self) -> Cmd<Self::Message> {
             self.initialized.store(true, Ordering::SeqCst);
-            None
+            Cmd::none()
         }
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             match msg {
                 Event::User(Msg::Increment) => {
                     self.update_count.fetch_add(1, Ordering::SeqCst);
                 }
-                Event::Quit => return None,
+                Event::Quit => return commands::quit(),
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

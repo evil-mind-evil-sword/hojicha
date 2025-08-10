@@ -1,5 +1,6 @@
 //! Basic tests for Program functionality
 
+use hojicha::commands;
 use hojicha::event::{Event, Key, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use hojicha::prelude::*;
 use hojicha::program::{MouseMode, ProgramOptions};
@@ -29,22 +30,22 @@ enum SimpleMessage {
 impl Model for SimpleModel {
     type Message = SimpleMessage;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.counter.fetch_add(1, Ordering::SeqCst);
-        None
+        Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(SimpleMessage::Increment) => {
                 self.counter.fetch_add(1, Ordering::SeqCst);
-                None
+                Cmd::none()
             }
             Event::User(SimpleMessage::Decrement) => {
                 self.counter.fetch_sub(1, Ordering::SeqCst);
-                None
+                Cmd::none()
             }
-            Event::Quit => None,
+            Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -56,7 +57,7 @@ impl Model for SimpleModel {
 fn test_model_init() {
     let mut model = SimpleModel::new();
     let cmd = model.init();
-    assert!(cmd.is_none());
+    assert!(!cmd.is_quit());
     assert_eq!(model.counter.load(Ordering::SeqCst), 1);
 }
 
@@ -129,7 +130,7 @@ fn test_event_handling() {
     for event in events {
         let result = model.update(event);
         // Cmd::none() returns None, not Some
-        assert!(result.is_none());
+        assert!(!result.is_quit());
     }
 }
 
@@ -137,5 +138,5 @@ fn test_event_handling() {
 fn test_quit_event() {
     let mut model = SimpleModel::new();
     let result = model.update(Event::Quit);
-    assert!(result.is_none()); // Quit should return None
+    assert!(result.is_quit()); // Quit should return commands::quit()
 }

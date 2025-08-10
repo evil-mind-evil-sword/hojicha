@@ -687,6 +687,37 @@ where
         AsyncHandle::new(handle, cancel_token)
     }
 
+    /// Spawn a simple async task that produces a message
+    ///
+    /// This is a simplified version of spawn_cancellable for tasks that don't need
+    /// cancellation support. The task runs to completion and sends its result.
+    ///
+    /// # Example
+    /// ```ignore
+    /// program.spawn(async {
+    ///     let data = fetch_data().await;
+    ///     Some(Msg::DataLoaded(data))
+    /// });
+    /// ```
+    pub fn spawn<Fut>(&mut self, fut: Fut)
+    where
+        Fut: std::future::Future<Output = Option<M::Message>> + Send + 'static,
+        M::Message: Send + 'static,
+    {
+        // Ensure we have a message channel
+        if self.message_tx.is_none() {
+            self.init_async_bridge();
+        }
+
+        let sender = self.message_tx.as_ref().unwrap().clone();
+
+        self.command_executor.spawn(async move {
+            if let Some(msg) = fut.await {
+                let _ = sender.send(Event::User(msg));
+            }
+        });
+    }
+
     /// Run the program with a timeout (useful for testing)
     ///
     /// The program will automatically exit after the specified duration.
@@ -759,8 +790,9 @@ where
         }
 
         // Run initial command
-        if let Some(cmd) = self.model.init() {
-            self.command_executor.execute(cmd, message_tx.clone());
+        let init_cmd = self.model.init();
+        if !init_cmd.is_noop() {
+            self.command_executor.execute(init_cmd, message_tx.clone());
         }
 
         // Main event loop
@@ -806,14 +838,15 @@ where
 
                 // Update model
                 if let Some(event) = event {
-                    let result = self.model.update(event);
+                    let cmd = self.model.update(event);
 
-                    // Check if model returned None (quit)
-                    if result.is_none() {
+                    // Check if command is quit
+                    if cmd.is_quit() {
                         break;
                     }
 
-                    if let Some(cmd) = result {
+                    // Execute the command if it's not a no-op
+                    if !cmd.is_noop() {
                         self.command_executor.execute(cmd, message_tx.clone());
                     }
                 }
@@ -904,8 +937,8 @@ mod tests {
         struct TestModel;
         impl Model for TestModel {
             type Message = ();
-            fn update(&mut self, _: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-                None
+            fn update(&mut self, _: Event<Self::Message>) -> Cmd<Self::Message> {
+                Cmd::none()
             }
             fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
         }
@@ -924,8 +957,8 @@ mod tests {
         struct TestModel;
         impl Model for TestModel {
             type Message = String;
-            fn update(&mut self, _: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-                None
+            fn update(&mut self, _: Event<Self::Message>) -> Cmd<Self::Message> {
+                Cmd::none()
             }
             fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
         }
@@ -953,8 +986,8 @@ mod tests {
         struct TestModel;
         impl Model for TestModel {
             type Message = i32;
-            fn update(&mut self, _: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-                None
+            fn update(&mut self, _: Event<Self::Message>) -> Cmd<Self::Message> {
+                Cmd::none()
             }
             fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
         }

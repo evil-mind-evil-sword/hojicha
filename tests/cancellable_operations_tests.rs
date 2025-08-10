@@ -46,11 +46,11 @@ enum CancelMsg {
 impl Model for CancellableTestModel {
     type Message = CancelMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        None
+    fn init(&mut self) -> Cmd<Self::Message> {
+        Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(CancelMsg::OperationStarted(id)) => {
                 self.operations_started.fetch_add(1, Ordering::SeqCst);
@@ -59,7 +59,7 @@ impl Model for CancellableTestModel {
             Event::User(CancelMsg::OperationCompleted(id)) => {
                 let count = self.operations_completed.fetch_add(1, Ordering::SeqCst) + 1;
                 if count >= self.should_stop_at {
-                    None // Quit
+                    hojicha::commands::quit() // Quit
                 } else {
                     Cmd::none()
                 }
@@ -72,7 +72,7 @@ impl Model for CancellableTestModel {
                 // Would trigger cancellation of specific operation
                 Cmd::none()
             }
-            Event::User(CancelMsg::Quit) | Event::Quit => None,
+            Event::User(CancelMsg::Quit) | Event::Quit => commands::quit(),
             _ => Cmd::none(),
         }
     }

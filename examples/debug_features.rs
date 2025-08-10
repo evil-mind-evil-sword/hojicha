@@ -43,17 +43,15 @@ impl DebugModel {
 impl Model for DebugModel {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         // Set the window title when the app starts
         commands::batch(vec![
-            Some(set_window_title("Hojicha Debug Features Demo")),
-            Some(commands::every(Duration::from_millis(1000), |_| {
-                Message::Tick
-            })),
+            set_window_title("Hojicha Debug Features Demo"),
+            commands::every(Duration::from_millis(1000), |_| Message::Tick),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Message::Tick) => {
                 self.counter += 1;
@@ -64,27 +62,24 @@ impl Model for DebugModel {
                 }
 
                 // Update window title with counter
-                Some(set_window_title(format!(
-                    "Hojicha Debug - Count: {}",
-                    self.counter
-                )))
+                set_window_title(format!("Hojicha Debug - Count: {}", self.counter))
             }
             Event::User(Message::DebugPrint) => {
                 self.debug_prints += 1;
                 eprintln!("Debug print #{} triggered", self.debug_prints);
-                None
+                Cmd::none()
             }
             Event::Key(key) => {
                 match key.key {
-                    Key::Char('q') => Some(quit()),
+                    Key::Char('q') => quit(),
                     Key::Char('d') => {
                         // Trigger a debug print
-                        Some(Cmd::new(|| Some(Message::DebugPrint)))
+                        Cmd::new(|| Some(Message::DebugPrint))
                     }
-                    _ => None,
+                    _ => Cmd::none(),
                 }
             }
-            _ => None,
+            _ => Cmd::none(),
         }
     }
 

@@ -51,14 +51,14 @@ fn test_mouse_event_handling() {
     impl Model for MouseModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             if let Event::Mouse(mouse) = event {
                 self.last_pos = Some((mouse.column, mouse.row));
                 if let crossterm::event::MouseEventKind::Down(_) = mouse.kind {
                     self.click_count += 1;
                 }
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

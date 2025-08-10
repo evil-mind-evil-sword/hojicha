@@ -28,17 +28,15 @@ enum TestMsg {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.messages.push("init".to_string());
         commands::batch(vec![
-            Some(commands::tick(Duration::from_millis(100), || TestMsg::Tick)),
-            Some(Cmd::new(|| {
-                Some(TestMsg::AddMessage("started".to_string()))
-            })),
+            commands::tick(Duration::from_millis(100), || TestMsg::Tick),
+            Cmd::new(|| Some(TestMsg::AddMessage("started".to_string()))),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => match msg {
                 TestMsg::Increment => {
@@ -57,7 +55,7 @@ impl Model for TestModel {
                 }
                 TestMsg::Quit => {
                     self.should_quit = true;
-                    None
+                    Cmd::none()
                 }
                 TestMsg::Tick => {
                     self.messages.push("tick".to_string());
@@ -67,7 +65,7 @@ impl Model for TestModel {
             Event::Key(key_event) => match key_event.key {
                 Key::Char('q') => {
                     self.should_quit = true;
-                    None
+                    Cmd::none()
                 }
                 Key::Char('+') => self.update(Event::User(TestMsg::Increment)),
                 Key::Char('-') => self.update(Event::User(TestMsg::Decrement)),
@@ -95,7 +93,7 @@ impl Model for TestModel {
             }
             Event::Quit => {
                 self.should_quit = true;
-                None
+                Cmd::none()
             }
             Event::Tick => {
                 self.messages.push("tick".to_string());
@@ -127,7 +125,7 @@ fn test_model_init() {
     };
 
     let cmd = model.init();
-    assert!(cmd.is_some());
+    assert!(!cmd.is_quit());
     assert_eq!(model.messages[0], "init");
 }
 
@@ -141,24 +139,24 @@ fn test_model_update_user_messages() {
 
     // Test increment
     let cmd = model.update(Event::User(TestMsg::Increment));
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.counter, 1);
     assert_eq!(model.messages[0], "inc: 1");
 
     // Test decrement
     let cmd = model.update(Event::User(TestMsg::Decrement));
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.counter, 0);
     assert_eq!(model.messages[1], "dec: 0");
 
     // Test add message
     let cmd = model.update(Event::User(TestMsg::AddMessage("test".to_string())));
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.messages[2], "test");
 
     // Test quit
     let cmd = model.update(Event::User(TestMsg::Quit));
-    assert!(cmd.is_none());
+    assert!(!cmd.is_quit());
     assert!(model.should_quit);
 }
 
@@ -173,19 +171,19 @@ fn test_model_keyboard_events() {
     // Test '+' key
     let event = Event::Key(KeyEvent::new(Key::Char('+'), KeyModifiers::empty()));
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.counter, 1);
 
     // Test '-' key
     let event = Event::Key(KeyEvent::new(Key::Char('-'), KeyModifiers::empty()));
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.counter, 0);
 
     // Test 'q' key (quit)
     let event = Event::Key(KeyEvent::new(Key::Char('q'), KeyModifiers::empty()));
     let cmd = model.update(event);
-    assert!(cmd.is_none());
+    assert!(!cmd.is_quit());
     assert!(model.should_quit);
 }
 
@@ -205,7 +203,7 @@ fn test_model_mouse_events() {
     });
 
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert!(model.messages[0].contains("mouse"));
 }
 
@@ -222,7 +220,7 @@ fn test_model_resize_event() {
         height: 24,
     };
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.messages[0], "resize: 80x24");
 }
 
@@ -236,12 +234,12 @@ fn test_model_focus_event() {
 
     let event = Event::Focus;
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.messages[0], "focus: true");
 
     let event = Event::Blur;
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.messages[1], "focus: false");
 }
 
@@ -255,7 +253,7 @@ fn test_model_paste_event() {
 
     let event = Event::Paste("Hello, World!".to_string());
     let cmd = model.update(event);
-    assert!(cmd.is_some()); // Cmd::none() returns Some(Cmd)
+    assert!(!cmd.is_quit()); // Cmd::none() returns Some(Cmd)
     assert_eq!(model.messages[0], "paste: Hello, World!");
 }
 
@@ -269,18 +267,16 @@ fn test_model_quit_event() {
 
     let event = Event::Quit;
     let cmd = model.update(event);
-    assert!(cmd.is_none());
+    assert!(!cmd.is_quit());
     assert!(model.should_quit);
 }
 
 #[test]
 fn test_batch_commands() {
-    let batch = commands::batch::<TestMsg>(vec![
-        Some(commands::custom(|| Some(TestMsg::Increment))),
-        Some(commands::custom(|| Some(TestMsg::Decrement))),
-        Some(commands::custom(|| {
-            Some(TestMsg::AddMessage("batch".to_string()))
-        })),
+    let _batch = commands::batch::<TestMsg>(vec![
+        commands::custom(|| Some(TestMsg::Increment)),
+        commands::custom(|| Some(TestMsg::Decrement)),
+        commands::custom(|| Some(TestMsg::AddMessage("batch".to_string()))),
     ]);
 
     // Batch command should exist
@@ -290,9 +286,9 @@ fn test_batch_commands() {
 #[test]
 fn test_sequence_commands() {
     let _seq = commands::sequence::<TestMsg>(vec![
-        Some(commands::custom(|| Some(TestMsg::Increment))),
-        Some(commands::tick(Duration::from_millis(100), || TestMsg::Tick)),
-        Some(commands::custom(|| Some(TestMsg::Decrement))),
+        commands::custom(|| Some(TestMsg::Increment)),
+        commands::tick(Duration::from_millis(100), || TestMsg::Tick),
+        commands::custom(|| Some(TestMsg::Decrement)),
     ]);
 
     // Sequence command should exist
@@ -416,7 +412,7 @@ fn test_program_options() {
 
 #[test]
 fn test_cmd_none() {
-    let _cmd: Option<Cmd<TestMsg>> = Cmd::none();
+    let _cmd: Cmd<TestMsg> = Cmd::none();
     // None command created successfully
 }
 

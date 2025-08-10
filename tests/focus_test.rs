@@ -1,5 +1,6 @@
 //! Tests for focus reporting functionality
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
@@ -19,7 +20,7 @@ fn test_focus_blur_events() {
     impl Model for FocusModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::Focus => {
                     self.has_focus.store(true, Ordering::SeqCst);
@@ -29,10 +30,10 @@ fn test_focus_blur_events() {
                     self.has_focus.store(false, Ordering::SeqCst);
                     self.blur_count.fetch_add(1, Ordering::SeqCst);
                 }
-                Event::Quit => return None,
+                Event::Quit => return commands::quit(),
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

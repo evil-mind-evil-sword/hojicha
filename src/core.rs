@@ -30,21 +30,22 @@ pub trait Model: Sized {
     /// The type of messages this model can receive
     type Message: Message;
 
-    /// Initialize the model and optionally return a command to run
+    /// Initialize the model and return a command to run
     ///
     /// Returns:
-    /// - `None` - Start the event loop without any initial command
-    /// - `Some(cmd)` - Execute the command before starting the event loop
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        None
+    /// - `Cmd::none()` - Start the event loop without any initial command
+    /// - Any other command - Execute the command before starting the event loop
+    fn init(&mut self) -> Cmd<Self::Message> {
+        Cmd::none()
     }
 
-    /// Update the model based on a message, optionally returning a command
+    /// Update the model based on a message and return a command
     ///
     /// Returns:
-    /// - `None` - Continue running without executing any command
-    /// - `Some(cmd)` - Execute the command (use `commands::quit()` to exit)
-    fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>>;
+    /// - `Cmd::none()` - Continue running without executing any command
+    /// - `commands::quit()` - Exit the program
+    /// - Any other command - Execute the command and continue
+    fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message>;
 
     /// Render the model to the screen
     fn view(&self, frame: &mut Frame, area: Rect);
@@ -115,12 +116,12 @@ impl<M: Message> Cmd<M> {
 
     /// Returns a no-op command that continues running without doing anything
     ///
-    /// This is a convenience method that returns a command that does nothing
-    /// but keeps the program running.
-    pub fn none() -> Option<Self> {
-        Some(Cmd {
+    /// This is the idiomatic way to return "no command" from update().
+    /// The program will continue running without executing any side effects.
+    pub fn none() -> Self {
+        Cmd {
             inner: CmdInner::NoOp,
-        })
+        }
     }
 
     /// Create a command that executes an external process
@@ -237,7 +238,7 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Check if this is a quit command
-    pub(crate) fn is_quit(&self) -> bool {
+    pub fn is_quit(&self) -> bool {
         matches!(self.inner, CmdInner::Quit)
     }
 
@@ -338,29 +339,29 @@ mod tests {
     impl Model for Counter {
         type Message = Msg;
 
-        fn init(&mut self) -> Option<Cmd<Self::Message>> {
-            Some(Cmd::new(|| Some(Msg::SetValue(0))))
+        fn init(&mut self) -> Cmd<Self::Message> {
+            Cmd::new(|| Some(Msg::SetValue(0)))
         }
 
-        fn update(&mut self, msg: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
             if let Event::User(msg) = msg {
                 match msg {
                     Msg::Increment => {
                         self.value += 1;
-                        Some(Cmd::new(move || Some(Msg::Noop)))
+                        Cmd::new(move || Some(Msg::Noop))
                     }
                     Msg::Decrement => {
                         self.value -= 1;
-                        Some(Cmd::new(move || Some(Msg::Noop)))
+                        Cmd::new(move || Some(Msg::Noop))
                     }
                     Msg::SetValue(v) => {
                         self.value = v;
-                        None
+                        Cmd::none()
                     }
-                    Msg::Noop => None,
+                    Msg::Noop => Cmd::none(),
                 }
             } else {
-                None
+                Cmd::none()
             }
         }
 
@@ -392,9 +393,7 @@ mod tests {
 
     #[test]
     fn test_cmd_none() {
-        let cmd: Option<Cmd<Msg>> = Cmd::none();
-        assert!(cmd.is_some());
-        let cmd = cmd.unwrap();
+        let cmd: Cmd<Msg> = Cmd::none();
         assert!(cmd.is_noop());
     }
 
@@ -439,9 +438,9 @@ mod tests {
     fn test_model_init() {
         let mut model = Counter { value: 5 };
         let cmd = model.init();
-        assert!(cmd.is_some());
+        assert!(!cmd.is_noop());
 
-        let result = cmd.unwrap().test_execute().unwrap();
+        let result = cmd.test_execute().unwrap();
         assert_eq!(result, Some(Msg::SetValue(0)));
     }
 }

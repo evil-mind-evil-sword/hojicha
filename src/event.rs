@@ -11,11 +11,11 @@ pub enum Event<M> {
     /// A mouse event  
     Mouse(MouseEvent),
     /// Terminal was resized
-    Resize { 
+    Resize {
         /// New terminal width in columns
-        width: u16, 
+        width: u16,
         /// New terminal height in rows
-        height: u16 
+        height: u16,
     },
     /// A tick event (for animations, etc.)
     Tick,

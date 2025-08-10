@@ -1,8 +1,10 @@
-//! Concurrent stress tests for priority event processing
-//!
-//! These tests verify the system behaves correctly under heavy concurrent load.
-//! They are marked with #[ignore] to exclude from regular test runs.
-//! Run with: cargo test --test priority_concurrent_stress_tests -- --ignored
+// Concurrent stress tests for priority event processing
+//
+// These tests verify the system behaves correctly under heavy concurrent load.
+// They are marked with #[ignore] to exclude from regular test runs.
+// Run with: cargo test --test priority_concurrent_stress_tests -- --ignored
+
+use hojicha::commands;
 
 use hojicha::prelude::*;
 use hojicha::program::{PriorityConfig, Program, ProgramOptions};
@@ -45,7 +47,7 @@ impl StressModel {
 impl Model for StressModel {
     type Message = StressMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => {
                 match msg {
@@ -62,16 +64,16 @@ impl Model for StressModel {
                         self.checkpoints.push(id);
                     }
                     StressMsg::Complete => {
-                        return None; // Quit
+                        return commands::quit(); // Quit
                     }
                 }
 
                 let total = self.total_received.fetch_add(1, Ordering::SeqCst);
                 if total >= self.target_messages {
-                    return None; // Exit when target reached
+                    return commands::quit(); // Exit when target reached
                 }
             }
-            Event::Quit => return None,
+            Event::Quit => return commands::quit(),
             _ => {}
         }
         Cmd::none()

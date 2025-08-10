@@ -24,12 +24,12 @@ enum TestMsg {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.events.push("init".to_string());
-        Some(commands::custom(|| Some(TestMsg::Inc)))
+        commands::custom(|| Some(TestMsg::Inc))
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(TestMsg::Inc) => {
                 self.value += 1;
@@ -41,8 +41,8 @@ impl Model for TestModel {
                 self.events.push(format!("dec:{}", self.value));
                 Cmd::none()
             }
-            Event::User(TestMsg::Quit) => None,
-            Event::Key(key) if key.key == Key::Char('q') => None,
+            Event::User(TestMsg::Quit) => commands::quit(),
+            Event::Key(key) if key.key == Key::Char('q') => commands::quit(),
             _ => Cmd::none(),
         }
     }

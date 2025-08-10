@@ -122,10 +122,10 @@ impl<M: Message> PartialOrd for PriorityEvent<M> {
 ///
 /// ```ignore
 /// let mut queue = PriorityEventQueue::new(1000);
-/// 
+///
 /// queue.push(Event::Tick)?;       // Low priority
 /// queue.push(Event::Quit)?;       // High priority
-/// 
+///
 /// // High priority events are processed first
 /// assert_eq!(queue.pop(), Some(Event::Quit));
 /// assert_eq!(queue.pop(), Some(Event::Tick));

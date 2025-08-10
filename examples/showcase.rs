@@ -109,7 +109,7 @@ Happy coding with hojicha! 🍵
         }
     }
 
-    fn handle_tab_input(&mut self, event: &Event<Message>) -> Option<Cmd<Message>> {
+    fn handle_tab_input(&mut self, event: &Event<Message>) -> Cmd<Message> {
         match self.current_tab {
             Tab::List => {
                 if let Event::Key(key) = event {
@@ -157,18 +157,18 @@ Happy coding with hojicha! 🍵
                 self.status_message = format!("Spinner frame: {}", self.counter % 8);
             }
         }
-        None
+        Cmd::none()
     }
 }
 
 impl Model for App {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        Some(commands::tick(Duration::from_millis(100), || Message::Tick))
+    fn init(&mut self) -> Cmd<Self::Message> {
+        commands::tick(Duration::from_millis(100), || Message::Tick)
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Message::TabNext) => {
                 self.current_tab = match self.current_tab {
@@ -179,7 +179,7 @@ impl Model for App {
                     Tab::Spinner => Tab::List,
                 };
                 self.status_message = format!("Switched to {:?} tab", self.current_tab);
-                None
+                Cmd::none()
             }
             Event::User(Message::TabPrev) => {
                 self.current_tab = match self.current_tab {
@@ -190,22 +190,22 @@ impl Model for App {
                     Tab::Spinner => Tab::Viewport,
                 };
                 self.status_message = format!("Switched to {:?} tab", self.current_tab);
-                None
+                Cmd::none()
             }
             Event::User(Message::Tick) => {
                 self.counter += 1;
                 if matches!(self.current_tab, Tab::Spinner) {
                     self.spinner.tick();
                 }
-                Some(commands::tick(Duration::from_millis(100), || Message::Tick))
+                commands::tick(Duration::from_millis(100), || Message::Tick)
             }
-            Event::User(Message::Quit) => Some(commands::quit()),
+            Event::User(Message::Quit) => commands::quit(),
             Event::Key(key) => {
                 // Check for quit keys first - using explicit quit command
                 if key.key == Key::Char('q') && key.modifiers.is_empty() {
-                    Some(commands::quit())
+                    commands::quit()
                 } else if key.key == Key::Esc {
-                    Some(commands::quit())
+                    commands::quit()
                 } else if key.key == Key::Tab && key.modifiers.is_empty() {
                     self.update(Event::User(Message::TabNext))
                 } else if key.key == Key::Tab && key.modifiers.contains(KeyModifiers::SHIFT) {
@@ -218,17 +218,17 @@ impl Model for App {
             Event::Paste(text) => self.handle_tab_input(&Event::Paste(text)),
             Event::Resize { width, height } => {
                 self.status_message = format!("Terminal resized to {width}x{height}");
-                None
+                Cmd::none()
             }
             Event::Focus => {
                 self.status_message = "Terminal focused".to_string();
-                None
+                Cmd::none()
             }
             Event::Blur => {
                 self.status_message = "Terminal blurred".to_string();
-                None
+                Cmd::none()
             }
-            _ => None,
+            _ => Cmd::none(),
         }
     }
 

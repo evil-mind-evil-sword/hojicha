@@ -22,21 +22,21 @@ enum Msg {
 impl Model for SimpleModel {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::Inc) => {
                 let new_count = self.count.fetch_add(1, Ordering::Relaxed) + 1;
                 println!("Count: {}", new_count);
                 if new_count >= 10 {
-                    return None; // Quit after 10
+                    return hojicha::commands::quit(); // Quit after 10
                 }
                 Cmd::none()
             }
-            Event::User(Msg::Quit) => None,
+            Event::User(Msg::Quit) => hojicha::commands::quit(),
             _ => Cmd::none(),
         }
     }

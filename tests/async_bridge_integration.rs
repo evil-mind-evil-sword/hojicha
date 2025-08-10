@@ -2,6 +2,7 @@
 //!
 //! These tests verify the public sender API and message injection.
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -24,24 +25,24 @@ enum TestMsg {
 impl Model for CollectorModel {
     type Message = TestMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(msg) => {
                 self.messages.lock().unwrap().push(msg.clone());
 
                 if msg == TestMsg::Quit {
                     self.should_quit = true;
-                    return None; // Exit program
+                    return commands::quit(); // Exit program
                 }
             }
             Event::Key(key) if key.key == Key::Char('q') => {
-                return None; // Also allow 'q' to quit
+                return commands::quit(); // Also allow 'q' to quit
             }
             _ => {}
         }
 
         if self.should_quit {
-            None
+            Cmd::none()
         } else {
             Cmd::none()
         }

@@ -26,12 +26,12 @@ enum Msg {
 impl Model for StreamDemo {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.messages.push("Stream demo started!".to_string());
         Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::StreamValue(val)) => {
                 self.count += 1;
@@ -44,13 +44,13 @@ impl Model for StreamDemo {
 
                 // Quit after 50 messages
                 if self.count >= 50 {
-                    return Some(commands::quit());
+                    return commands::quit();
                 }
 
                 Cmd::none()
             }
-            Event::Quit => None,
-            Event::Key(key) if key.key == hojicha::event::Key::Char('q') => Some(commands::quit()),
+            Event::Quit => commands::quit(),
+            Event::Key(key) if key.key == hojicha::event::Key::Char('q') => commands::quit(),
             _ => Cmd::none(),
         }
     }
@@ -100,48 +100,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_mouse_mode(hojicha::program::MouseMode::CellMotion);
 
     let mut program = Program::with_options(model, options)?;
-    
-    // Initialize async bridge for external events
-    let sender = program.init_async_bridge();
-    
-    // Spawn async tasks that send messages through the bridge
-    std::thread::spawn(move || {
-        // Use a local tokio runtime for the streams
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(async {
-            // Create multiple streams
-            let sender1 = sender.clone();
-            let sender2 = sender.clone();
-            let sender3 = sender.clone();
-            
-            // Stream 1
-            tokio::spawn(async move {
-                for i in 0..20 {
-                    tokio::time::sleep(Duration::from_millis(100)).await;
-                    let _ = sender1.send(Event::User(Msg::StreamValue(format!("Stream 1: Value {}", i))));
-                }
-            });
-            
-            // Stream 2
-            tokio::spawn(async move {
-                for i in 0..15 {
-                    tokio::time::sleep(Duration::from_millis(150)).await;
-                    let _ = sender2.send(Event::User(Msg::StreamValue(format!("Stream 2: Data {}", i * 2))));
-                }
-            });
-            
-            // Stream 3
-            tokio::spawn(async move {
-                for i in 0..15 {
-                    tokio::time::sleep(Duration::from_millis(200)).await;
-                    let _ = sender3.send(Event::User(Msg::StreamValue(format!("Stream 3: Item {}", i * 3))));
-                }
-            });
-            
-            // Keep runtime alive for the duration
-            tokio::time::sleep(Duration::from_secs(10)).await;
-        });
-    });
+
+    // Use the built-in stream subscription system
+    use futures::stream::StreamExt;
+    use hojicha::stream_builders::interval_stream;
+
+    // Create Stream 1: Fast updates every 100ms
+    let stream1 = interval_stream(Duration::from_millis(100))
+        .take(20)
+        .enumerate()
+        .map(|(i, _)| Msg::StreamValue(format!("Stream 1: Value {}", i)));
+
+    // Create Stream 2: Medium updates every 150ms
+    let stream2 = interval_stream(Duration::from_millis(150))
+        .take(15)
+        .enumerate()
+        .map(|(i, _)| Msg::StreamValue(format!("Stream 2: Data {}", i * 2)));
+
+    // Create Stream 3: Slow updates every 200ms
+    let stream3 = interval_stream(Duration::from_millis(200))
+        .take(15)
+        .enumerate()
+        .map(|(i, _)| Msg::StreamValue(format!("Stream 3: Item {}", i * 3)));
+
+    // Subscribe to all streams
+    program.subscribe(stream1);
+    program.subscribe(stream2);
+    program.subscribe(stream3);
 
     // Run the program
     program.run()?;

@@ -2,6 +2,7 @@
 
 use futures::stream::{self, StreamExt};
 use hojicha::{
+    commands,
     core::{Cmd, Model},
     event::Event,
     program::{Program, ProgramOptions},
@@ -41,25 +42,25 @@ enum StreamMessage {
 impl Model for StreamCollector {
     type Message = StreamMessage;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
-        None // Streams will be attached externally
+    fn init(&mut self) -> Cmd<Self::Message> {
+        Cmd::none() // Streams will be attached externally
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(StreamMessage::Value(val)) => {
                 let count = self.messages_received.fetch_add(1, Ordering::SeqCst) + 1;
                 self.last_values.lock().unwrap().push(val);
 
                 if count >= self.should_stop_at {
-                    None // Quit after receiving enough messages
+                    commands::quit() // Quit after receiving enough messages
                 } else {
                     Cmd::none()
                 }
             }
             Event::User(StreamMessage::StreamComplete) => {
                 // Stream has completed
-                None // Quit
+                Cmd::none() // Quit
             }
             _ => Cmd::none(),
         }

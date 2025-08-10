@@ -42,43 +42,35 @@ impl HeadlessModel {
 impl Model for HeadlessModel {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.log("Model initialized".to_string());
 
         // Start a sequence of operations
         commands::sequence(vec![
-            Some(commands::tick(Duration::from_millis(100), || {
-                Message::Increment
-            })),
-            Some(commands::tick(Duration::from_millis(200), || {
-                Message::Increment
-            })),
-            Some(commands::tick(Duration::from_millis(300), || {
-                Message::Decrement
-            })),
-            Some(commands::tick(Duration::from_millis(400), || {
-                Message::Complete
-            })),
+            commands::tick(Duration::from_millis(100), || Message::Increment),
+            commands::tick(Duration::from_millis(200), || Message::Increment),
+            commands::tick(Duration::from_millis(300), || Message::Decrement),
+            commands::tick(Duration::from_millis(400), || Message::Complete),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Message::Increment) => {
                 self.counter += 1;
                 self.log(format!("Counter incremented to {}", self.counter));
-                None
+                Cmd::none()
             }
             Event::User(Message::Decrement) => {
                 self.counter -= 1;
                 self.log(format!("Counter decremented to {}", self.counter));
-                None
+                Cmd::none()
             }
             Event::User(Message::Complete) => {
                 self.log(format!("Complete! Final counter value: {}", self.counter));
-                Some(quit())
+                quit()
             }
-            _ => None,
+            _ => Cmd::none(),
         }
     }
 

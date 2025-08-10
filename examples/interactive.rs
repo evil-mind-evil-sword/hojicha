@@ -165,13 +165,13 @@ impl App {
 impl Model for App {
     type Message = Message;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.log_event("Application started".to_string(), EventType::System);
         // Window size command would go here
-        None
+        Cmd::none()
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Message::ToggleMouseMode) => {
                 self.mouse_mode = match self.mouse_mode {
@@ -183,7 +183,7 @@ impl Model for App {
                     format!("Mouse mode: {}", self.get_mouse_mode_name()),
                     EventType::System,
                 );
-                None
+                Cmd::none()
             }
             Event::User(Message::ToggleInstructions) => {
                 self.instructions_visible = !self.instructions_visible;
@@ -198,20 +198,20 @@ impl Model for App {
                     ),
                     EventType::System,
                 );
-                None
+                Cmd::none()
             }
             Event::User(Message::ClearEvents) => {
                 self.events.clear();
                 self.log_event("Event log cleared".to_string(), EventType::System);
-                None
+                Cmd::none()
             }
-            Event::User(Message::Quit) => Some(commands::quit()), // Using explicit quit command
+            Event::User(Message::Quit) => commands::quit(), // Using explicit quit command
             Event::Key(key) => {
                 // Check for quit keys first - demonstrate both patterns
                 if key.key == Key::Char('q') && key.modifiers.is_empty() {
-                    return Some(commands::quit()); // Using explicit quit command
+                    return commands::quit(); // Using explicit quit command
                 } else if key.key == Key::Esc {
-                    return None; // Traditional pattern still works
+                    return commands::quit(); // Traditional pattern still works
                 }
 
                 let formatted = Self::format_key(&key);
@@ -219,21 +219,17 @@ impl Model for App {
                 self.log_event(format!("Key: {formatted}"), EventType::Keyboard);
 
                 match key.key {
-                    Key::Char('m') if key.modifiers.is_empty() => {
-                        Some(send(Message::ToggleMouseMode))
-                    }
-                    Key::Char('i') if key.modifiers.is_empty() => {
-                        Some(send(Message::ToggleInstructions))
-                    }
-                    Key::Char('c') if key.modifiers.is_empty() => Some(send(Message::ClearEvents)),
-                    _ => None,
+                    Key::Char('m') if key.modifiers.is_empty() => send(Message::ToggleMouseMode),
+                    Key::Char('i') if key.modifiers.is_empty() => send(Message::ToggleInstructions),
+                    Key::Char('c') if key.modifiers.is_empty() => send(Message::ClearEvents),
+                    _ => Cmd::none(),
                 }
             }
             Event::Mouse(mouse) => {
                 self.mouse_position = (mouse.column, mouse.row);
                 let formatted = Self::format_mouse(&mouse);
                 self.log_event(format!("Mouse: {formatted}"), EventType::Mouse);
-                None
+                Cmd::none()
             }
             Event::Paste(text) => {
                 let preview = if text.len() > 50 {
@@ -245,17 +241,17 @@ impl Model for App {
                     format!("Paste: \"{}\"", preview.replace('\n', "\\n")),
                     EventType::Paste,
                 );
-                None
+                Cmd::none()
             }
             Event::Focus => {
                 self.has_focus = true;
                 self.log_event("Window focused".to_string(), EventType::Focus);
-                None
+                Cmd::none()
             }
             Event::Blur => {
                 self.has_focus = false;
                 self.log_event("Window blurred".to_string(), EventType::Focus);
-                None
+                Cmd::none()
             }
             Event::Resize { width, height } => {
                 self.window_size = (width, height);
@@ -263,20 +259,20 @@ impl Model for App {
                     format!("Window resized to {width}x{height}"),
                     EventType::Resize,
                 );
-                None
+                Cmd::none()
             }
             Event::Suspend => {
                 self.log_event(
                     "Application suspended (Ctrl+Z)".to_string(),
                     EventType::System,
                 );
-                None
+                Cmd::none()
             }
             Event::Resume => {
                 self.log_event("Application resumed".to_string(), EventType::System);
-                None
+                Cmd::none()
             }
-            _ => None,
+            _ => Cmd::none(),
         }
     }
 

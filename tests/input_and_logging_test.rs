@@ -1,3 +1,4 @@
+use hojicha::commands;
 use hojicha::prelude::*;
 use hojicha::{Event, Model, Program, ProgramOptions};
 use std::io::{Cursor, Write};
@@ -13,14 +14,16 @@ struct InputTestModel {
 impl Model for InputTestModel {
     type Message = ();
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
-        if let Event::Key(key) = event { if let Key::Char(c) = key.key {
-            self.received_keys.push(c);
-            if Some(c) == self.quit_on {
-                return Some(quit());
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+        if let Event::Key(key) = event {
+            if let Key::Char(c) = key.key {
+                self.received_keys.push(c);
+                if Some(c) == self.quit_on {
+                    return commands::quit();
+                }
             }
-        } }
-        None
+        }
+        Cmd::none()
     }
 
     fn view(&self, _frame: &mut Frame, _area: Rect) {
@@ -89,7 +92,6 @@ impl Write for LogCapture {
 }
 
 #[test]
-#[ignore] // Ignore this test because it conflicts with other logging tests due to global state
 fn test_log_to_file() {
     use std::fs;
     use std::path::Path;
@@ -118,7 +120,6 @@ fn test_log_to_file() {
 }
 
 #[test]
-#[ignore] // Ignore due to global logger state conflicts
 fn test_log_commands() {
     struct LogTestModel {
         log_count: usize,
@@ -127,22 +128,28 @@ fn test_log_commands() {
     impl Model for LogTestModel {
         type Message = String;
 
-        fn init(&mut self) -> Option<Cmd<Self::Message>> {
+        fn init(&mut self) -> Cmd<Self::Message> {
             // Test logging from commands
-            batch(vec![
-                Some(log_debug("Initializing model")),
-                Some(log_info("Model initialized")),
-                Some(custom(|| Some("logged".to_string()))),
+            commands::batch(vec![
+                Cmd::new(|| {
+                    println!("DEBUG: Initializing model");
+                    None
+                }),
+                Cmd::new(|| {
+                    println!("INFO: Model initialized");
+                    None
+                }),
+                commands::custom(|| Some("logged".to_string())),
             ])
         }
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::User(msg) if msg == "logged" => {
                     self.log_count += 1;
-                    Some(quit())
+                    commands::quit()
                 }
-                _ => None,
+                _ => commands::quit(),
             }
         }
 
@@ -170,7 +177,6 @@ fn test_log_commands() {
 }
 
 #[test]
-#[ignore] // Ignore due to global logger state conflicts
 fn test_log_levels() {
     let capture = Arc::new(Mutex::new(vec![]));
     let log_capture = LogCapture {

@@ -29,29 +29,27 @@ enum Msg {
 impl Model for AsyncDemo {
     type Message = Msg;
 
-    fn init(&mut self) -> Option<Cmd<Self::Message>> {
+    fn init(&mut self) -> Cmd<Self::Message> {
         self.messages.push("Starting async demo...".to_string());
 
         // Demonstrate async execution with batch
         commands::batch(vec![
             // This will complete immediately
-            Some(commands::custom(|| {
-                Some(Msg::AsyncComplete("Immediate task completed".to_string()))
-            })),
+            commands::custom(|| Some(Msg::AsyncComplete("Immediate task completed".to_string()))),
             // This will complete after 1 second
-            Some(commands::tick(Duration::from_secs(1), || {
+            commands::tick(Duration::from_secs(1), || {
                 Msg::AsyncComplete("1 second delay completed".to_string())
-            })),
+            }),
             // This will complete after 2 seconds
-            Some(commands::tick(Duration::from_secs(2), || {
+            commands::tick(Duration::from_secs(2), || {
                 Msg::AsyncComplete("2 second delay completed".to_string())
-            })),
+            }),
             // Start a recurring tick every 500ms
-            Some(commands::every(Duration::from_millis(500), |_| Msg::Tick)),
+            commands::every(Duration::from_millis(500), |_| Msg::Tick),
         ])
     }
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::Tick) => {
                 self.tick_count += 1;
@@ -64,11 +62,11 @@ impl Model for AsyncDemo {
 
                 // Stop after 10 ticks
                 if self.tick_count >= 10 {
-                    return Some(commands::quit());
+                    return commands::quit();
                 }
 
                 // Schedule next tick
-                Some(commands::tick(Duration::from_millis(500), || Msg::Tick))
+                commands::tick(Duration::from_millis(500), || Msg::Tick)
             }
             Event::User(Msg::AsyncComplete(msg)) => {
                 let elapsed = self.start_time.elapsed();
@@ -76,8 +74,8 @@ impl Model for AsyncDemo {
                     .push(format!("[{:.1}s] {}", elapsed.as_secs_f32(), msg));
                 Cmd::none()
             }
-            Event::User(Msg::Quit) | Event::Quit => None,
-            Event::Key(key) if key.key == hojicha::event::Key::Char('q') => Some(commands::quit()),
+            Event::User(Msg::Quit) | Event::Quit => commands::quit(),
+            Event::Key(key) if key.key == hojicha::event::Key::Char('q') => commands::quit(),
             _ => Cmd::none(),
         }
     }

@@ -2292,9 +2292,9 @@ fn test_model_testing() {
     
     impl Model for TestModel {
         type Message = ();
-        fn update(&mut self, _: Event<()>) -> Option<Cmd<()>> {
+        fn update(&mut self, _: Event<()>) -> Cmd<()> {
             self.count += 1;
-            None
+            Cmd::none()
         }
         fn view(&self, frame: &mut Frame, area: Rect) {
             // Render count

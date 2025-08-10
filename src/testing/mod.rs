@@ -60,14 +60,16 @@ impl<M: Model> TestHarness<M> {
         let mut commands_executed = Vec::new();
 
         // Run init
-        if let Some(cmd) = self.model.init() {
+        let cmd = self.model.init();
+        if !cmd.is_noop() {
             commands_executed.push(format!("Init command: {cmd:?}"));
         }
 
         // Process each event
         for event in self.events {
             let event_str = format!("{event:?}");
-            if let Some(cmd) = self.model.update(event) {
+            let cmd = self.model.update(event);
+            if !cmd.is_noop() {
                 commands_executed.push(format!("Command from {event_str}: {cmd:?}"));
             }
         }
@@ -161,17 +163,17 @@ mod tests {
     impl Model for TestModel {
         type Message = i32;
 
-        fn init(&mut self) -> Option<Cmd<Self::Message>> {
-            None
+        fn init(&mut self) -> Cmd<Self::Message> {
+            Cmd::none()
         }
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::User(n) => {
                     self.counter += n;
-                    None
+                    Cmd::none()
                 }
-                _ => None,
+                _ => Cmd::none(),
             }
         }
 

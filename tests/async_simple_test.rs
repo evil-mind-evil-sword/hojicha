@@ -1,5 +1,6 @@
 //! Simple test to verify async bridge functionality
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -17,12 +18,12 @@ enum Msg {
 impl Model for SimpleModel {
     type Message = Msg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
             Event::User(Msg::Test(s)) => {
                 self.received.lock().unwrap().push(s);
                 // Quit after receiving one message
-                None
+                commands::quit()
             }
             _ => Cmd::none(),
         }

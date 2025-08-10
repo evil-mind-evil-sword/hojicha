@@ -272,7 +272,7 @@ enum Msg {
 impl Model for AiModel {
     type Message = Msg;
     
-    fn update(&mut self, event: Event<Msg>) -> Option<Cmd<Msg>> {
+    fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
         match event {
             Event::User(Msg::StartGeneration(prompt)) => {
                 // Cancel any existing generation
@@ -352,7 +352,7 @@ enum Msg {
 impl Model for FileSearchModel {
     type Message = Msg;
     
-    fn update(&mut self, event: Event<Msg>) -> Option<Cmd<Msg>> {
+    fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
         match event {
             Event::User(Msg::StartSearch(query)) => {
                 // Cancel any existing search
@@ -528,11 +528,11 @@ enum Msg {
 impl Model for ChatModel {
     type Message = Msg;
     
-    fn init(&mut self) -> Option<Cmd<Msg>> {
-        Some(commands::custom(|| Some(Msg::Connect)))
+    fn init(&mut self) -> Cmd<Msg> {
+        commands::custom(|| Some(Msg::Connect))
     }
     
-    fn update(&mut self, event: Event<Msg>) -> Option<Cmd<Msg>> {
+    fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
         match event {
             Event::User(Msg::Connect) => {
                 // Subscribe to WebSocket stream

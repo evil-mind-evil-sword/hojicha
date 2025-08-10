@@ -1,5 +1,6 @@
 //! Tests for bracketed paste functionality
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::{Arc, Mutex};
 
@@ -16,15 +17,15 @@ fn test_paste_event() {
     impl Model for PasteModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::Paste(text) => {
                     self.pastes.lock().unwrap().push(text);
                 }
-                Event::Quit => return None,
+                Event::Quit => return commands::quit(),
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}

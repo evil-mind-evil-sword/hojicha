@@ -1,5 +1,6 @@
 //! Test that priority event processing is now the default behavior
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use hojicha::program::{PriorityConfig, Program, ProgramOptions};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -36,7 +37,7 @@ impl TestModel {
 impl Model for TestModel {
     type Message = TestMsg;
 
-    fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         if let Event::User(msg) = event {
             match &msg {
                 TestMsg::HighPriority(_) => {
@@ -48,14 +49,14 @@ impl Model for TestModel {
                 TestMsg::LowPriority(_) => {
                     self.low_count.fetch_add(1, Ordering::SeqCst);
                 }
-                TestMsg::Quit => return None,
+                TestMsg::Quit => return commands::quit(),
             }
             self.events_received.push(msg);
         }
 
         // Quit after receiving enough events
         if self.events_received.len() >= 30 {
-            return None;
+            return commands::quit();
         }
 
         Cmd::none()

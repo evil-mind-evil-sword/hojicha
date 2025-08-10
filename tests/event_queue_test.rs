@@ -1,5 +1,6 @@
 //! Tests for event queue management and buffering
 
+use hojicha::commands;
 use hojicha::prelude::*;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
@@ -21,7 +22,7 @@ fn test_event_buffering() {
     impl Model for BufferTestModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             self.event_count.fetch_add(1, Ordering::SeqCst);
 
             match event {
@@ -31,10 +32,10 @@ fn test_event_buffering() {
                 Event::User(Msg::UserEvent(_)) => {
                     self.user_msg_count.fetch_add(1, Ordering::SeqCst);
                 }
-                Event::Quit => return None,
+                Event::Quit => return commands::quit(),
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}
@@ -95,16 +96,16 @@ fn test_resize_event_coalescing() {
     impl Model for ResizeTestModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             match event {
                 Event::Resize { width, height } => {
                     self.resize_count.fetch_add(1, Ordering::SeqCst);
                     *self.last_size.lock().unwrap() = (width, height);
                 }
-                Event::Quit => return None,
+                Event::Quit => return commands::quit(),
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}
@@ -143,7 +144,7 @@ fn test_event_priority() {
     impl Model for PriorityTestModel {
         type Message = Msg;
 
-        fn update(&mut self, event: Event<Self::Message>) -> Option<Cmd<Self::Message>> {
+        fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
             let mut events = self.events.lock().unwrap();
 
             match event {
@@ -151,11 +152,11 @@ fn test_event_priority() {
                 Event::User(Msg::Normal) => events.push("Normal".to_string()),
                 Event::Quit => {
                     events.push("Quit".to_string());
-                    return None;
+                    return commands::quit();
                 }
                 _ => {}
             }
-            None
+            Cmd::none()
         }
 
         fn view(&self, _frame: &mut Frame, _area: Rect) {}
