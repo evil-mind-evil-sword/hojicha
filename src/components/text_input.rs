@@ -2,7 +2,7 @@
 //!
 //! A text input field with validation, placeholder text, and theming support.
 
-use crate::style::{Style, Theme, Themed, ColorProfile};
+use crate::style::{Style, Theme, ColorProfile};
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style as RatatuiStyle},
@@ -359,8 +359,9 @@ impl Default for TextInput {
     }
 }
 
-impl Themed for TextInput {
-    fn apply_theme(&mut self, theme: &Theme) {
+impl TextInput {
+    /// Apply a theme to this text input
+    pub fn apply_theme(&mut self, theme: &Theme) {
         if let Some(style) = theme.get_style("input") {
             self.style = style.clone();
         }

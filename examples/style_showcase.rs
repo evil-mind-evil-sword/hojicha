@@ -267,9 +267,8 @@ impl StyleShowcase {
                     .fg(self.theme.colors.border.to_ratatui(&self.color_profile))
             );
 
-        frame.render_widget(block, area);
-
         let inner = block.inner(area);
+        frame.render_widget(block, area);
         let color_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Length(2); 6])
@@ -308,9 +307,8 @@ impl StyleShowcase {
                     .fg(self.theme.colors.border.to_ratatui(&self.color_profile))
             );
 
-        frame.render_widget(block, area);
-
         let inner = block.inner(area);
+        frame.render_widget(block, area);
         let form_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([

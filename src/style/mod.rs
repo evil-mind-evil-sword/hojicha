@@ -12,7 +12,7 @@ pub use builder::{Style, StyleBuilder, Padding, Margin, BorderStyle};
 pub use color::{Color, AdaptiveColor, ColorProfile, BackgroundMode};
 pub use layout::{
     join_horizontal, join_vertical, center, place,
-    Alignment, HAlign, VAlign, Element, LayoutBuilder
+    Alignment, HAlign, VAlign, Element, LayoutBuilder, StyledText
 };
 pub use theme::{Theme, ColorPalette, Themed};
 
