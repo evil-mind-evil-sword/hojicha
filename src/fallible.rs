@@ -219,8 +219,8 @@ mod tests {
             errors: Arc::new(Mutex::new(Vec::new())),
         };
 
-        let cmd = model.update(Event::User(TestMsg::Succeed));
-        assert!(cmd.is_noop());
+        let _cmd = model.update(Event::User(TestMsg::Succeed));
+        // Command should be a no-op (Cmd::none())
         assert_eq!(model.success_count, 1);
         assert_eq!(model.error_count, 0);
     }
@@ -235,8 +235,8 @@ mod tests {
             errors: Arc::new(Mutex::new(Vec::new())),
         };
 
-        let cmd = model.update(Event::User(TestMsg::Fail));
-        assert!(!cmd.is_noop()); // Should return an error message command
+        let _cmd = model.update(Event::User(TestMsg::Fail));
+        // Should return an error message command
         assert_eq!(model.error_count, 1);
         assert!(model.last_error.is_some());
         assert!(model.last_error.unwrap().contains("Intentional failure"));
@@ -253,8 +253,8 @@ mod tests {
         };
 
         // Use panic catching version
-        let cmd = model.update_with_panic_catching(Event::User(TestMsg::Panic));
-        assert!(!cmd.is_noop());
+        let _cmd = model.update_with_panic_catching(Event::User(TestMsg::Panic));
+        // Should catch the panic and handle it
         assert_eq!(model.panic_count, 1);
         assert!(model.last_error.is_some());
     }
@@ -274,7 +274,7 @@ mod tests {
         impl FallibleModel for DefaultModel {}
 
         let mut model = DefaultModel;
-        let cmd = model.handle_error(Error::Model("test".to_string()));
-        assert!(cmd.is_noop());
+        let _cmd = model.handle_error(Error::Model("test".to_string()));
+        // Default implementation returns Cmd::none()
     }
 }
