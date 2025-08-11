@@ -1,30 +1,44 @@
 //! Command execution logic extracted from Program for testability
 
+use super::error_handler::{DefaultErrorHandler, ErrorHandler};
 use hojicha_core::core::Cmd;
 use hojicha_core::event::Event;
 use std::panic::{self, AssertUnwindSafe};
-use std::sync::mpsc;
+use std::sync::{Arc, mpsc};
 use tokio::runtime::Runtime;
 
 /// Executes commands and sends resulting messages
 #[derive(Clone)]
-pub struct CommandExecutor {
-    runtime: std::sync::Arc<Runtime>,
+pub struct CommandExecutor<M = ()> {
+    runtime: Arc<Runtime>,
+    error_handler: Arc<dyn ErrorHandler<M> + Send + Sync>,
 }
 
-impl CommandExecutor {
-    /// Create a new command executor
+impl<M> CommandExecutor<M>
+where
+    M: Clone + Send + 'static,
+{
+    /// Create a new command executor with default error handler
     pub fn new() -> std::io::Result<Self> {
         Ok(Self {
-            runtime: std::sync::Arc::new(Runtime::new()?),
+            runtime: Arc::new(Runtime::new()?),
+            error_handler: Arc::new(DefaultErrorHandler),
+        })
+    }
+
+    /// Create a new command executor with custom error handler
+    pub fn with_error_handler<H>(error_handler: H) -> std::io::Result<Self>
+    where
+        H: ErrorHandler<M> + Send + Sync + 'static,
+    {
+        Ok(Self {
+            runtime: Arc::new(Runtime::new()?),
+            error_handler: Arc::new(error_handler),
         })
     }
 
     /// Execute a command and send the result through the channel
-    pub fn execute<M>(&self, cmd: Cmd<M>, tx: mpsc::SyncSender<Event<M>>)
-    where
-        M: Clone + Send + 'static,
-    {
+    pub fn execute(&self, cmd: Cmd<M>, tx: mpsc::SyncSender<Event<M>>) {
         if cmd.is_noop() {
             // NoOp command - do nothing
         } else if cmd.is_quit() {
@@ -104,6 +118,7 @@ impl CommandExecutor {
         } else {
             // Spawn async task for regular command execution (like Bubbletea's goroutines)
             let tx_clone = tx.clone();
+            let error_handler = self.error_handler.clone();
             self.runtime.spawn(async move {
                 // Wrap command execution in panic recovery
                 let result = panic::catch_unwind(AssertUnwindSafe(|| cmd.execute()));
@@ -116,8 +131,8 @@ impl CommandExecutor {
                         // Command executed successfully but produced no message
                     }
                     Ok(Err(error)) => {
-                        // Log the error - in a real implementation, this might send an error event
-                        eprintln!("Command execution error: {error}");
+                        // Use the configured error handler
+                        error_handler.handle_error(error, &tx_clone);
                     }
                     Err(panic) => {
                         // Command panicked - log and recover
@@ -137,10 +152,7 @@ impl CommandExecutor {
     }
 
     /// Execute a batch of commands concurrently
-    pub fn execute_batch<M>(&self, commands: Vec<Cmd<M>>, tx: mpsc::SyncSender<Event<M>>)
-    where
-        M: Clone + Send + 'static,
-    {
+    pub fn execute_batch(&self, commands: Vec<Cmd<M>>, tx: mpsc::SyncSender<Event<M>>) {
         // Spawn all commands concurrently (like Bubbletea's batch)
         for cmd in commands {
             // Each command runs in its own async task
@@ -149,12 +161,10 @@ impl CommandExecutor {
     }
 
     /// Execute a sequence of commands (one after another)
-    pub fn execute_sequence<M>(&self, commands: Vec<Cmd<M>>, tx: mpsc::SyncSender<Event<M>>)
-    where
-        M: Clone + Send + 'static,
-    {
+    pub fn execute_sequence(&self, commands: Vec<Cmd<M>>, tx: mpsc::SyncSender<Event<M>>) {
         // Spawn async task to execute commands in sequence
         let tx_clone = tx.clone();
+        let error_handler = self.error_handler.clone();
         self.runtime.spawn(async move {
             for cmd in commands {
                 let tx_inner = tx_clone.clone();
@@ -213,7 +223,8 @@ impl CommandExecutor {
                         }
                         Ok(Ok(None)) => {}
                         Ok(Err(error)) => {
-                            eprintln!("Sequence command execution error: {error}");
+                            // Use the configured error handler
+                            error_handler.handle_error(error, &tx_inner);
                         }
                         Err(panic) => {
                             let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
@@ -247,7 +258,10 @@ impl CommandExecutor {
     }
 }
 
-impl Default for CommandExecutor {
+impl<M> Default for CommandExecutor<M>
+where
+    M: Clone + Send + 'static,
+{
     fn default() -> Self {
         Self::new().expect("Failed to create runtime")
     }
@@ -268,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_execute_custom_command() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         let cmd = commands::custom(|| Some(TestMsg::Inc));
@@ -283,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_execute_quit_command() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         let cmd: Cmd<TestMsg> = commands::quit();
@@ -295,7 +309,7 @@ mod tests {
 
     #[test]
     fn test_execute_batch_commands() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         let commands = vec![
@@ -325,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_execute_none_command() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         // Cmd::none() returns Option<Cmd>, which is None
@@ -342,7 +356,7 @@ mod tests {
 
     #[test]
     fn test_execute_tick_command() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         let cmd = commands::tick(Duration::from_millis(10), || TestMsg::Inc);
@@ -359,7 +373,7 @@ mod tests {
 
     #[test]
     fn test_execute_sequence() {
-        let executor = CommandExecutor::new().unwrap();
+        let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         let commands = vec![
@@ -385,8 +399,8 @@ mod tests {
 
     #[test]
     fn test_multiple_executors() {
-        let executor1 = CommandExecutor::new().unwrap();
-        let executor2 = CommandExecutor::new().unwrap();
+        let executor1 = CommandExecutor::<TestMsg>::new().unwrap();
+        let executor2 = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
         executor1.execute(commands::custom(|| Some(TestMsg::Inc)), tx.clone());
@@ -409,3 +423,7 @@ mod tests {
 #[cfg(test)]
 #[path = "command_executor_panic_tests.rs"]
 mod panic_tests;
+
+#[cfg(test)]
+#[path = "error_handler_tests.rs"]
+mod error_handler_tests;
