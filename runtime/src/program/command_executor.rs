@@ -115,6 +115,22 @@ where
                     }
                 });
             }
+        } else if cmd.is_async() {
+            // Handle async command using shared runtime
+            if let Some(future) = cmd.take_async() {
+                let tx_clone = tx.clone();
+                self.runtime.spawn(async move {
+                    // The future is already boxed, just need to pin it
+                    use std::pin::Pin;
+                    let mut future = future;
+                    let future = unsafe { Pin::new_unchecked(&mut *future) };
+                    
+                    // Actually await the future
+                    if let Some(msg) = future.await {
+                        let _ = tx_clone.send(Event::User(msg));
+                    }
+                });
+            }
         } else {
             // Spawn async task for regular command execution (like Bubbletea's goroutines)
             let tx_clone = tx.clone();
