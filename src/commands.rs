@@ -45,6 +45,11 @@ pub fn none<M: Message>() -> Cmd<M> {
 
 /// Batch multiple commands to run concurrently
 ///
+/// Note: For performance optimization:
+/// - Empty vectors return `Cmd::none()`
+/// - Single-element vectors return the element directly
+/// - Use `batch_strict()` if you need guaranteed batch semantics
+///
 /// # Example
 /// ```ignore
 /// fn init(&mut self) -> Cmd<Self::Message> {
@@ -64,6 +69,11 @@ pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 
 /// Sequence commands to run one after another
 ///
+/// Note: For performance optimization:
+/// - Empty vectors return `Cmd::none()`
+/// - Single-element vectors return the element directly
+/// - Use `sequence_strict()` if you need guaranteed sequence semantics
+///
 /// # Example
 /// ```ignore
 /// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
@@ -79,6 +89,34 @@ pub fn sequence<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
         1 => cmds.into_iter().next().unwrap(),
         _ => Cmd::sequence(cmds),
     }
+}
+
+/// Create a batch command with strict semantics
+///
+/// Unlike `batch()`, this always returns a batch command regardless of the
+/// number of elements. Use this when you need guaranteed batch behavior.
+///
+/// # Example
+/// ```ignore
+/// // Always returns a batch, even with 0 or 1 elements
+/// batch_strict(vec![maybe_cmd()])
+/// ```
+pub fn batch_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
+    Cmd::batch(cmds)
+}
+
+/// Create a sequence command with strict semantics
+///
+/// Unlike `sequence()`, this always returns a sequence command regardless of the
+/// number of elements. Use this when you need guaranteed sequence behavior.
+///
+/// # Example
+/// ```ignore
+/// // Always returns a sequence, even with 0 or 1 elements
+/// sequence_strict(vec![maybe_cmd()])
+/// ```
+pub fn sequence_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
+    Cmd::sequence(cmds)
 }
 
 /// Create a command that sends a message after a delay
