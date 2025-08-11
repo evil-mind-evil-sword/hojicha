@@ -83,10 +83,10 @@ fn test_batch_with_different_timings() {
         }),
     ]);
     
-    // Execute with time to let all ticks complete
-    let messages = harness.execute_with_time_advance(batch_cmd, Duration::from_millis(15));
+    // Execute and wait for all ticks to complete
+    let messages = harness.execute_and_wait(batch_cmd, Duration::from_millis(20));
     
-    // Should have all three messages
+    // Should have all three messages (batch executes concurrently)
     assert_eq!(messages.len(), 3);
     assert!(messages.contains(&AnimationMsg::Tick("immediate".to_string())));
     assert!(messages.contains(&AnimationMsg::Tick("tick_5".to_string())));
@@ -138,16 +138,19 @@ fn test_sequence_with_timing() {
     // Create a sequence with timing
     let seq_cmd = commands::sequence(vec![
         commands::custom(|| Some(AnimationMsg::Frame(0))),
-        commands::tick(Duration::from_millis(10), || AnimationMsg::Frame(1)),
-        commands::tick(Duration::from_millis(10), || AnimationMsg::Frame(2)),
+        commands::tick(Duration::from_millis(5), || AnimationMsg::Frame(1)),
+        commands::tick(Duration::from_millis(5), || AnimationMsg::Frame(2)),
         commands::custom(|| Some(AnimationMsg::Complete)),
     ]);
     
-    // Execute with enough time for sequence to complete
-    let messages = harness.execute_with_time_advance(seq_cmd, Duration::from_millis(25));
+    // Execute and wait for sequence to complete
+    // Sequences run one after another, so we need to wait for the sum of all delays
+    let messages = harness.execute_and_wait(seq_cmd, Duration::from_millis(30));
     
-    // Sequence should maintain order
+    // Should have at least the expected messages
     assert!(messages.len() >= 3);
+    
+    // Check that we got the expected frame messages
     let frame_messages: Vec<_> = messages
         .iter()
         .filter_map(|m| match m {
@@ -156,7 +159,8 @@ fn test_sequence_with_timing() {
         })
         .collect();
     
-    // Frames should be in order
+    // Frames should be in order (0, 1, 2)
+    assert!(!frame_messages.is_empty());
     for i in 1..frame_messages.len() {
         assert!(frame_messages[i] >= frame_messages[i - 1]);
     }

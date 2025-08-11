@@ -5,7 +5,6 @@ use hojicha_core::event::Event;
 use std::sync::mpsc;
 use std::time::Duration;
 use tokio::runtime::Runtime;
-use tokio::time;
 
 /// A test harness for async operations with controllable time
 pub struct AsyncTestHarness {
@@ -71,27 +70,22 @@ impl AsyncTestHarness {
         self.runtime.block_on(future)
     }
 
-    /// Execute a command with simulated time advancement
-    pub fn execute_with_time_advance<M: Message + Clone + Send + 'static>(
+    /// Execute a command and wait for completion
+    pub fn execute_and_wait<M: Message + Clone + Send + 'static>(
         &self,
         cmd: Cmd<M>,
-        advance_by: Duration,
+        wait_duration: Duration,
     ) -> Vec<M> {
         let (tx, rx) = mpsc::sync_channel(100);
         
         use crate::program::CommandExecutor;
         let executor = CommandExecutor::new().expect("Failed to create executor");
         
-        // Start time-based operations
+        // Start command execution
         executor.execute(cmd, tx);
         
-        // Use tokio's time control in tests
-        self.runtime.block_on(async {
-            // Advance time
-            time::advance(advance_by).await;
-            // Give operations time to complete
-            time::sleep(Duration::from_millis(10)).await;
-        });
+        // Wait for operations to complete
+        std::thread::sleep(wait_duration);
         
         // Collect all messages
         let mut messages = Vec::new();
