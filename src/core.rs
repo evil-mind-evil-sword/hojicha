@@ -95,6 +95,9 @@ pub(crate) enum CmdInner<M: Message> {
 
 impl<M: Message> Cmd<M> {
     /// Create a new command from a function
+    /// 
+    /// Note: If the function returns `None`, consider using `Cmd::none()` instead
+    /// for better performance and clearer intent.
     pub fn new<F>(f: F) -> Self
     where
         F: FnOnce() -> Option<M> + Send + 'static,
