@@ -2,6 +2,7 @@
 
 use hojicha_core::core::Cmd;
 use hojicha_core::event::Event;
+use std::panic::{self, AssertUnwindSafe};
 use std::sync::mpsc;
 use tokio::runtime::Runtime;
 
@@ -52,8 +53,24 @@ impl CommandExecutor {
                 let tx_clone = tx.clone();
                 self.runtime.spawn(async move {
                     tokio::time::sleep(duration).await;
-                    let msg = callback();
-                    let _ = tx_clone.send(Event::User(msg));
+                    // Wrap callback execution in panic recovery
+                    let result = panic::catch_unwind(AssertUnwindSafe(|| callback()));
+                    match result {
+                        Ok(msg) => {
+                            let _ = tx_clone.send(Event::User(msg));
+                        }
+                        Err(panic) => {
+                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                                s.clone()
+                            } else if let Some(s) = panic.downcast_ref::<&str>() {
+                                s.to_string()
+                            } else {
+                                "Unknown panic in tick callback".to_string()
+                            };
+                            eprintln!("Tick callback panicked: {}", panic_msg);
+                            // Continue running - don't crash the application
+                        }
+                    }
                 });
             }
         } else if cmd.is_every() {
@@ -64,24 +81,55 @@ impl CommandExecutor {
                     // Since callback is FnOnce, we can only call it once
                     // For now, just execute once after delay
                     tokio::time::sleep(duration).await;
-                    let msg = callback(std::time::Instant::now());
-                    let _ = tx_clone.send(Event::User(msg));
+                    // Wrap callback execution in panic recovery
+                    let result = panic::catch_unwind(AssertUnwindSafe(|| callback(std::time::Instant::now())));
+                    match result {
+                        Ok(msg) => {
+                            let _ = tx_clone.send(Event::User(msg));
+                        }
+                        Err(panic) => {
+                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                                s.clone()
+                            } else if let Some(s) = panic.downcast_ref::<&str>() {
+                                s.to_string()
+                            } else {
+                                "Unknown panic in every callback".to_string()
+                            };
+                            eprintln!("Every callback panicked: {}", panic_msg);
+                            // Continue running - don't crash the application
+                        }
+                    }
                 });
             }
         } else {
             // Spawn async task for regular command execution (like Bubbletea's goroutines)
             let tx_clone = tx.clone();
             self.runtime.spawn(async move {
-                match cmd.execute() {
-                    Ok(Some(msg)) => {
+                // Wrap command execution in panic recovery
+                let result = panic::catch_unwind(AssertUnwindSafe(|| cmd.execute()));
+                
+                match result {
+                    Ok(Ok(Some(msg))) => {
                         let _ = tx_clone.send(Event::User(msg));
                     }
-                    Ok(None) => {
+                    Ok(Ok(None)) => {
                         // Command executed successfully but produced no message
                     }
-                    Err(error) => {
+                    Ok(Err(error)) => {
                         // Log the error - in a real implementation, this might send an error event
                         eprintln!("Command execution error: {error}");
+                    }
+                    Err(panic) => {
+                        // Command panicked - log and recover
+                        let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                            s.clone()
+                        } else if let Some(s) = panic.downcast_ref::<&str>() {
+                            s.to_string()
+                        } else {
+                            "Unknown panic in command".to_string()
+                        };
+                        eprintln!("Command panicked: {}", panic_msg);
+                        // Continue running - don't crash the application
                     }
                 }
             });
@@ -115,24 +163,68 @@ impl CommandExecutor {
                 if cmd.is_tick() {
                     if let Some((duration, callback)) = cmd.take_tick() {
                         tokio::time::sleep(duration).await;
-                        let msg = callback();
-                        let _ = tx_inner.send(Event::User(msg));
+                        // Wrap callback execution in panic recovery
+                        let result = panic::catch_unwind(AssertUnwindSafe(|| callback()));
+                        match result {
+                            Ok(msg) => {
+                                let _ = tx_inner.send(Event::User(msg));
+                            }
+                            Err(panic) => {
+                                let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                                    s.clone()
+                                } else if let Some(s) = panic.downcast_ref::<&str>() {
+                                    s.to_string()
+                                } else {
+                                    "Unknown panic in tick callback".to_string()
+                                };
+                                eprintln!("Tick callback panicked: {}", panic_msg);
+                                // Continue running - don't crash the application
+                            }
+                        }
                     }
                 } else if cmd.is_every() {
                     if let Some((duration, callback)) = cmd.take_every() {
                         tokio::time::sleep(duration).await;
-                        let msg = callback(std::time::Instant::now());
-                        let _ = tx_inner.send(Event::User(msg));
+                        // Wrap callback execution in panic recovery
+                        let result = panic::catch_unwind(AssertUnwindSafe(|| callback(std::time::Instant::now())));
+                        match result {
+                            Ok(msg) => {
+                                let _ = tx_inner.send(Event::User(msg));
+                            }
+                            Err(panic) => {
+                                let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                                    s.clone()
+                                } else if let Some(s) = panic.downcast_ref::<&str>() {
+                                    s.to_string()
+                                } else {
+                                    "Unknown panic in every callback".to_string()
+                                };
+                                eprintln!("Every callback panicked: {}", panic_msg);
+                                // Continue running - don't crash the application
+                            }
+                        }
                     }
                 } else {
-                    // Regular command execution
-                    match cmd.execute() {
-                        Ok(Some(msg)) => {
+                    // Regular command execution with panic recovery
+                    let result = panic::catch_unwind(AssertUnwindSafe(|| cmd.execute()));
+                    match result {
+                        Ok(Ok(Some(msg))) => {
                             let _ = tx_inner.send(Event::User(msg));
                         }
-                        Ok(None) => {}
-                        Err(error) => {
+                        Ok(Ok(None)) => {}
+                        Ok(Err(error)) => {
                             eprintln!("Sequence command execution error: {error}");
+                        }
+                        Err(panic) => {
+                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
+                                s.clone()
+                            } else if let Some(s) = panic.downcast_ref::<&str>() {
+                                s.to_string()
+                            } else {
+                                "Unknown panic in sequence command".to_string()
+                            };
+                            eprintln!("Sequence command panicked: {}", panic_msg);
+                            // Continue running - don't crash the application
                         }
                     }
                 }
@@ -313,3 +405,7 @@ mod tests {
         assert!(events.contains(&TestMsg::Dec));
     }
 }
+
+#[cfg(test)]
+#[path = "command_executor_panic_tests.rs"]
+mod panic_tests;
