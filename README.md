@@ -165,6 +165,7 @@ let handle = program.spawn_cancellable(|token| async move {
 
 ## Documentation
 
+- [Common Patterns](./docs/COMMON_PATTERNS.md)
 - [Architecture Guide](./docs/ARCHITECTURE.md)
 - [Development Guide](./docs/DEVELOPMENT.md)
 - [Testing Guide](./docs/TESTING_BEST_PRACTICES.md)
