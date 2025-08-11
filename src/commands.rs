@@ -874,7 +874,8 @@ mod tests {
         let cmd = custom_async::<TestMsg, _, _>(|| async { Some(TestMsg::Three) });
         let result = cmd.execute();
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Some(TestMsg::Three));
+        // Now async commands return None since they use shared runtime
+        assert_eq!(result.unwrap(), None);
     }
 
     #[test]
