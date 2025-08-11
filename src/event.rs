@@ -246,6 +246,20 @@ impl From<crossterm::event::KeyEvent> for KeyEvent {
 }
 
 /// A mouse event
+///
+/// # Example
+/// ```ignore
+/// match event {
+///     Event::Mouse(mouse) => {
+///         if mouse.is_left_click() {
+///             println!("Left clicked at ({}, {})", mouse.column, mouse.row);
+///         } else if mouse.is_scroll_up() {
+///             println!("Scrolled up");
+///         }
+///     }
+///     _ => {}
+/// }
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MouseEvent {
     /// The kind of mouse event
@@ -256,6 +270,84 @@ pub struct MouseEvent {
     pub row: u16,
     /// Key modifiers held during the event
     pub modifiers: KeyModifiers,
+}
+
+impl MouseEvent {
+    /// Check if this is a left button click (button down event)
+    pub fn is_left_click(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Down(MouseButton::Left))
+    }
+    
+    /// Check if this is a right button click (button down event)
+    pub fn is_right_click(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Down(MouseButton::Right))
+    }
+    
+    /// Check if this is a middle button click (button down event)
+    pub fn is_middle_click(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Down(MouseButton::Middle))
+    }
+    
+    /// Check if this is any button click (button down event)
+    pub fn is_click(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Down(_))
+    }
+    
+    /// Check if this is a button release event
+    pub fn is_release(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Up(_))
+    }
+    
+    /// Check if this is a drag event (mouse moved while button pressed)
+    pub fn is_drag(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Drag(_))
+    }
+    
+    /// Check if this is a scroll up event
+    pub fn is_scroll_up(&self) -> bool {
+        matches!(self.kind, MouseEventKind::ScrollUp)
+    }
+    
+    /// Check if this is a scroll down event
+    pub fn is_scroll_down(&self) -> bool {
+        matches!(self.kind, MouseEventKind::ScrollDown)
+    }
+    
+    /// Check if this is a scroll left event
+    pub fn is_scroll_left(&self) -> bool {
+        matches!(self.kind, MouseEventKind::ScrollLeft)
+    }
+    
+    /// Check if this is a scroll right event
+    pub fn is_scroll_right(&self) -> bool {
+        matches!(self.kind, MouseEventKind::ScrollRight)
+    }
+    
+    /// Check if this is any scroll event
+    pub fn is_scroll(&self) -> bool {
+        matches!(
+            self.kind,
+            MouseEventKind::ScrollUp
+                | MouseEventKind::ScrollDown
+                | MouseEventKind::ScrollLeft
+                | MouseEventKind::ScrollRight
+        )
+    }
+    
+    /// Check if this is a mouse move event (without button pressed)
+    pub fn is_move(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Moved)
+    }
+    
+    /// Get the position as a tuple (column, row)
+    pub fn position(&self) -> (u16, u16) {
+        (self.column, self.row)
+    }
+    
+    /// Check if a modifier key was held during the event
+    pub fn has_modifier(&self, modifier: KeyModifiers) -> bool {
+        self.modifiers.contains(modifier)
+    }
 }
 
 impl From<crossterm::event::MouseEvent> for MouseEvent {
