@@ -181,10 +181,10 @@ impl Model for App {
             }
             Event::User(Message::Quit) => commands::quit(),
             Event::Key(key) => {
-                // Check for quit keys first - using explicit quit command
-                if key.key == Key::Char('q') && key.modifiers.is_empty() || key.key == Key::Esc {
+                // Check for quit keys first - using improved API
+                if key.is(Key::Char('q')) && key.no_modifiers() || key.is(Key::Esc) {
                     commands::quit()
-                } else if key.key == Key::Tab && key.modifiers.is_empty() {
+                } else if key.is(Key::Tab) && key.no_modifiers() {
                     // Don't call update recursively - just handle the tab switch directly
                     self.current_tab = match self.current_tab {
                         Tab::List => Tab::Table,
@@ -195,7 +195,7 @@ impl Model for App {
                     };
                     self.status_message = format!("Switched to {:?} tab", self.current_tab);
                     Cmd::none()
-                } else if key.key == Key::Tab && key.modifiers.contains(KeyModifiers::SHIFT) {
+                } else if key.is_with_modifiers(Key::Tab, KeyModifiers::SHIFT) {
                     // Don't call update recursively - just handle the tab switch directly
                     self.current_tab = match self.current_tab {
                         Tab::List => Tab::Spinner,

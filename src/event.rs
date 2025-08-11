@@ -38,6 +38,162 @@ pub enum Event<M> {
     ExecProcess,
 }
 
+impl<M> Event<M> {
+    /// Check if this is a key event
+    pub fn is_key(&self) -> bool {
+        matches!(self, Event::Key(_))
+    }
+    
+    /// Check if this is a specific key press
+    ///
+    /// # Example
+    /// ```ignore
+    /// if event.is_key_press(Key::Enter) {
+    ///     // Handle enter key
+    /// }
+    /// ```
+    pub fn is_key_press(&self, key: Key) -> bool {
+        matches!(self, Event::Key(k) if k.key == key)
+    }
+    
+    /// Check if this is a specific key with modifiers
+    ///
+    /// # Example
+    /// ```ignore
+    /// if event.is_key_with_modifiers(Key::Char('c'), KeyModifiers::CONTROL) {
+    ///     // Handle Ctrl+C
+    /// }
+    /// ```
+    pub fn is_key_with_modifiers(&self, key: Key, modifiers: KeyModifiers) -> bool {
+        matches!(self, Event::Key(k) if k.key == key && k.modifiers == modifiers)
+    }
+    
+    /// Get the key event if this is a key event
+    pub fn as_key(&self) -> Option<&KeyEvent> {
+        match self {
+            Event::Key(k) => Some(k),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a mouse event
+    pub fn is_mouse(&self) -> bool {
+        matches!(self, Event::Mouse(_))
+    }
+    
+    /// Get the mouse event if this is a mouse event
+    pub fn as_mouse(&self) -> Option<&MouseEvent> {
+        match self {
+            Event::Mouse(m) => Some(m),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a mouse click at any position
+    pub fn is_click(&self) -> bool {
+        matches!(self, Event::Mouse(m) if m.is_click())
+    }
+    
+    /// Get click position if this is a click event
+    ///
+    /// # Example
+    /// ```ignore
+    /// if let Some((x, y)) = event.as_click() {
+    ///     // Handle click at position (x, y)
+    /// }
+    /// ```
+    pub fn as_click(&self) -> Option<(u16, u16)> {
+        match self {
+            Event::Mouse(m) if m.is_click() => Some(m.position()),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a resize event
+    pub fn is_resize(&self) -> bool {
+        matches!(self, Event::Resize { .. })
+    }
+    
+    /// Get resize dimensions if this is a resize event
+    ///
+    /// # Example
+    /// ```ignore
+    /// if let Some((width, height)) = event.as_resize() {
+    ///     // Handle resize to width x height
+    /// }
+    /// ```
+    pub fn as_resize(&self) -> Option<(u16, u16)> {
+        match self {
+            Event::Resize { width, height } => Some((*width, *height)),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a user message
+    pub fn is_user(&self) -> bool {
+        matches!(self, Event::User(_))
+    }
+    
+    /// Get the user message if this is a user event
+    pub fn as_user(&self) -> Option<&M> {
+        match self {
+            Event::User(msg) => Some(msg),
+            _ => None,
+        }
+    }
+    
+    /// Take the user message if this is a user event
+    pub fn into_user(self) -> Option<M> {
+        match self {
+            Event::User(msg) => Some(msg),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a quit event
+    pub fn is_quit(&self) -> bool {
+        matches!(self, Event::Quit)
+    }
+    
+    /// Check if this is a tick event
+    pub fn is_tick(&self) -> bool {
+        matches!(self, Event::Tick)
+    }
+    
+    /// Check if this is a paste event
+    pub fn is_paste(&self) -> bool {
+        matches!(self, Event::Paste(_))
+    }
+    
+    /// Get pasted text if this is a paste event
+    pub fn as_paste(&self) -> Option<&str> {
+        match self {
+            Event::Paste(text) => Some(text.as_str()),
+            _ => None,
+        }
+    }
+    
+    /// Check if this is a focus event
+    pub fn is_focus(&self) -> bool {
+        matches!(self, Event::Focus)
+    }
+    
+    /// Check if this is a blur event
+    pub fn is_blur(&self) -> bool {
+        matches!(self, Event::Blur)
+    }
+    
+    /// Check if this is a suspend event
+    pub fn is_suspend(&self) -> bool {
+        matches!(self, Event::Suspend)
+    }
+    
+    /// Check if this is a resume event
+    pub fn is_resume(&self) -> bool {
+        matches!(self, Event::Resume)
+    }
+}
+
 /// Window size information
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct WindowSize {
@@ -73,6 +229,85 @@ impl KeyEvent {
             Key::Char(c) => Some(c),
             _ => None,
         }
+    }
+    
+    /// Check if this key event matches a specific key
+    ///
+    /// # Example
+    /// ```ignore
+    /// if key_event.is(Key::Enter) {
+    ///     // Handle enter key
+    /// }
+    /// ```
+    pub fn is(&self, key: Key) -> bool {
+        self.key == key
+    }
+    
+    /// Check if this key event matches a specific key with modifiers
+    ///
+    /// # Example
+    /// ```ignore
+    /// if key_event.is_with_modifiers(Key::Char('s'), KeyModifiers::CONTROL) {
+    ///     // Handle Ctrl+S
+    /// }
+    /// ```
+    pub fn is_with_modifiers(&self, key: Key, modifiers: KeyModifiers) -> bool {
+        self.key == key && self.modifiers == modifiers
+    }
+    
+    /// Check if control key is held
+    pub fn is_ctrl(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::CONTROL)
+    }
+    
+    /// Check if alt key is held
+    pub fn is_alt(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::ALT)
+    }
+    
+    /// Check if shift key is held
+    pub fn is_shift(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::SHIFT)
+    }
+    
+    /// Check if super/meta key is held
+    pub fn is_super(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::SUPER)
+    }
+    
+    /// Check if this is a navigation key (arrows, home, end, page up/down)
+    pub fn is_navigation(&self) -> bool {
+        matches!(
+            self.key,
+            Key::Up | Key::Down | Key::Left | Key::Right | 
+            Key::Home | Key::End | Key::PageUp | Key::PageDown
+        )
+    }
+    
+    /// Check if this is a function key (F1-F24)
+    pub fn is_function_key(&self) -> bool {
+        matches!(self.key, Key::F(_))
+    }
+    
+    /// Check if this is a media control key
+    pub fn is_media_key(&self) -> bool {
+        matches!(
+            self.key,
+            Key::MediaPlay | Key::MediaPause | Key::MediaPlayPause |
+            Key::MediaStop | Key::MediaNext | Key::MediaPrevious |
+            Key::MediaFastForward | Key::MediaRewind |
+            Key::MediaVolumeUp | Key::MediaVolumeDown | Key::MediaMute
+        )
+    }
+    
+    /// Check if this key event has any modifiers
+    pub fn has_modifiers(&self) -> bool {
+        !self.modifiers.is_empty()
+    }
+    
+    /// Check if this key event has no modifiers
+    pub fn no_modifiers(&self) -> bool {
+        self.modifiers.is_empty()
     }
 }
 
@@ -273,6 +508,11 @@ pub struct MouseEvent {
 }
 
 impl MouseEvent {
+    /// Create a new mouse event
+    pub fn new(kind: MouseEventKind, column: u16, row: u16, modifiers: KeyModifiers) -> Self {
+        Self { kind, column, row, modifiers }
+    }
+    
     /// Check if this is a left button click (button down event)
     pub fn is_left_click(&self) -> bool {
         matches!(self.kind, MouseEventKind::Down(MouseButton::Left))
@@ -301,6 +541,21 @@ impl MouseEvent {
     /// Check if this is a drag event (mouse moved while button pressed)
     pub fn is_drag(&self) -> bool {
         matches!(self.kind, MouseEventKind::Drag(_))
+    }
+    
+    /// Check if this is a left button drag
+    pub fn is_left_drag(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Drag(MouseButton::Left))
+    }
+    
+    /// Check if this is a right button drag
+    pub fn is_right_drag(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Drag(MouseButton::Right))
+    }
+    
+    /// Check if this is a middle button drag
+    pub fn is_middle_drag(&self) -> bool {
+        matches!(self.kind, MouseEventKind::Drag(MouseButton::Middle))
     }
     
     /// Check if this is a scroll up event
@@ -339,14 +594,66 @@ impl MouseEvent {
         matches!(self.kind, MouseEventKind::Moved)
     }
     
+    /// Get the button involved in this event, if any
+    pub fn button(&self) -> Option<MouseButton> {
+        match self.kind {
+            MouseEventKind::Down(btn) | MouseEventKind::Up(btn) | MouseEventKind::Drag(btn) => Some(btn),
+            _ => None,
+        }
+    }
+    
     /// Get the position as a tuple (column, row)
     pub fn position(&self) -> (u16, u16) {
         (self.column, self.row)
     }
     
+    /// Check if the mouse event occurred within a rectangular area
+    ///
+    /// # Example
+    /// ```ignore
+    /// let rect = Rect::new(10, 10, 20, 10);
+    /// if mouse_event.is_within_rect(rect) {
+    ///     // Mouse event is within the rectangle
+    /// }
+    /// ```
+    pub fn is_within(&self, x: u16, y: u16, width: u16, height: u16) -> bool {
+        self.column >= x && self.column < x + width &&
+        self.row >= y && self.row < y + height
+    }
+    
+    /// Check if the mouse event occurred at a specific position
+    pub fn is_at(&self, column: u16, row: u16) -> bool {
+        self.column == column && self.row == row
+    }
+    
     /// Check if a modifier key was held during the event
     pub fn has_modifier(&self, modifier: KeyModifiers) -> bool {
         self.modifiers.contains(modifier)
+    }
+    
+    /// Check if control key is held
+    pub fn is_ctrl(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::CONTROL)
+    }
+    
+    /// Check if alt key is held
+    pub fn is_alt(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::ALT)
+    }
+    
+    /// Check if shift key is held
+    pub fn is_shift(&self) -> bool {
+        self.modifiers.contains(KeyModifiers::SHIFT)
+    }
+    
+    /// Check if this mouse event has any modifiers
+    pub fn has_modifiers(&self) -> bool {
+        !self.modifiers.is_empty()
+    }
+    
+    /// Check if this mouse event has no modifiers
+    pub fn no_modifiers(&self) -> bool {
+        self.modifiers.is_empty()
     }
 }
 
