@@ -735,6 +735,66 @@ where
         });
     }
 
+    /// Subscribe to an interval timer with a simple callback
+    ///
+    /// This is a simplified API for the common case of periodic events.
+    ///
+    /// # Example
+    /// ```ignore
+    /// program.subscribe_interval(Duration::from_secs(1), || Msg::Tick);
+    /// ```
+    pub fn subscribe_interval<F>(&mut self, interval: Duration, mut callback: F) -> Subscription
+    where
+        F: FnMut() -> M::Message + Send + 'static,
+        M::Message: Send + 'static,
+    {
+        use futures::stream::StreamExt;
+        
+        let stream = async_stream::stream! {
+            let mut interval = tokio::time::interval(interval);
+            loop {
+                interval.tick().await;
+                yield callback();
+            }
+        };
+        
+        self.subscribe(stream)
+    }
+
+    /// Subscribe to a stream with automatic error handling
+    ///
+    /// This helper automatically converts stream items and errors to messages.
+    ///
+    /// # Example
+    /// ```ignore
+    /// program.subscribe_with_error(
+    ///     my_stream,
+    ///     |item| Msg::Data(item),
+    ///     |error| Msg::Error(error.to_string())
+    /// );
+    /// ```
+    pub fn subscribe_with_error<S, T, E, F, G>(
+        &mut self,
+        stream: S,
+        on_item: F,
+        on_error: G,
+    ) -> Subscription
+    where
+        S: futures::Stream<Item = std::result::Result<T, E>> + Send + 'static,
+        F: Fn(T) -> M::Message + Send + 'static,
+        G: Fn(E) -> M::Message + Send + 'static,
+        M::Message: Send + 'static,
+    {
+        use futures::StreamExt;
+        
+        let mapped_stream = stream.map(move |result| match result {
+            Ok(item) => on_item(item),
+            Err(error) => on_error(error),
+        });
+        
+        self.subscribe(mapped_stream)
+    }
+
     /// Run the program with a timeout (useful for testing)
     ///
     /// The program will automatically exit after the specified duration.

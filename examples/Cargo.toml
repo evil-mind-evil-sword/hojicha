@@ -31,6 +31,10 @@ name = "debugging"
 path = "src/debugging.rs"
 
 [[bin]]
+name = "http_example"
+path = "src/http_example.rs"
+
+[[bin]]
 name = "visual"
 path = "src/visual.rs"
 

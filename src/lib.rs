@@ -57,6 +57,7 @@
 #![warn(rustdoc::missing_crate_level_docs)]
 
 // Core TEA abstractions
+pub mod async_helpers;
 pub mod commands;
 pub mod core;
 pub mod debug;
