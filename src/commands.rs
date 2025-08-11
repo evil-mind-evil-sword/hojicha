@@ -5,6 +5,18 @@ use crate::event::WindowSize;
 use std::process::Command;
 use std::time::Duration;
 
+/// Default maximum batch size
+/// 
+/// Batches larger than this will trigger a warning in debug mode.
+/// This is a soft limit - the batch will still be created.
+const DEFAULT_MAX_BATCH_SIZE: usize = 100;
+
+/// Hard maximum batch size
+/// 
+/// Batches larger than this will be automatically chunked.
+/// This prevents accidental memory exhaustion from massive batches.
+const HARD_MAX_BATCH_SIZE: usize = 1000;
+
 /// Special message types for terminal control
 #[derive(Debug, Clone)]
 pub enum TerminalControlMsg {
@@ -50,6 +62,10 @@ pub fn none<M: Message>() -> Cmd<M> {
 /// - Single-element vectors return the element directly
 /// - Use `batch_strict()` if you need guaranteed batch semantics
 ///
+/// # Safety
+/// - Batches larger than 100 commands will trigger a debug warning
+/// - Batches larger than 1000 commands will be automatically chunked
+///
 /// # Example
 /// ```ignore
 /// fn init(&mut self) -> Cmd<Self::Message> {
@@ -63,7 +79,18 @@ pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     match cmds.len() {
         0 => Cmd::none(),
         1 => cmds.into_iter().next().unwrap(),
-        _ => Cmd::batch(cmds),
+        n if n > HARD_MAX_BATCH_SIZE => {
+            // Chunk very large batches to prevent memory issues
+            eprintln!("Warning: Batch of {} commands exceeds hard limit of {}. Chunking into smaller batches.", n, HARD_MAX_BATCH_SIZE);
+            batch_chunked(cmds, HARD_MAX_BATCH_SIZE)
+        }
+        n => {
+            #[cfg(debug_assertions)]
+            if n > DEFAULT_MAX_BATCH_SIZE {
+                eprintln!("Warning: Large batch of {} commands (recommended max: {})", n, DEFAULT_MAX_BATCH_SIZE);
+            }
+            Cmd::batch(cmds)
+        }
     }
 }
 
@@ -103,6 +130,39 @@ pub fn sequence<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 /// ```
 pub fn batch_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     Cmd::batch(cmds)
+}
+
+/// Create a batch command with a specific size limit
+///
+/// Batches larger than the limit will be automatically chunked.
+///
+/// # Example
+/// ```ignore
+/// // Create batches with max 50 commands each
+/// batch_with_limit(large_vec_of_commands, 50)
+/// ```
+pub fn batch_with_limit<M: Message>(cmds: Vec<Cmd<M>>, limit: usize) -> Cmd<M> {
+    if cmds.len() <= limit {
+        batch(cmds)
+    } else {
+        batch_chunked(cmds, limit)
+    }
+}
+
+/// Internal helper to chunk large batches
+fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M> {
+    let mut chunks = Vec::new();
+    
+    while !cmds.is_empty() {
+        let chunk: Vec<Cmd<M>> = cmds
+            .drain(..chunk_size.min(cmds.len()))
+            .collect();
+        chunks.push(Cmd::batch(chunk));
+    }
+    
+    // Batch the batches - this creates a two-level batch
+    // This ensures all commands still run concurrently
+    Cmd::batch(chunks)
 }
 
 /// Create a sequence command with strict semantics
