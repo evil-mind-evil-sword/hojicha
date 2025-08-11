@@ -1,0 +1,27 @@
+[package]
+name = "hojicha"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.80.0"
+authors = ["McCoy Reynolds Becker <mccoybecker@gmail.com>"]
+description = "Elm Architecture for terminal UIs in Rust, built on Ratatui"
+homepage = "https://github.com/evil-mind-evil-sword/hojicha"
+documentation = "https://docs.rs/hojicha"
+readme = "../README.md"
+repository = "https://github.com/evil-mind-evil-sword/hojicha"
+license = "GPL-3.0"
+keywords = ["tui", "terminal", "elm", "tea", "ratatui"]
+categories = ["command-line-interface", "gui"]
+
+[dependencies]
+hojicha-core = { version = "0.2.0", path = "../hojicha-core" }
+hojicha-runtime = { version = "0.2.0", path = "../runtime" }
+hojicha-pearls = { version = "0.2.0", path = "../pearls", optional = true }
+
+[features]
+default = ["full"]
+full = ["pearls"]
+pearls = ["dep:hojicha-pearls"]
+
+[package.metadata.docs.rs]
+all-features = true

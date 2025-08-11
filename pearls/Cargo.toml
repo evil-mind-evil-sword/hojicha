@@ -11,7 +11,7 @@ categories = ["command-line-interface"]
 
 [dependencies]
 # Core hojicha dependency
-hojicha-core = { path = "..", version = "0.2.0" }
+hojicha-core = { path = "../hojicha-core", version = "0.2.0" }
 
 # TUI rendering
 ratatui = { version = "0.29", features = ["all-widgets"] }
