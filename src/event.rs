@@ -185,6 +185,7 @@ impl From<crossterm::event::KeyEvent> for KeyEvent {
             KeyCode::PageUp => Key::PageUp,
             KeyCode::PageDown => Key::PageDown,
             KeyCode::Tab => Key::Tab,
+            KeyCode::BackTab => Key::Tab, // BackTab is Shift+Tab
             KeyCode::Delete => Key::Delete,
             KeyCode::Insert => Key::Insert,
             KeyCode::Esc => Key::Esc,
@@ -512,7 +513,7 @@ mod tests {
             (KeyCode::F(1), Key::F(1)),
             (KeyCode::F(12), Key::F(12)),
             (KeyCode::Null, Key::Null),
-            (KeyCode::BackTab, Key::Null), // Unmapped key
+            (KeyCode::BackTab, Key::Tab), // BackTab is Shift+Tab
         ];
 
         for (crossterm_code, expected_key) in test_cases {

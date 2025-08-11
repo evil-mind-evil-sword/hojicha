@@ -1,30 +1,25 @@
 # Hojicha Documentation
 
-## Guides
-
-- [Development Guide](DEVELOPMENT.md) - Architecture, testing, and contribution guidelines
+## Architecture & Design
 - [Async Design](ASYNC_DESIGN.md) - Async event handling architecture and implementation
-- [TODO](TODO.md) - Project roadmap and task tracking
+- [Development Guide](DEVELOPMENT.md) - Architecture, testing, and contribution guidelines
+- [Testing Best Practices](TESTING_BEST_PRACTICES.md) - Testing patterns and guidelines
+
+## Project Planning
+- [Roadmap](ROADMAP.md) - Future enhancements and project direction
 
 ## API Documentation
-
 Run `cargo doc --open` to view the generated API documentation.
 
 ## Examples
+The `examples/` directory contains working examples demonstrating various features:
 
-The `examples/` directory contains working examples:
-
-- `counter` - Minimal counter application
-- `components_gallery` - Showcase of all built-in components
-- `async_demo` - Async event handling demonstration
-- `exec` - External process execution
-
-Run examples with:
 ```bash
-cargo run --example <name>
+cargo run --example showcase        # Component showcase
+cargo run --example async_examples  # Async patterns
+cargo run --example tutorial        # Step-by-step tutorial
 ```
 
 ## Quick Links
-
 - [GitHub Repository](https://github.com/evil-mind-evil-sword/hojicha)
 - [Main README](../README.md)

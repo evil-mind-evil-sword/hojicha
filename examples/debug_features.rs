@@ -1,3 +1,4 @@
+use hojicha_runtime;
 //! Example demonstrating debug features: Printf/Println and SetWindowTitle
 //!
 //! This example shows how to use the new debugging features:
@@ -6,15 +7,15 @@
 //! - FPS control to limit frame rate
 //! - Message filtering to intercept and modify events
 
-use hojicha::{
+use hojicha_core::{
     commands::{self, quit, set_window_title},
     core::{Cmd, Model},
     event::{Event, Key},
-    program::{Program, ProgramOptions},
+    hojicha_runtime::program::Program, ProgramOptions},
 };
 use ratatui::{
     layout::{Alignment, Rect},
-    style::{Color, Style},
+    hojicha_pearls::style::{ColorProfile, Theme},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };

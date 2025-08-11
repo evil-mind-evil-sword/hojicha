@@ -30,6 +30,19 @@ pub enum TerminalControlMsg {
     ClearLine,
 }
 
+/// Create a no-op command
+///
+/// # Example
+/// ```ignore
+/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
+///     // Handle message but don't trigger any side effects
+///     none()
+/// }
+/// ```
+pub fn none<M: Message>() -> Cmd<M> {
+    Cmd::none()
+}
+
 /// Batch multiple commands to run concurrently
 ///
 /// # Example

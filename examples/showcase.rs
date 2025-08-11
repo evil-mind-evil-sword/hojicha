@@ -1,18 +1,22 @@
-//! Comprehensive showcase of all hojicha components and features
+//! Complete UI Component Showcase
 //!
-//! This example demonstrates:
-//! - All available components (List, Table, TextArea, Viewport, Spinner)
-//! - Navigation between components with Tab
-//! - Mouse and keyboard interaction
+//! This example demonstrates all UI components available in Hojicha.
+//! Navigate through different component categories to see them in action.
+//!
+//! Controls:
+//! - Tab/Shift+Tab: Navigate between categories
+//! - Arrow keys: Navigate within components
+//! - Space: Interact with components
+//! - q: Quit
 
-use hojicha::commands;
-use hojicha::components::{List, Spinner, SpinnerStyle, Table, TextArea, Viewport};
-use hojicha::event::{Key, KeyModifiers};
+use hojicha_core::commands;
+use hojicha_pearls::PLACEHOLDER_COMPONENTS;
+use hojicha_core::event::{Key, KeyModifiers};
 use hojicha::prelude::*;
-use hojicha::program::{MouseMode, ProgramOptions};
+use hojicha_runtime::hojicha_runtime::program::Program, ProgramOptions};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
+    hojicha_pearls::style::{ColorProfile, Theme},
     text::Line,
     widgets::{Block, Borders, Paragraph, Tabs},
 };
@@ -40,8 +44,6 @@ struct App {
 
 #[derive(Debug, Clone)]
 enum Message {
-    TabNext,
-    TabPrev,
     Tick,
     #[allow(dead_code)]
     Quit,
@@ -170,28 +172,6 @@ impl Model for App {
 
     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         match event {
-            Event::User(Message::TabNext) => {
-                self.current_tab = match self.current_tab {
-                    Tab::List => Tab::Table,
-                    Tab::Table => Tab::TextArea,
-                    Tab::TextArea => Tab::Viewport,
-                    Tab::Viewport => Tab::Spinner,
-                    Tab::Spinner => Tab::List,
-                };
-                self.status_message = format!("Switched to {:?} tab", self.current_tab);
-                Cmd::none()
-            }
-            Event::User(Message::TabPrev) => {
-                self.current_tab = match self.current_tab {
-                    Tab::List => Tab::Spinner,
-                    Tab::Table => Tab::List,
-                    Tab::TextArea => Tab::Table,
-                    Tab::Viewport => Tab::TextArea,
-                    Tab::Spinner => Tab::Viewport,
-                };
-                self.status_message = format!("Switched to {:?} tab", self.current_tab);
-                Cmd::none()
-            }
             Event::User(Message::Tick) => {
                 self.counter += 1;
                 if matches!(self.current_tab, Tab::Spinner) {
@@ -202,14 +182,30 @@ impl Model for App {
             Event::User(Message::Quit) => commands::quit(),
             Event::Key(key) => {
                 // Check for quit keys first - using explicit quit command
-                if key.key == Key::Char('q') && key.modifiers.is_empty() {
-                    commands::quit()
-                } else if key.key == Key::Esc {
+                if key.key == Key::Char('q') && key.modifiers.is_empty() || key.key == Key::Esc {
                     commands::quit()
                 } else if key.key == Key::Tab && key.modifiers.is_empty() {
-                    self.update(Event::User(Message::TabNext))
+                    // Don't call update recursively - just handle the tab switch directly
+                    self.current_tab = match self.current_tab {
+                        Tab::List => Tab::Table,
+                        Tab::Table => Tab::TextArea,
+                        Tab::TextArea => Tab::Viewport,
+                        Tab::Viewport => Tab::Spinner,
+                        Tab::Spinner => Tab::List,
+                    };
+                    self.status_message = format!("Switched to {:?} tab", self.current_tab);
+                    Cmd::none()
                 } else if key.key == Key::Tab && key.modifiers.contains(KeyModifiers::SHIFT) {
-                    self.update(Event::User(Message::TabPrev))
+                    // Don't call update recursively - just handle the tab switch directly
+                    self.current_tab = match self.current_tab {
+                        Tab::List => Tab::Spinner,
+                        Tab::Table => Tab::List,
+                        Tab::TextArea => Tab::Table,
+                        Tab::Viewport => Tab::TextArea,
+                        Tab::Spinner => Tab::Viewport,
+                    };
+                    self.status_message = format!("Switched to {:?} tab", self.current_tab);
+                    Cmd::none()
                 } else {
                     self.handle_tab_input(&event)
                 }

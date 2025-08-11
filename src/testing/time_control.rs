@@ -109,8 +109,10 @@ impl TimeController {
 }
 
 /// Global time controller for tests
-static GLOBAL_TIME: once_cell::sync::Lazy<TimeController> =
-    once_cell::sync::Lazy::new(TimeController::new_real);
+use std::sync::LazyLock;
+
+static GLOBAL_TIME: LazyLock<TimeController> =
+    LazyLock::new(TimeController::new_real);
 
 /// Pause global time (for use in tests)
 pub fn pause() {

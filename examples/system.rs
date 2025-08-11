@@ -1,3 +1,4 @@
+use hojicha_runtime;
 //! System integration example
 //!
 //! This example demonstrates system-level features:
@@ -7,12 +8,12 @@
 //! - Async operations
 //! - Window management
 
-use hojicha::commands;
-use hojicha::event::Key;
+use hojicha_core::commands;
+use hojicha_core::event::Key;
 use hojicha::prelude::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
+    hojicha_pearls::style::{ColorProfile, Theme},
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };

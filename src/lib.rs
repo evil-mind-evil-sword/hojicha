@@ -1,76 +1,99 @@
-//! # Hojicha
+//! # Hojicha Core
 //!
-#![warn(missing_docs)]
-#![warn(rustdoc::missing_crate_level_docs)]
+//! Core Elm Architecture (TEA) abstractions for building terminal user interfaces in Rust.
 //!
-//! A Rust framework that brings the Elm Architecture to terminal user interfaces,
-//! built on top of [ratatui](https://github.com/ratatui-org/ratatui).
+//! This crate provides the fundamental building blocks of The Elm Architecture:
 //!
-//! ## Overview
+//! ## The Elm Architecture
 //!
-//! Hojicha provides a structured way to build terminal applications using:
+//! Hojicha implements The Elm Architecture (TEA), a pattern for building interactive
+//! applications with a clear separation of concerns:
+//!
 //! - **Model**: Your application state
 //! - **Message**: Events that trigger state changes  
 //! - **Update**: Pure functions that handle messages and update state
 //! - **View**: Pure functions that render your model to the terminal
 //! - **Command**: Side effects that produce messages
+//!
+//! ## Core Traits
+//!
+//! - [`Model`]: The main trait your application must implement
+//! - [`Message`]: Marker trait for your application's message types
+//! - [`Cmd`]: Commands for side effects and async operations
+//!
+//! ## Example
+//!
+//! ```no_run
+//! use hojicha_core::{Model, Cmd};
+//! use ratatui::Frame;
+//! 
+//! struct App {
+//!     counter: u32,
+//! }
+//!
+//! enum Msg {
+//!     Increment,
+//!     Decrement,
+//! }
+//!
+//! impl Model for App {
+//!     type Message = Msg;
+//!
+//!     fn update(&mut self, msg: Self::Message) -> Cmd<Self::Message> {
+//!         match msg {
+//!             Msg::Increment => self.counter += 1,
+//!             Msg::Decrement => self.counter -= 1,
+//!         }
+//!         Cmd::none()
+//!     }
+//!
+//!     fn view(&self, frame: &mut Frame, area: ratatui::layout::Rect) {
+//!         // Render your UI here
+//!     }
+//! }
+//! ```
 
-pub mod async_handle;
-pub mod commands;
-pub mod components;
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_crate_level_docs)]
+
+// Core TEA abstractions
 pub mod core;
+pub mod commands;
 pub mod error;
 pub mod event;
 pub mod fallible;
 pub mod logging;
-pub mod metrics;
-pub mod priority_queue;
-pub mod program;
-pub mod queue_scaling;
-pub mod stream_builders;
-pub mod style;
-pub mod subscription;
 
+// Testing utilities (only in tests)
 #[cfg(test)]
 pub mod testing;
 
 // Re-export core types
-pub use core::{Cmd, Model};
+pub use core::{Cmd, Model, Message};
 pub use error::{Error, ErrorContext, ErrorHandler, Result};
-pub use event::{Event, KeyEvent, MouseEvent};
-pub use program::{MouseMode, Program, ProgramOptions};
+pub use event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent};
+
+// Re-export command constructors
+pub use commands::{
+    batch, quit, none, sequence,
+    tick, every,
+    custom, custom_async, custom_fallible,
+    spawn,
+};
 
 /// Prelude module for convenient imports
 pub mod prelude {
+    pub use crate::core::{Cmd, Model, Message};
+    pub use crate::error::{Error, ErrorContext, Result};
     pub use crate::commands::{
-        batch, clear_line, clear_screen, custom, custom_async, custom_fallible,
-        disable_bracketed_paste, disable_focus_change, disable_mouse, enable_bracketed_paste,
-        enable_focus_change, enable_mouse_all_motion, enable_mouse_cell_motion, enter_alt_screen,
-        every, exec, exec_command, exit_alt_screen, hide_cursor, interrupt, quit, sequence,
-        set_window_title, show_cursor, spawn, suspend, tick, window_size,
+        batch, quit, none, sequence,
+        tick, every,
+        custom, custom_async, custom_fallible,
     };
-    pub use crate::components::{
-        KeyBinding, KeyMap, List, ListOptions, Spinner, SpinnerStyle, Table, TableOptions,
-        TableRow, TextArea, TextAreaOptions, Viewport, ViewportOptions,
-    };
-    pub use crate::core::{Cmd, Model};
-    pub use crate::error::{Error, ErrorContext, ErrorHandler, Result};
-    pub use crate::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, WindowSize};
     pub use crate::logging::{log_debug, log_error, log_info, log_warn};
-    pub use crate::program::{MouseMode, Program, ProgramOptions};
-
-    // Re-export error macros
-    pub use crate::{bail, ensure};
-
-    // Re-export ratatui types users will need
+    
+    // Re-export ratatui types users will need for views
     pub use ratatui::prelude::*;
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        // Basic sanity test
-        assert_eq!(2 + 2, 4);
-    }
-}
+// Users will directly import hojicha-runtime and hojicha-pearls as separate crates
