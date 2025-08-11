@@ -354,6 +354,57 @@ impl<M: Message> Cmd<M> {
             _ => None,
         }
     }
+
+    /// Inspect this command for debugging
+    ///
+    /// This allows you to observe command execution without modifying behavior.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # use hojicha_core::{Cmd, Message};
+    /// # #[derive(Clone)]
+    /// # struct Msg;
+    /// # impl Message for Msg {}
+    /// Cmd::none()
+    ///     .inspect(|cmd| println!("Executing command: {:?}", cmd))
+    /// # ;
+    /// ```
+    pub fn inspect<F>(self, f: F) -> Self
+    where
+        F: FnOnce(&Self),
+    {
+        f(&self);
+        self
+    }
+
+    /// Conditionally inspect this command
+    ///
+    /// Only runs the inspection function if the condition is true.
+    pub fn inspect_if<F>(self, condition: bool, f: F) -> Self
+    where
+        F: FnOnce(&Self),
+    {
+        if condition {
+            f(&self);
+        }
+        self
+    }
+
+    /// Get a string representation of the command type for debugging
+    pub fn debug_name(&self) -> &'static str {
+        match self.inner {
+            CmdInner::Function(_) => "Function",
+            CmdInner::Fallible(_) => "Fallible",
+            CmdInner::ExecProcess { .. } => "ExecProcess",
+            CmdInner::NoOp => "NoOp",
+            CmdInner::Quit => "Quit",
+            CmdInner::Batch(_) => "Batch",
+            CmdInner::Sequence(_) => "Sequence",
+            CmdInner::Tick { .. } => "Tick",
+            CmdInner::Every { .. } => "Every",
+            CmdInner::Async(_) => "Async",
+        }
+    }
 }
 
 impl<M: Message> Debug for Cmd<M> {

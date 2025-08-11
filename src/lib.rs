@@ -59,6 +59,7 @@
 // Core TEA abstractions
 pub mod commands;
 pub mod core;
+pub mod debug;
 pub mod error;
 pub mod event;
 pub mod fallible;
