@@ -286,6 +286,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::testing::{AsyncTestHarness, CmdTestExt};
     use hojicha_core::commands;
     use std::time::Duration;
 
@@ -298,6 +299,17 @@ mod tests {
 
     #[test]
     fn test_execute_custom_command() {
+        // Using AsyncTestHarness for cleaner testing
+        let harness = AsyncTestHarness::new();
+        let cmd = commands::custom(|| Some(TestMsg::Inc));
+        
+        let messages = harness.execute_command(cmd);
+        assert_eq!(messages, vec![TestMsg::Inc]);
+    }
+    
+    #[test]
+    fn test_execute_custom_command_raw() {
+        // Keep raw test to verify CommandExecutor directly
         let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
@@ -325,32 +337,21 @@ mod tests {
 
     #[test]
     fn test_execute_batch_commands() {
-        let executor = CommandExecutor::<TestMsg>::new().unwrap();
-        let (tx, rx) = mpsc::sync_channel(10);
-
-        let commands = vec![
+        // Using AsyncTestHarness for cleaner testing
+        let harness = AsyncTestHarness::new();
+        
+        let batch = commands::batch(vec![
             commands::custom(|| Some(TestMsg::Inc)),
             commands::custom(|| Some(TestMsg::Dec)),
             commands::custom(|| Some(TestMsg::Text("test".to_string()))),
-        ];
+        ]);
 
-        executor.execute_batch(commands, tx);
-
-        // Give async tasks time to execute
-        std::thread::sleep(Duration::from_millis(50));
-
-        // Collect all events
-        let mut events = Vec::new();
-        while let Ok(event) = rx.try_recv() {
-            if let Event::User(msg) = event {
-                events.push(msg);
-            }
-        }
-
-        assert_eq!(events.len(), 3);
-        assert!(events.contains(&TestMsg::Inc));
-        assert!(events.contains(&TestMsg::Dec));
-        assert!(events.contains(&TestMsg::Text("test".to_string())));
+        let messages = harness.execute_command(batch);
+        
+        assert_eq!(messages.len(), 3);
+        assert!(messages.contains(&TestMsg::Inc));
+        assert!(messages.contains(&TestMsg::Dec));
+        assert!(messages.contains(&TestMsg::Text("test".to_string())));
     }
 
     #[test]
@@ -372,6 +373,17 @@ mod tests {
 
     #[test]
     fn test_execute_tick_command() {
+        // Using AsyncTestHarness for cleaner testing
+        let harness = AsyncTestHarness::new();
+        let cmd = commands::tick(Duration::from_millis(10), || TestMsg::Inc);
+        
+        let messages = harness.execute_command(cmd);
+        assert_eq!(messages, vec![TestMsg::Inc]);
+    }
+    
+    #[test]
+    fn test_execute_tick_command_raw() {
+        // Keep raw test to verify CommandExecutor directly
         let executor = CommandExecutor::<TestMsg>::new().unwrap();
         let (tx, rx) = mpsc::sync_channel(10);
 
@@ -389,28 +401,20 @@ mod tests {
 
     #[test]
     fn test_execute_sequence() {
-        let executor = CommandExecutor::<TestMsg>::new().unwrap();
-        let (tx, rx) = mpsc::sync_channel(10);
-
-        let commands = vec![
+        // Using AsyncTestHarness for cleaner testing
+        let harness = AsyncTestHarness::new();
+        
+        let seq = commands::sequence(vec![
             commands::custom(|| Some(TestMsg::Inc)),
             commands::custom(|| Some(TestMsg::Dec)),
-        ];
+        ]);
 
-        executor.execute_sequence(commands, tx);
-
-        // Give async tasks time to execute
-        std::thread::sleep(Duration::from_millis(50));
-
-        let mut events = Vec::new();
-        while let Ok(Event::User(msg)) = rx.try_recv() {
-            events.push(msg);
-        }
-
+        let messages = harness.execute_and_wait(seq, Duration::from_millis(50));
+        
         // Sequence should maintain order
-        assert_eq!(events.len(), 2);
-        assert_eq!(events[0], TestMsg::Inc);
-        assert_eq!(events[1], TestMsg::Dec);
+        assert_eq!(messages.len(), 2);
+        assert_eq!(messages[0], TestMsg::Inc);
+        assert_eq!(messages[1], TestMsg::Dec);
     }
 
     #[test]
