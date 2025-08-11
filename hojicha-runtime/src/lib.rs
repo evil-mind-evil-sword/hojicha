@@ -45,6 +45,7 @@ pub mod testing;
 
 // Error resilience
 pub mod panic_handler;
+pub mod panic_recovery;
 pub mod panic_utils;
 pub mod resilient_input;
 pub mod resource_limits;
