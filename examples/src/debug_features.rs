@@ -16,6 +16,7 @@ use hojicha_pearls::{components, style};
 use hojicha_runtime::program::{Program, ProgramOptions};
 use ratatui::{
     layout::{Alignment, Rect},
+    style::{Color, Style},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };

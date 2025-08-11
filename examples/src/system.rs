@@ -8,11 +8,12 @@
 // - Window management
 
 use hojicha_core::commands;
-use hojicha_core::event::Key;
+use hojicha_core::event::{Event, Key};
 use hojicha_core::prelude::*;
+use hojicha_pearls::style::{ColorProfile, Theme};
 use hojicha_pearls::{components, style};
+use hojicha_runtime::program::{Program, ProgramOptions};
 use ratatui::{
-    hojicha_pearls::style::{ColorProfile, Theme},
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
@@ -457,7 +458,7 @@ impl App {
     }
 }
 
-fn send<M: hojicha::core::Message>(msg: M) -> Cmd<M> {
+fn send<M: hojicha_core::core::Message>(msg: M) -> Cmd<M> {
     Cmd::new(move || Some(msg))
 }
 

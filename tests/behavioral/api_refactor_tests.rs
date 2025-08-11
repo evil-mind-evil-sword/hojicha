@@ -7,8 +7,8 @@
 
 use futures::stream::StreamExt;
 use hojicha_core::commands;
-use hojicha_core::prelude::*;
 use hojicha_core::event::Event;
+use hojicha_core::prelude::*;
 use hojicha_runtime::program::{Program, ProgramOptions};
 use hojicha_runtime::stream_builders::interval_stream;
 use std::sync::{Arc, Mutex};

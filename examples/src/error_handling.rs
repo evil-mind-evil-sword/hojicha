@@ -9,8 +9,10 @@
 use hojicha_core::prelude::*;
 use hojicha_core::{
     commands,
+    event::{Event, Key},
     fallible::{FallibleModel, FallibleModelExt},
 };
+use hojicha_runtime::program::Program;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use std::fs;
 use std::io;
@@ -182,7 +184,7 @@ impl FallibleModel for ErrorHandlingApp {
     fn try_update(
         &mut self,
         event: Event<Self::Message>,
-    ) -> hojicha::error::Result<Cmd<Self::Message>> {
+    ) -> hojicha_core::error::Result<Cmd<Self::Message>> {
         // Clear previous messages
         self.success_message = None;
 
@@ -255,7 +257,7 @@ impl FallibleModel for ErrorHandlingApp {
                 }
                 Msg::SimulateError => {
                     // Deliberately cause an error to demonstrate error handling
-                    Err(hojicha::error::Error::Model(
+                    Err(hojicha_core::error::Error::Model(
                         "Simulated error for demonstration".to_string(),
                     ))
                 }
@@ -275,7 +277,7 @@ impl FallibleModel for ErrorHandlingApp {
         }
     }
 
-    fn handle_error(&mut self, error: hojicha::error::Error) -> Cmd<Self::Message> {
+    fn handle_error(&mut self, error: hojicha_core::error::Error) -> Cmd<Self::Message> {
         // Custom error handling
         let error_msg = format!("{}", error);
         self.error_message = Some(error_msg.clone());

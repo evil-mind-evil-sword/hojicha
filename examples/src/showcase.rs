@@ -10,11 +10,11 @@
 // - q: Quit
 
 use hojicha_core::commands;
-use hojicha_core::event::{Key, KeyModifiers};
+use hojicha_core::event::{Event, Key, KeyModifiers};
 use hojicha_core::prelude::*;
+use hojicha_pearls::components::{List, Spinner, SpinnerStyle, Table, TextArea, Viewport};
 use hojicha_pearls::style::{ColorProfile, Theme};
-use hojicha_pearls::PLACEHOLDER_COMPONENTS;
-use hojicha_runtime::program::{Program, ProgramOptions};
+use hojicha_runtime::program::{MouseMode, Program, ProgramOptions};
 use ratatui::widgets::{Block, Borders, Paragraph, Tabs};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
