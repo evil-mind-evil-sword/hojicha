@@ -57,11 +57,3 @@ path = "src/error_handling.rs"
 [[bin]]
 name = "headless"
 path = "src/headless.rs"
-
-[[bin]]
-name = "visual_logged"
-path = "src/visual_logged.rs"
-
-[[bin]]
-name = "visual_logged_fixed"
-path = "src/visual_logged_fixed.rs"

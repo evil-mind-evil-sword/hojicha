@@ -7,6 +7,8 @@ use log::error;
 use std::io::Write;
 use std::panic::{self, PanicHookInfo};
 use std::sync::atomic::{AtomicBool, Ordering};
+#[cfg(test)]
+use std::sync::Arc;
 
 /// Global flag to track if we're in a TUI context
 static TUI_ACTIVE: AtomicBool = AtomicBool::new(false);
