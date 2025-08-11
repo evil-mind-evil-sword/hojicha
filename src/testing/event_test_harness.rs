@@ -273,18 +273,17 @@ mod tests {
         type Message = String;
 
         fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
-            match event {
-                Event::User(msg) => {
-                    self.messages.lock().unwrap().push(msg);
-                    self.counter.fetch_add(1, Ordering::SeqCst);
+            if let Some(msg) = event.into_user() {
+                self.messages.lock().unwrap().push(msg);
+                self.counter.fetch_add(1, Ordering::SeqCst);
 
-                    if self.counter.load(Ordering::SeqCst) >= 5 {
-                        crate::commands::quit() // Quit after 5 messages
-                    } else {
-                        Cmd::none() // Continue without command
-                    }
+                if self.counter.load(Ordering::SeqCst) >= 5 {
+                    crate::commands::quit() // Quit after 5 messages
+                } else {
+                    Cmd::none() // Continue without command
                 }
-                _ => Cmd::none(),
+            } else {
+                Cmd::none()
             }
         }
 
