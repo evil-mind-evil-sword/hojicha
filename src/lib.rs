@@ -124,7 +124,7 @@ pub mod prelude {
     
     // Essential commands
     pub use crate::commands::{
-        batch, every, none, quit, sequence, tick,
+        batch, custom, custom_fallible, every, none, quit, sequence, spawn, tick,
     };
     
     // Error handling

@@ -44,7 +44,7 @@ impl Model for Counter {
             Event::Key(key) => match key.key {
                 Key::Up => self.value += 1,
                 Key::Down => self.value -= 1,
-                Key::Char('q') => return commands::quit(),
+                Key::Char('q') => return quit(),
                 _ => {}
             },
             _ => {}
@@ -85,7 +85,7 @@ The Elm Architecture consists of:
 fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
     match event {
         Event::User(Msg::FetchData) => {
-            commands::spawn(async {
+            spawn(async {
                 let data = fetch_api().await.ok()?;
                 Some(Msg::DataLoaded(data))
             })
@@ -99,7 +99,7 @@ fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
 
 ```rust
 fn init(&mut self) -> Cmd<Msg> {
-    commands::every(Duration::from_secs(1), |_| Msg::Tick)
+    every(Duration::from_secs(1), |_| Msg::Tick)
 }
 ```
 

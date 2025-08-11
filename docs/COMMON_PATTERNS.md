@@ -72,10 +72,14 @@ impl Model for App {
     fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
         match event {
             Event::User(Msg::Sidebar(msg)) => {
-                self.sidebar.update(msg).map(Msg::Sidebar)
+                // Components return their own commands
+                // In a real app, you'd need to convert between message types
+                let _sidebar_cmd = self.sidebar.update(msg);
+                Cmd::none()
             }
             Event::User(Msg::MainView(msg)) => {
-                self.main_view.update(msg).map(Msg::MainView)
+                let _main_cmd = self.main_view.update(msg);
+                Cmd::none()
             }
             _ => Cmd::none()
         }
@@ -229,8 +233,6 @@ fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
 ### HTTP Requests
 
 ```rust
-use hojicha_core::async_helpers::http_get;
-
 enum Msg {
     FetchData,
     DataReceived(String),
@@ -240,10 +242,12 @@ enum Msg {
 fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
     match event {
         Event::User(Msg::FetchData) => {
-            http_get("https://api.example.com/data", |result| {
-                match result {
-                    Ok(body) => Msg::DataReceived(body),
-                    Err(e) => Msg::RequestFailed(e.to_string()),
+            // Use the async_helpers module if available
+            // or spawn with a custom async block
+            spawn(async {
+                match fetch_data().await {
+                    Ok(data) => Some(Msg::DataReceived(data)),
+                    Err(e) => Some(Msg::RequestFailed(e.to_string())),
                 }
             })
         }
@@ -395,13 +399,13 @@ impl TodoList {
 fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
     match event {
         Event::User(Msg::SaveFile) => {
-            commands::fallible_with_error(
-                || {
-                    std::fs::write("data.json", &self.data)?;
-                    Ok(Some(Msg::SaveSuccess))
-                },
-                |err| Msg::SaveError(err.to_string())
-            )
+            // Use custom_fallible for error handling
+            custom_fallible(|| {
+                match std::fs::write("data.json", &self.data) {
+                    Ok(_) => Ok(Some(Msg::SaveSuccess)),
+                    Err(e) => Ok(Some(Msg::SaveError(e.to_string()))),
+                }
+            })
         }
         _ => Cmd::none()
     }
@@ -425,7 +429,7 @@ fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
             if self.retry_count < 3 {
                 // Retry with exponential backoff
                 let delay = Duration::from_secs(2_u64.pow(self.retry_count));
-                commands::tick(delay, || Msg::Retry)
+                tick(delay, || Msg::Retry)
             } else {
                 // Give up and show error
                 Cmd::none()
