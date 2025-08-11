@@ -1,4 +1,47 @@
 //! Event handling for keyboard, mouse, and other terminal events
+//! 
+//! This module defines all the event types that your Hojicha application can receive.
+//! Events are the primary way your application interacts with the terminal and user input.
+//! 
+//! ## Event Categories
+//! 
+//! ### User Events
+//! Custom messages specific to your application:
+//! ```
+//! # use hojicha_core::event::Event;
+//! # #[derive(Debug, Clone, PartialEq)]
+//! enum MyMessage {
+//!     ButtonClicked,
+//!     DataLoaded(String),
+//! }
+//! 
+//! let event = Event::User(MyMessage::ButtonClicked);
+//! ```
+//! 
+//! ### Input Events
+//! Keyboard and mouse input from the user:
+//! ```
+//! # use hojicha_core::event::{Event, Key, KeyEvent, KeyModifiers};
+//! # type MyMessage = ();
+//! # let event: Event<MyMessage> = Event::Tick;
+//! match event {
+//!     Event::Key(key) if key.key == Key::Char('q') => {
+//!         // Handle quit
+//!     }
+//!     Event::Mouse(mouse) => {
+//!         // Handle mouse click/movement
+//!     }
+//!     _ => {}
+//! }
+//! ```
+//! 
+//! ### System Events
+//! Terminal and application lifecycle events:
+//! - `Event::Resize` - Terminal was resized
+//! - `Event::Focus` / `Event::Blur` - Terminal gained/lost focus  
+//! - `Event::Suspend` / `Event::Resume` - App was suspended/resumed
+//! - `Event::Tick` - Periodic timer tick
+//! - `Event::Quit` - Application should exit
 
 use crossterm::event::KeyCode;
 pub use crossterm::event::{KeyModifiers, MouseButton, MouseEventKind};

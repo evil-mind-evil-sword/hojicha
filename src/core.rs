@@ -1,4 +1,52 @@
 //! Core traits and types for the Elm Architecture
+//! 
+//! This module contains the foundational traits and types that implement
+//! The Elm Architecture (TEA) pattern in Hojicha.
+//! 
+//! ## The Elm Architecture
+//! 
+//! TEA is a pattern for organizing interactive applications with:
+//! - **Unidirectional data flow**: Events flow through update to modify state
+//! - **Pure functions**: Update and view are pure, side effects use commands
+//! - **Clear separation**: Model (state), Update (logic), View (presentation)
+//! 
+//! ## Core Components
+//! 
+//! ### Model Trait
+//! Your application struct implements this trait:
+//! ```
+//! # use hojicha_core::{Model, Cmd, Event};
+//! # use ratatui::{Frame, layout::Rect};
+//! struct MyApp {
+//!     counter: i32,
+//! }
+//! 
+//! impl Model for MyApp {
+//!     type Message = MyMessage;
+//!     
+//!     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+//!         // Handle events and return commands
+//!         Cmd::none()
+//!     }
+//!     
+//!     fn view(&self, frame: &mut Frame, area: Rect) {
+//!         // Render the UI
+//!     }
+//! }
+//! # enum MyMessage {}
+//! ```
+//! 
+//! ### Commands
+//! Commands represent side effects that produce messages:
+//! ```
+//! # use hojicha_core::Cmd;
+//! # enum Msg { DataLoaded(String) }
+//! let cmd: Cmd<Msg> = Cmd::new(|| {
+//!     // Perform side effect
+//!     let data = std::fs::read_to_string("data.txt").ok()?;
+//!     Some(Msg::DataLoaded(data))
+//! });
+//! ```
 
 use crate::event::Event;
 use ratatui::layout::Rect;
@@ -129,8 +177,8 @@ impl<M: Message> Cmd<M> {
         }
     }
 
-    /// Create a command that executes an external process
     /// Internal method
+    #[doc(hidden)]
     pub fn exec_process<F>(program: String, args: Vec<String>, callback: F) -> Self
     where
         F: Fn(Option<i32>) -> M + Send + 'static,
@@ -146,6 +194,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a batch command that executes commands concurrently
     /// Internal method
+    #[doc(hidden)]
     pub fn batch(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Batch(cmds),
@@ -154,6 +203,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a sequence command that executes commands in order
     /// Internal method
+    #[doc(hidden)]
     pub fn sequence(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Sequence(cmds),
@@ -162,6 +212,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a quit command
     /// Internal method
+    #[doc(hidden)]
     pub fn quit() -> Self {
         Cmd {
             inner: CmdInner::Quit,
@@ -170,6 +221,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a tick command
     /// Internal method
+    #[doc(hidden)]
     pub fn tick<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce() -> M + Send + 'static,
@@ -184,6 +236,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create an every command
     /// Internal method
+    #[doc(hidden)]
     pub fn every<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce(std::time::Instant) -> M + Send + 'static,
@@ -198,6 +251,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create an async command
     /// Internal method
+    #[doc(hidden)]
     pub fn async_cmd<Fut>(future: Fut) -> Self
     where
         Fut: std::future::Future<Output = Option<M>> + Send + 'static,
@@ -209,6 +263,7 @@ impl<M: Message> Cmd<M> {
 
     /// Execute the command and return its message
     /// Internal method
+    #[doc(hidden)]
     pub fn execute(self) -> crate::Result<Option<M>> {
         match self.inner {
             CmdInner::Function(func) => Ok(func()),
@@ -269,6 +324,7 @@ impl<M: Message> Cmd<M> {
     /// Extract exec process details if this is an exec process command
     #[allow(clippy::type_complexity)]
     /// Internal method
+    #[doc(hidden)]
     pub fn take_exec_process(self) -> Option<ExecDetails<M>> {
         match self.inner {
             CmdInner::ExecProcess {
@@ -282,12 +338,14 @@ impl<M: Message> Cmd<M> {
 
     /// Check if this is a batch command
     /// Internal method
+    #[doc(hidden)]
     pub fn is_batch(&self) -> bool {
         matches!(self.inner, CmdInner::Batch(_))
     }
 
     /// Take the batch commands (consumes the command)
     /// Internal method
+    #[doc(hidden)]
     pub fn take_batch(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Batch(cmds) => Some(cmds),
@@ -297,12 +355,14 @@ impl<M: Message> Cmd<M> {
 
     /// Check if this is a sequence command
     /// Internal method
+    #[doc(hidden)]
     pub fn is_sequence(&self) -> bool {
         matches!(self.inner, CmdInner::Sequence(_))
     }
 
     /// Take the sequence commands (consumes the command)
     /// Internal method
+    #[doc(hidden)]
     pub fn take_sequence(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Sequence(cmds) => Some(cmds),
@@ -311,16 +371,19 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_tick(&self) -> bool {
         matches!(self.inner, CmdInner::Tick { .. })
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_every(&self) -> bool {
         matches!(self.inner, CmdInner::Every { .. })
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn take_tick(self) -> Option<(std::time::Duration, Box<dyn FnOnce() -> M + Send>)> {
         match self.inner {
             CmdInner::Tick { duration, callback } => Some((duration, callback)),
@@ -330,6 +393,7 @@ impl<M: Message> Cmd<M> {
 
     #[allow(clippy::type_complexity)]
     /// Internal method
+    #[doc(hidden)]
     pub fn take_every(
         self,
     ) -> Option<(
@@ -343,11 +407,13 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_async(&self) -> bool {
         matches!(self.inner, CmdInner::Async(_))
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn take_async(self) -> Option<Box<dyn std::future::Future<Output = Option<M>> + Send>> {
         match self.inner {
             CmdInner::Async(future) => Some(future),

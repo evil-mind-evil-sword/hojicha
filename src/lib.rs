@@ -81,15 +81,56 @@ pub use commands::{
 };
 
 /// Prelude module for convenient imports
+/// 
+/// This module provides the most commonly used types and functions for building
+/// Hojicha applications. Import everything with:
+/// 
+/// ```
+/// use hojicha_core::prelude::*;
+/// ```
+/// 
+/// ## Included Items
+/// 
+/// ### Core Traits
+/// - [`Model`] - The main trait your application implements
+/// - [`Message`] - Marker trait for messages
+/// - [`Cmd`] - Commands for side effects
+/// 
+/// ### Events
+/// - [`Event`] - All event types (Key, Mouse, User, etc.)
+/// - [`Key`], [`KeyEvent`], [`KeyModifiers`] - Keyboard handling
+/// - [`MouseEvent`] - Mouse events
+/// 
+/// ### Commands
+/// - [`none()`] - No-op command
+/// - [`batch()`] - Run commands concurrently
+/// - [`sequence()`] - Run commands in order
+/// - [`tick()`] - Delayed command
+/// - [`every()`] - Recurring command
+/// - [`quit()`] - Exit the program
+/// 
+/// ### Error Handling
+/// - [`Result`] - Hojicha's Result type
+/// - [`Error`] - Hojicha's Error type
+/// 
+/// ### Ratatui Re-exports
+/// - All of ratatui's prelude for building views
 pub mod prelude {
-    pub use crate::commands::{
-        batch, custom, custom_async, custom_fallible, every, none, quit, sequence, tick,
-    };
+    // Core traits and types
     pub use crate::core::{Cmd, Message, Model};
-    pub use crate::error::{Error, ErrorContext, Result};
-    pub use crate::logging::{log_debug, log_error, log_info, log_warn};
-
-    // Re-export ratatui types users will need for views
+    
+    // Events
+    pub use crate::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, WindowSize};
+    
+    // Essential commands
+    pub use crate::commands::{
+        batch, every, none, quit, sequence, tick,
+    };
+    
+    // Error handling
+    pub use crate::error::{Error, Result};
+    
+    // Re-export ratatui's prelude for views
     pub use ratatui::prelude::*;
 }
 

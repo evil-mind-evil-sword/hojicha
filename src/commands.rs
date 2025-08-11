@@ -1,4 +1,55 @@
 //! Command utilities for handling side effects
+//! 
+//! This module provides functions for creating commands that perform side effects
+//! in your Hojicha application. Commands are the Elm Architecture's way of handling
+//! operations that interact with the outside world.
+//! 
+//! ## Core Command Types
+//! 
+//! - **Synchronous**: Simple functions that return messages
+//! - **Asynchronous**: Futures that eventually produce messages
+//! - **Timed**: Commands that execute after delays or at intervals
+//! - **Composite**: Batch and sequence commands for complex flows
+//! 
+//! ## Common Patterns
+//! 
+//! ### No-op Command
+//! ```
+//! # use hojicha_core::commands::none;
+//! # use hojicha_core::{Model, Cmd, Event};
+//! # struct MyModel;
+//! # impl Model for MyModel {
+//! #     type Message = ();
+//! fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+//!     // Handle event but don't trigger side effects
+//!     none()
+//! }
+//! #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+//! # }
+//! ```
+//! 
+//! ### Concurrent Commands
+//! ```
+//! # use hojicha_core::commands::{batch, tick};
+//! # use hojicha_core::Cmd;
+//! # use std::time::Duration;
+//! # enum Msg { Tick1, Tick2 }
+//! let cmd: Cmd<Msg> = batch(vec![
+//!     tick(Duration::from_secs(1), || Msg::Tick1),
+//!     tick(Duration::from_secs(2), || Msg::Tick2),
+//! ]);
+//! ```
+//! 
+//! ### Sequential Commands
+//! ```
+//! # use hojicha_core::commands::sequence;
+//! # use hojicha_core::Cmd;
+//! # enum Msg { First, Second }
+//! let cmd: Cmd<Msg> = sequence(vec![
+//!     Cmd::new(|| Some(Msg::First)),
+//!     Cmd::new(|| Some(Msg::Second)),
+//! ]);
+//! ```
 
 use crate::core::{Cmd, Message};
 use crate::event::WindowSize;
@@ -150,7 +201,8 @@ pub fn batch_with_limit<M: Message>(cmds: Vec<Cmd<M>>, limit: usize) -> Cmd<M> {
 }
 
 /// Internal helper to chunk large batches
-fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M> {
+#[doc(hidden)]
+pub(crate) fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M> {
     let mut chunks = Vec::new();
     
     while !cmds.is_empty() {

@@ -45,10 +45,45 @@ pub use components::{
 pub use style::{Color, ColorProfile, FloatingElement, Gradient, Grid, StyleBuilder, Theme};
 
 /// Prelude for convenient imports
+/// 
+/// This module provides the most commonly used components and styling utilities.
+/// Import everything with:
+/// 
+/// ```
+/// use hojicha_pearls::prelude::*;
+/// ```
+/// 
+/// ## Included Components
+/// 
+/// ### Input Components
+/// - [`TextInput`] - Single-line text input
+/// - [`TextArea`] - Multi-line text editor
+/// - [`Button`] - Clickable button
+/// 
+/// ### Display Components
+/// - [`List`] - Scrollable list with selection
+/// - [`Table`] - Data table with headers
+/// - [`Tabs`] - Tab navigation
+/// - [`Modal`] - Overlay dialog
+/// - [`ProgressBar`] - Progress indicator
+/// - [`Spinner`] - Loading animation
+/// 
+/// ### Styling
+/// - [`Theme`] - Color themes
+/// - [`ColorProfile`] - Component color sets
+/// - [`StyleBuilder`] - Fluent style API
 pub mod prelude {
+    // Input components
+    pub use crate::components::{Button, TextArea, TextInput};
+    
+    // Display components
     pub use crate::components::{
-        Button, List, Modal, ProgressBar, Spinner, SpinnerStyle, Table, Tabs, TextArea, TextInput,
+        List, Modal, ProgressBar, Spinner, SpinnerStyle, Table, Tabs,
     };
-
+    
+    // Common additional components
+    pub use crate::components::{StatusBar, Timer, Viewport};
+    
+    // Styling utilities
     pub use crate::style::{ColorProfile, StyleBuilder, Theme};
 }

@@ -63,11 +63,40 @@ pub use program::{
 };
 
 /// Prelude for convenient imports
+/// 
+/// This module provides the essential runtime types for Hojicha applications.
+/// Import everything with:
+/// 
+/// ```
+/// use hojicha_runtime::prelude::*;
+/// ```
+/// 
+/// ## Included Items
+/// 
+/// ### Program & Configuration
+/// - [`Program`] - The main application runtime
+/// - [`ProgramOptions`] - Configuration for the program
+/// - [`MouseMode`] - Mouse tracking options
+/// 
+/// ### Async Support
+/// - [`AsyncHandle`] - Handle for cancellable async operations
+/// - [`Subscription`] - Stream subscription handle
+/// 
+/// ### Stream Builders
+/// - [`interval_stream()`] - Create periodic event streams
+/// - [`timeout_stream()`] - Create timeout streams
+/// - [`delayed_stream()`] - Create delayed streams
 pub mod prelude {
-    pub use crate::async_handle::AsyncHandle;
-    pub use crate::panic_handler;
+    // Program and configuration
     pub use crate::program::{MouseMode, Program, ProgramOptions};
-    pub use crate::stream_builders::{delayed_stream, interval_stream, timeout_stream};
+    
+    // Async support
+    pub use crate::async_handle::AsyncHandle;
     pub use crate::subscription::Subscription;
-    pub use hojicha_core::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent};
+    
+    // Stream builders for common patterns
+    pub use crate::stream_builders::{delayed_stream, interval_stream, timeout_stream};
+    
+    // Re-export essential event types from core
+    pub use hojicha_core::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, WindowSize};
 }
