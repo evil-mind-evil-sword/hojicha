@@ -60,6 +60,7 @@
 // Core TEA abstractions
 pub mod async_helpers;
 pub mod commands;
+pub mod concurrency;
 pub mod core;
 pub mod debug;
 pub mod error;
