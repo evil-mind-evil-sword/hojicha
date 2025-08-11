@@ -27,6 +27,10 @@ name = "showcase"
 path = "src/showcase.rs"
 
 [[bin]]
+name = "debugging"
+path = "src/debugging.rs"
+
+[[bin]]
 name = "visual"
 path = "src/visual.rs"
 
