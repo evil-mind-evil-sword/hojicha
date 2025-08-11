@@ -90,7 +90,9 @@ impl<M> Event<M> {
     /// Check if this is a specific key press
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::{Event, Key};
+    /// # let event: Event<()> = Event::Tick;
     /// if event.is_key_press(Key::Enter) {
     ///     // Handle enter key
     /// }
@@ -102,7 +104,9 @@ impl<M> Event<M> {
     /// Check if this is a specific key with modifiers
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::{Event, Key, KeyModifiers};
+    /// # let event: Event<()> = Event::Tick;
     /// if event.is_key_with_modifiers(Key::Char('c'), KeyModifiers::CONTROL) {
     ///     // Handle Ctrl+C
     /// }
@@ -140,7 +144,9 @@ impl<M> Event<M> {
     /// Get click position if this is a click event
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::Event;
+    /// # let event: Event<()> = Event::Tick;
     /// if let Some((x, y)) = event.as_click() {
     ///     // Handle click at position (x, y)
     /// }
@@ -160,7 +166,9 @@ impl<M> Event<M> {
     /// Get resize dimensions if this is a resize event
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::Event;
+    /// # let event: Event<()> = Event::Tick;
     /// if let Some((width, height)) = event.as_resize() {
     ///     // Handle resize to width x height
     /// }
@@ -277,7 +285,9 @@ impl KeyEvent {
     /// Check if this key event matches a specific key
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::{Key, KeyEvent, KeyModifiers};
+    /// # let key_event = KeyEvent { key: Key::Enter, modifiers: KeyModifiers::empty() };
     /// if key_event.is(Key::Enter) {
     ///     // Handle enter key
     /// }
@@ -289,7 +299,9 @@ impl KeyEvent {
     /// Check if this key event matches a specific key with modifiers
     ///
     /// # Example
-    /// ```ignore
+    /// ```no_run
+    /// # use hojicha_core::{Key, KeyEvent, KeyModifiers};
+    /// # let key_event = KeyEvent { key: Key::Char('s'), modifiers: KeyModifiers::CONTROL };
     /// if key_event.is_with_modifiers(Key::Char('s'), KeyModifiers::CONTROL) {
     ///     // Handle Ctrl+S
     /// }
@@ -526,7 +538,9 @@ impl From<crossterm::event::KeyEvent> for KeyEvent {
 /// A mouse event
 ///
 /// # Example
-/// ```ignore
+/// ```no_run
+/// # use hojicha_core::{Event, MouseEvent};
+/// # let event: Event<()> = Event::Tick;
 /// match event {
 ///     Event::Mouse(mouse) => {
 ///         if mouse.is_left_click() {
@@ -653,9 +667,11 @@ impl MouseEvent {
     /// Check if the mouse event occurred within a rectangular area
     ///
     /// # Example
-    /// ```ignore
-    /// let rect = Rect::new(10, 10, 20, 10);
-    /// if mouse_event.is_within_rect(rect) {
+    /// ```no_run
+    /// # use hojicha_core::event::{MouseEvent, MouseEventKind, MouseButton, KeyModifiers};
+    /// # let mouse_event = MouseEvent { kind: MouseEventKind::Down(MouseButton::Left), column: 15, row: 15, modifiers: KeyModifiers::empty() };
+    /// let (x, y, width, height) = (10, 10, 20, 10);
+    /// if mouse_event.is_within(x, y, width, height) {
     ///     // Mouse event is within the rectangle
     /// }
     /// ```

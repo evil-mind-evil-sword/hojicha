@@ -74,7 +74,7 @@ pub mod testing;
 // Re-export core types
 pub use core::{Cmd, Message, Model};
 pub use error::{Error, ErrorContext, ErrorHandler, Result};
-pub use event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent};
+pub use event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind, MouseButton, WindowSize};
 
 // Re-export command constructors
 pub use commands::{
@@ -121,7 +121,7 @@ pub mod prelude {
     pub use crate::core::{Cmd, Message, Model};
     
     // Events
-    pub use crate::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, WindowSize};
+    pub use crate::event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind, MouseButton, WindowSize};
     
     // Essential commands
     pub use crate::commands::{
