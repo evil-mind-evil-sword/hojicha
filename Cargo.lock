@@ -727,7 +727,7 @@ checksum = "fc0fef456e4baa96da950455cd02c081ca953b141298e41db3fc7e36b1da849c"
 
 [[package]]
 name = "hojicha-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -749,7 +749,7 @@ dependencies = [
 
 [[package]]
 name = "hojicha-examples"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -767,7 +767,7 @@ dependencies = [
 
 [[package]]
 name = "hojicha-pearls"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "crossterm 0.29.0",
  "hojicha-core",
@@ -781,7 +781,7 @@ dependencies = [
 
 [[package]]
 name = "hojicha-runtime"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-stream",

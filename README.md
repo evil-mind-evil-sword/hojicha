@@ -21,8 +21,8 @@ Hojicha implements [The Elm Architecture](https://guide.elm-lang.org/architectur
 
 ```toml
 [dependencies]
-hojicha-core = "0.1"
-hojicha-runtime = "0.1"
+hojicha-core = "0.2"
+hojicha-runtime = "0.2"
 ```
 
 ## Quick Start

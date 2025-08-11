@@ -1,6 +1,6 @@
 [package]
 name = "hojicha-pearls"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["The Hojicha Contributors"]
 description = "UI components and styling for Hojicha TUI framework"
@@ -11,7 +11,7 @@ categories = ["command-line-interface"]
 
 [dependencies]
 # Core hojicha dependency
-hojicha-core = { path = "..", version = "0.1.0" }
+hojicha-core = { path = "..", version = "0.2.0" }
 
 # TUI rendering
 ratatui = { version = "0.29", features = ["all-widgets"] }

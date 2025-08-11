@@ -3,7 +3,7 @@ members = [".", "pearls", "runtime", "examples"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.80.0"
 authors = ["McCoy Reynolds Becker <mccoybecker@gmail.com>"]
@@ -14,10 +14,10 @@ license = "GPL-3.0"
 
 [workspace.dependencies]
 # Internal crates
-hojicha-core = { path = ".", version = "0.1.0" }
-hojicha-pearls = { path = "pearls", version = "0.1.0" }
-hojicha-runtime = { path = "runtime", version = "0.1.0" }
-hojicha-examples = { path = "examples", version = "0.1.0" }
+hojicha-core = { path = ".", version = "0.2.0" }
+hojicha-pearls = { path = "pearls", version = "0.2.0" }
+hojicha-runtime = { path = "runtime", version = "0.2.0" }
+hojicha-examples = { path = "examples", version = "0.2.0" }
 
 # External dependencies
 ratatui = "0.29"
