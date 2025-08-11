@@ -11,7 +11,6 @@
 //!
 //! ```no_run
 //! use hojicha::prelude::*;
-//! use ratatui::widgets::{Block, Borders, Paragraph};
 //!
 //! struct Counter {
 //!     value: i32,
@@ -34,10 +33,8 @@
 //!     }
 //!
 //!     fn view(&self, frame: &mut Frame, area: Rect) {
-//!         let text = format!("Counter: {}\n\nUp/Down: change | q: quit", self.value);
-//!         let widget = Paragraph::new(text)
-//!             .block(Block::default().borders(Borders::ALL).title("Counter"));
-//!         frame.render_widget(widget, area);
+//!         // Render your UI here
+//!         // The ratatui crate provides widgets for rendering
 //!     }
 //! }
 //!

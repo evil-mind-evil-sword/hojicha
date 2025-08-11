@@ -21,6 +21,7 @@ pub use terminal_manager::{TerminalConfig, TerminalManager};
 
 use crate::async_handle::AsyncHandle;
 use crate::panic_recovery::{self, PanicRecoveryStrategy};
+use crate::resource_limits::ResourceLimits;
 use crate::subscription::Subscription;
 use crossterm::event::{self};
 use hojicha_core::core::Model;
@@ -76,6 +77,8 @@ pub struct ProgramOptions {
     pub input: Option<Box<dyn Read + Send + Sync>>,
     /// Panic recovery strategy for Model methods
     pub panic_recovery_strategy: PanicRecoveryStrategy,
+    /// Resource limits for async task execution
+    pub resource_limits: ResourceLimits,
 }
 
 impl ProgramOptions {
@@ -93,6 +96,7 @@ impl ProgramOptions {
             output: None,
             input: None,
             panic_recovery_strategy: PanicRecoveryStrategy::default(),
+            resource_limits: ResourceLimits::default(),
         }
     }
 
@@ -168,6 +172,12 @@ impl ProgramOptions {
         self.input = Some(Box::new(Cursor::new(input.as_bytes().to_vec())));
         self
     }
+    
+    /// Set resource limits for async task execution
+    pub fn with_resource_limits(mut self, limits: ResourceLimits) -> Self {
+        self.resource_limits = limits;
+        self
+    }
 }
 
 impl Default for ProgramOptions {
@@ -213,8 +223,8 @@ where
         };
         let terminal_manager = TerminalManager::new(terminal_config)?;
 
-        // Create command executor
-        let command_executor = CommandExecutor::new()?;
+        // Create command executor with resource limits
+        let command_executor = CommandExecutor::with_resource_limits(options.resource_limits.clone())?;
 
         // Create FPS limiter
         let fps_limiter = FpsLimiter::new(options.fps);
@@ -312,6 +322,11 @@ where
     /// Get advanced performance metrics
     pub fn metrics(&self) -> crate::metrics::AdvancedEventStats {
         self.priority_processor.advanced_metrics()
+    }
+    
+    /// Get resource usage statistics
+    pub fn resource_stats(&self) -> crate::resource_limits::ResourceStats {
+        self.command_executor.resource_stats()
     }
 
     /// Export metrics in JSON format

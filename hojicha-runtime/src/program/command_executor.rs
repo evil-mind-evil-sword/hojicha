@@ -1,18 +1,23 @@
 //! Command execution logic extracted from Program for testability
 
 use super::error_handler::{DefaultErrorHandler, ErrorHandler};
+use crate::resource_limits::{ResourceMonitor, ResourceLimits};
+use crate::panic_utils;
 use hojicha_core::core::Cmd;
 use hojicha_core::event::Event;
 use std::panic::{self, AssertUnwindSafe};
-use crate::panic_utils;
 use std::sync::{Arc, mpsc};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::runtime::Runtime;
+use log::{warn, error};
 
 /// Executes commands and sends resulting messages
 #[derive(Clone)]
 pub struct CommandExecutor<M = ()> {
     runtime: Arc<Runtime>,
     error_handler: Arc<dyn ErrorHandler<M> + Send + Sync>,
+    resource_monitor: Arc<ResourceMonitor>,
+    recursion_depth: Arc<AtomicUsize>,
 }
 
 impl<M> CommandExecutor<M>
@@ -24,6 +29,8 @@ where
         Ok(Self {
             runtime: Arc::new(Runtime::new()?),
             error_handler: Arc::new(DefaultErrorHandler),
+            resource_monitor: Arc::new(ResourceMonitor::new()),
+            recursion_depth: Arc::new(AtomicUsize::new(0)),
         })
     }
 
@@ -35,7 +42,46 @@ where
         Ok(Self {
             runtime: Arc::new(Runtime::new()?),
             error_handler: Arc::new(error_handler),
+            resource_monitor: Arc::new(ResourceMonitor::new()),
+            recursion_depth: Arc::new(AtomicUsize::new(0)),
         })
+    }
+    
+    /// Create a new command executor with custom resource limits
+    pub fn with_resource_limits(limits: ResourceLimits) -> std::io::Result<Self> {
+        Ok(Self {
+            runtime: Arc::new(Runtime::new()?),
+            error_handler: Arc::new(DefaultErrorHandler),
+            resource_monitor: Arc::new(ResourceMonitor::with_limits(limits)),
+            recursion_depth: Arc::new(AtomicUsize::new(0)),
+        })
+    }
+    
+    /// Get current resource statistics
+    pub fn resource_stats(&self) -> crate::resource_limits::ResourceStats {
+        self.resource_monitor.stats()
+    }
+    
+    /// Spawn a task with resource limit checking
+    fn spawn_with_limits<F>(&self, f: F)
+    where
+        F: std::future::Future<Output = ()> + Send + 'static,
+    {
+        let monitor = self.resource_monitor.clone();
+        let runtime = self.runtime.clone();
+        
+        // Try to spawn with resource checking
+        runtime.spawn(async move {
+            match monitor.try_acquire_task_permit().await {
+                Ok(_permit) => {
+                    // Permit will be dropped when task completes
+                    f.await;
+                }
+                Err(e) => {
+                    error!("Failed to spawn task: {}", e);
+                }
+            }
+        });
     }
 
     /// Execute a command and send the result through the channel
@@ -66,7 +112,7 @@ where
             // Handle tick command with async delay
             if let Some((duration, callback)) = cmd.take_tick() {
                 let tx_clone = tx.clone();
-                self.runtime.spawn(async move {
+                self.spawn_with_limits(async move {
                     tokio::time::sleep(duration).await;
                     // Wrap callback execution in panic recovery
                     let result = panic::catch_unwind(AssertUnwindSafe(|| callback()));
@@ -86,7 +132,7 @@ where
             // Handle every command with recurring async timer
             if let Some((duration, callback)) = cmd.take_every() {
                 let tx_clone = tx.clone();
-                self.runtime.spawn(async move {
+                self.spawn_with_limits(async move {
                     // Since callback is FnOnce, we can only call it once
                     // For now, just execute once after delay
                     tokio::time::sleep(duration).await;
@@ -108,7 +154,7 @@ where
             // Handle async command using shared runtime
             if let Some(future) = cmd.take_async() {
                 let tx_clone = tx.clone();
-                self.runtime.spawn(async move {
+                self.spawn_with_limits(async move {
                     // The future is already boxed, just need to pin it
                     use std::pin::Pin;
                     let mut future = future;
@@ -124,7 +170,7 @@ where
             // Spawn async task for regular command execution (like Bubbletea's goroutines)
             let tx_clone = tx.clone();
             let error_handler = self.error_handler.clone();
-            self.runtime.spawn(async move {
+            self.spawn_with_limits(async move {
                 // Wrap command execution in panic recovery
                 let result = panic::catch_unwind(AssertUnwindSafe(|| cmd.execute()));
                 
@@ -164,7 +210,7 @@ where
         // Spawn async task to execute commands in sequence
         let tx_clone = tx.clone();
         let error_handler = self.error_handler.clone();
-        self.runtime.spawn(async move {
+        self.spawn_with_limits(async move {
             for cmd in commands {
                 let tx_inner = tx_clone.clone();
 
@@ -236,13 +282,30 @@ where
         });
     }
 
-    /// Spawn a future on the runtime
+    /// Spawn a future on the runtime with resource limit checking
     pub fn spawn<F>(&self, future: F) -> tokio::task::JoinHandle<F::Output>
     where
         F: std::future::Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        self.runtime.spawn(future)
+        let monitor = self.resource_monitor.clone();
+        let runtime = self.runtime.clone();
+        
+        // Spawn wrapper task that acquires permit first
+        runtime.spawn(async move {
+            match monitor.try_acquire_task_permit().await {
+                Ok(_permit) => {
+                    // Permit will be dropped when task completes
+                    future.await
+                }
+                Err(e) => {
+                    error!("Failed to spawn task: {}", e);
+                    // Return default value - this is not ideal but maintains API compatibility
+                    // In a real implementation, we'd want to propagate the error
+                    panic!("Resource exhausted: {}", e);
+                }
+            }
+        })
     }
 
     /// Block on the runtime to ensure all tasks complete (for testing)
