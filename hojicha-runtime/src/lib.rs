@@ -47,6 +47,7 @@ pub mod testing;
 pub mod panic_handler;
 pub mod panic_utils;
 pub mod resilient_input;
+pub mod resource_limits;
 pub mod safe_mutex;
 
 // Re-export from core

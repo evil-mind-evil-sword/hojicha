@@ -20,6 +20,7 @@ pub use terminal_manager::{TerminalConfig, TerminalManager};
 // We'll gradually migrate the implementation to use the extracted components
 
 use crate::async_handle::AsyncHandle;
+use crate::resource_limits::ResourceLimits;
 use crate::subscription::Subscription;
 use crossterm::event::{self};
 use hojicha_core::core::Model;
@@ -73,6 +74,8 @@ pub struct ProgramOptions {
     pub output: Option<Box<dyn Write + Send + Sync>>,
     /// Custom input reader
     pub input: Option<Box<dyn Read + Send + Sync>>,
+    /// Resource limits for async task execution
+    pub resource_limits: ResourceLimits,
 }
 
 impl ProgramOptions {
@@ -89,6 +92,7 @@ impl ProgramOptions {
             without_renderer: false,
             output: None,
             input: None,
+            resource_limits: ResourceLimits::default(),
         }
     }
 
@@ -158,6 +162,12 @@ impl ProgramOptions {
         self.input = Some(Box::new(Cursor::new(input.as_bytes().to_vec())));
         self
     }
+    
+    /// Set resource limits for async task execution
+    pub fn with_resource_limits(mut self, limits: ResourceLimits) -> Self {
+        self.resource_limits = limits;
+        self
+    }
 }
 
 impl Default for ProgramOptions {
@@ -203,8 +213,8 @@ where
         };
         let terminal_manager = TerminalManager::new(terminal_config)?;
 
-        // Create command executor
-        let command_executor = CommandExecutor::new()?;
+        // Create command executor with resource limits
+        let command_executor = CommandExecutor::with_resource_limits(options.resource_limits.clone())?;
 
         // Create FPS limiter
         let fps_limiter = FpsLimiter::new(options.fps);
@@ -302,6 +312,11 @@ where
     /// Get advanced performance metrics
     pub fn metrics(&self) -> crate::metrics::AdvancedEventStats {
         self.priority_processor.advanced_metrics()
+    }
+    
+    /// Get resource usage statistics
+    pub fn resource_stats(&self) -> crate::resource_limits::ResourceStats {
+        self.command_executor.resource_stats()
     }
 
     /// Export metrics in JSON format
