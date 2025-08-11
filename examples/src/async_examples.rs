@@ -1,21 +1,23 @@
-use hojicha_runtime;
-//! Async Programming Examples
-//!
-//! This example demonstrates Hojicha's async capabilities:
-//! - Async commands and tasks
-//! - Stream subscriptions
-//! - Cancellable operations
-//! - External event injection
-//!
-//! Press Tab to switch between examples.
+// Async Programming Examples
+//
+// This example demonstrates Hojicha's async capabilities:
+// - Async commands and tasks
+// - Stream subscriptions
+// - Cancellable operations
+// - External event injection
+//
+// Press Tab to switch between examples.
 
 use hojicha_core::{
-use hojicha_pearls::{components, style};    commands::{self, spawn, tick},
+    commands::{self, spawn, tick},
     core::{Cmd, Model},
     event::{Event, Key},
-    hojicha_runtime::program::Program,
-    hojicha_pearls::style::{ColorProfile, Theme},
 };
+use hojicha_pearls::{
+    components,
+    style::{ColorProfile, Theme},
+};
+use hojicha_runtime::program::Program;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     widgets::{Block, Borders, Gauge, List, ListItem, Paragraph},

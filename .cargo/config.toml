@@ -24,3 +24,7 @@ check-all = ["fmt", "clippy", "test"]
 
 # Watch tests (requires cargo-watch)
 watch-test = "watch -x 'test --lib --all-features'"
+
+# GitHub Actions testing with act (requires act and Docker/Colima)
+# Note: These are shell commands that must be run directly, not as cargo aliases
+# Use: act -W .github/workflows/examples.yml -j test-examples --matrix os:ubuntu-latest --container-architecture linux/amd64 --container-daemon-socket -

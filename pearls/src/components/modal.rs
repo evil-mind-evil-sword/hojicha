@@ -2,8 +2,8 @@
 //!
 //! Overlay dialogs for confirmations, forms, and information display.
 
-use hojicha_core::event::{Event, Key, KeyEvent};
 use crate::style::{BorderStyle, Color, ColorProfile, Style, Theme};
+use hojicha_core::event::{Event, Key, KeyEvent};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     widgets::{Block, Borders, Clear, Paragraph, Wrap},

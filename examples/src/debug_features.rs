@@ -1,21 +1,21 @@
-use hojicha_runtime;
-//! Example demonstrating debug features: Printf/Println and SetWindowTitle
-//!
-//! This example shows how to use the new debugging features:
-//! - printf/println for debug output to stderr
-//! - set_window_title to change the terminal window title
-//! - FPS control to limit frame rate
-//! - Message filtering to intercept and modify events
+// Example demonstrating debug features: Printf/Println and SetWindowTitle
+//
+// This example shows how to use the new debugging features:
+// - printf/println for debug output to stderr
+// - set_window_title to change the terminal window title
+// - FPS control to limit frame rate
+// - Message filtering to intercept and modify events
 
 use hojicha_core::{
-use hojicha_pearls::{components, style};    commands::{self, quit, set_window_title},
+    commands::{self, quit, set_window_title},
     core::{Cmd, Model},
     event::{Event, Key},
-    hojicha_runtime::program::Program, ProgramOptions},
 };
+use hojicha_pearls::style::{ColorProfile, Theme};
+use hojicha_pearls::{components, style};
+use hojicha_runtime::program::{Program, ProgramOptions};
 use ratatui::{
     layout::{Alignment, Rect},
-    hojicha_pearls::style::{ColorProfile, Theme},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };

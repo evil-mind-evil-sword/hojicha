@@ -1,11 +1,11 @@
 //! Test runner utilities for testing hojicha applications
 
+use crate::program::{Program, ProgramOptions};
 use hojicha_core::{
     core::{Cmd, Model},
-    event::Event,
     error::Result,
+    event::Event,
 };
-use crate::program::{Program, ProgramOptions};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 

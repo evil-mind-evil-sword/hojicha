@@ -3,11 +3,11 @@
 //! This module provides a panic handler that ensures the terminal is restored
 //! to a usable state when a panic occurs, and optionally logs panic information.
 
+use log::error;
+use std::io::Write;
 use std::panic::{self, PanicInfo};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::io::Write;
-use log::error;
 
 /// Global flag to track if we're in a TUI context
 static TUI_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -93,32 +93,33 @@ impl Drop for TuiGuard {
 fn handle_panic(panic_info: &PanicInfo) {
     // First, log the panic if logging is available
     error!("PANIC: {}", panic_info);
-    
+
     // Run custom cleanup if provided
     unsafe {
         if let Some(ref cleanup) = CLEANUP_FN {
             cleanup();
         }
     }
-    
+
     // If we're in TUI mode, restore the terminal
     if TUI_ACTIVE.load(Ordering::SeqCst) {
         restore_terminal();
     }
-    
+
     // Print panic information to stderr
     eprintln!("\n\n==================== PANIC ====================");
     eprintln!("{}", panic_info);
-    
+
     // Print location if available
     if let Some(location) = panic_info.location() {
-        eprintln!("\nLocation: {}:{}:{}", 
+        eprintln!(
+            "\nLocation: {}:{}:{}",
             location.file(),
             location.line(),
             location.column()
         );
     }
-    
+
     // Print backtrace if available
     if let Ok(var) = std::env::var("RUST_BACKTRACE") {
         if var == "1" || var == "full" {
@@ -128,19 +129,19 @@ fn handle_panic(panic_info: &PanicInfo) {
     } else {
         eprintln!("\nNote: Set RUST_BACKTRACE=1 to see a backtrace");
     }
-    
+
     eprintln!("================================================\n");
 }
 
 /// Attempt to restore the terminal to a usable state
 fn restore_terminal() {
     use crossterm::{
+        cursor,
+        event::{DisableBracketedPaste, DisableFocusChange, DisableMouseCapture},
         execute,
         terminal::{self, LeaveAlternateScreen},
-        cursor,
-        event::{DisableMouseCapture, DisableBracketedPaste, DisableFocusChange},
     };
-    
+
     // Try to restore terminal state
     let _ = execute!(
         std::io::stderr(),
@@ -150,10 +151,10 @@ fn restore_terminal() {
         DisableFocusChange,
         cursor::Show,
     );
-    
+
     // Disable raw mode
     let _ = terminal::disable_raw_mode();
-    
+
     // Flush stderr to ensure all output is visible
     let _ = std::io::stderr().flush();
 }
@@ -174,15 +175,15 @@ impl TestPanicHook {
             panic_message: Arc::new(std::sync::Mutex::new(None)),
         }
     }
-    
+
     /// Install this hook as the panic handler
     pub fn install(&self) {
         let panicked = Arc::clone(&self.panicked);
         let panic_message = Arc::clone(&self.panic_message);
-        
+
         panic::set_hook(Box::new(move |panic_info| {
             panicked.store(true, Ordering::SeqCst);
-            
+
             let msg = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
                 s.to_string()
             } else if let Some(s) = panic_info.payload().downcast_ref::<String>() {
@@ -190,21 +191,21 @@ impl TestPanicHook {
             } else {
                 "Unknown panic".to_string()
             };
-            
+
             *panic_message.lock().unwrap() = Some(msg);
         }));
     }
-    
+
     /// Check if a panic occurred
     pub fn did_panic(&self) -> bool {
         self.panicked.load(Ordering::SeqCst)
     }
-    
+
     /// Get the panic message if one occurred
     pub fn get_panic_message(&self) -> Option<String> {
         self.panic_message.lock().unwrap().clone()
     }
-    
+
     /// Reset the panic state
     pub fn reset(&self) {
         self.panicked.store(false, Ordering::SeqCst);
@@ -216,20 +217,23 @@ impl TestPanicHook {
 mod tests {
     use super::*;
     use std::panic;
-    
+
     #[test]
     fn test_panic_hook_captures_panic() {
         let hook = TestPanicHook::new();
         hook.install();
-        
+
         let result = panic::catch_unwind(|| {
             panic!("Test panic message");
         });
-        
+
         assert!(result.is_err());
         assert!(hook.did_panic());
-        assert_eq!(hook.get_panic_message(), Some("Test panic message".to_string()));
-        
+        assert_eq!(
+            hook.get_panic_message(),
+            Some("Test panic message".to_string())
+        );
+
         // Restore default panic hook
         let _ = panic::take_hook();
     }

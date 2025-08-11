@@ -26,7 +26,7 @@
 //! ```no_run
 //! use hojicha_core::{Model, Cmd};
 //! use ratatui::Frame;
-//! 
+//!
 //! struct App {
 //!     counter: u32,
 //! }
@@ -57,8 +57,8 @@
 #![warn(rustdoc::missing_crate_level_docs)]
 
 // Core TEA abstractions
-pub mod core;
 pub mod commands;
+pub mod core;
 pub mod error;
 pub mod event;
 pub mod fallible;
@@ -69,29 +69,24 @@ pub mod logging;
 pub mod testing;
 
 // Re-export core types
-pub use core::{Cmd, Model, Message};
+pub use core::{Cmd, Message, Model};
 pub use error::{Error, ErrorContext, ErrorHandler, Result};
 pub use event::{Event, Key, KeyEvent, KeyModifiers, MouseEvent};
 
 // Re-export command constructors
 pub use commands::{
-    batch, quit, none, sequence,
-    tick, every,
-    custom, custom_async, custom_fallible,
-    spawn,
+    batch, custom, custom_async, custom_fallible, every, none, quit, sequence, spawn, tick,
 };
 
 /// Prelude module for convenient imports
 pub mod prelude {
-    pub use crate::core::{Cmd, Model, Message};
-    pub use crate::error::{Error, ErrorContext, Result};
     pub use crate::commands::{
-        batch, quit, none, sequence,
-        tick, every,
-        custom, custom_async, custom_fallible,
+        batch, custom, custom_async, custom_fallible, every, none, quit, sequence, tick,
     };
+    pub use crate::core::{Cmd, Message, Model};
+    pub use crate::error::{Error, ErrorContext, Result};
     pub use crate::logging::{log_debug, log_error, log_info, log_warn};
-    
+
     // Re-export ratatui types users will need for views
     pub use ratatui::prelude::*;
 }

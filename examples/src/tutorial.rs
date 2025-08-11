@@ -14,11 +14,11 @@ use hojicha_core::{
     event::{Event, Key},
     Result,
 };
-use hojicha_runtime::program::Program;
 use hojicha_pearls::{
     components::{Help, TextInput},
     style::{ColorProfile, Theme},
 };
+use hojicha_runtime::program::Program;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::Stylize,

@@ -6,14 +6,10 @@ use hojicha_core::{
     commands::{self, tick},
     core::{Cmd, Model},
     event::{Event, Key},
-    logging,
-    Result,
+    logging, Result,
 };
+use hojicha_pearls::{components::*, style::*};
 use hojicha_runtime::program::{Program, ProgramOptions};
-use hojicha_pearls::{
-    components::*,
-    style::*,
-};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     text::{Line, Span},
@@ -76,10 +72,13 @@ impl Model for VisualShowcase {
 
     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         self.update_count += 1;
-        
+
         // Log every event received with update count
-        logging::info(&format!("update() #{} received event: {:?}", self.update_count, event));
-        
+        logging::info(&format!(
+            "update() #{} received event: {:?}",
+            self.update_count, event
+        ));
+
         let result = match event {
             Event::User(msg) if msg == "tick" => {
                 self.tick_count += 1;
@@ -105,13 +104,17 @@ impl Model for VisualShowcase {
                     "KEY EVENT RECEIVED - key: {:?}, modifiers: {:?}",
                     event.key, event.modifiers
                 ));
-                
+
                 match event.key {
                     Key::Char('q') | Key::Esc => {
                         logging::error("QUIT key pressed - returning quit command");
                         commands::quit()
                     }
-                    Key::Tab if event.modifiers.contains(crossterm::event::KeyModifiers::SHIFT) => {
+                    Key::Tab
+                        if event
+                            .modifiers
+                            .contains(crossterm::event::KeyModifiers::SHIFT) =>
+                    {
                         logging::info("Shift+Tab pressed");
                         self.prev_page();
                         Cmd::none()
@@ -122,7 +125,10 @@ impl Model for VisualShowcase {
                         Cmd::none()
                     }
                     _ => {
-                        logging::warn(&format!("Unhandled key: {:?} - returning Cmd::none()", event.key));
+                        logging::warn(&format!(
+                            "Unhandled key: {:?} - returning Cmd::none()",
+                            event.key
+                        ));
                         Cmd::none()
                     }
                 }
@@ -136,9 +142,12 @@ impl Model for VisualShowcase {
                 Cmd::none()
             }
         };
-        
-        logging::info(&format!("update() #{} returning - is_quit: {}", 
-            self.update_count, result.is_quit()));
+
+        logging::info(&format!(
+            "update() #{} returning - is_quit: {}",
+            self.update_count,
+            result.is_quit()
+        ));
         result
     }
 
@@ -155,7 +164,7 @@ impl Model for VisualShowcase {
 
         // Render header
         let header = Paragraph::new(format!(
-            "Visual Debug | Updates: {} | Ticks: {} | Log: /tmp/visual_debug.log", 
+            "Visual Debug | Updates: {} | Ticks: {} | Log: /tmp/visual_debug.log",
             self.update_count, self.tick_count
         ))
         .alignment(Alignment::Center)
@@ -169,31 +178,31 @@ impl Model for VisualShowcase {
             Tab/Shift+Tab: Navigate\n\
             'q' or Esc: Quit\n\n\
             If program exits on keypress, check the log!",
-            self.current_page, self.progress * 100.0
+            self.current_page,
+            self.progress * 100.0
         ))
         .alignment(Alignment::Center);
         frame.render_widget(content, main_chunks[1]);
 
         // Render footer
-        let footer = Paragraph::new("Watch /tmp/visual_debug.log for events")
-            .alignment(Alignment::Center);
+        let footer =
+            Paragraph::new("Watch /tmp/visual_debug.log for events").alignment(Alignment::Center);
         frame.render_widget(footer, main_chunks[2]);
     }
 }
 
 fn main() -> Result<()> {
     // Initialize file logger
-    logging::init_file_logger("/tmp/visual_debug.log")
-        .expect("Failed to initialize logger");
-    
+    logging::init_file_logger("/tmp/visual_debug.log").expect("Failed to initialize logger");
+
     logging::info("========================================");
     logging::info("Starting Visual Debug (with better error handling)");
     logging::info("========================================");
-    
+
     // Create a custom input handler that logs errors
     let running = Arc::new(AtomicBool::new(true));
     let running_clone = Arc::clone(&running);
-    
+
     // Spawn a thread to monitor the program
     thread::spawn(move || {
         while running_clone.load(Ordering::SeqCst) {
@@ -202,23 +211,23 @@ fn main() -> Result<()> {
         }
         logging::error("Monitor: Program stopped!");
     });
-    
+
     logging::info("Creating program...");
     let program = Program::new(VisualShowcase::new())?;
     logging::info("Program created successfully");
-    
+
     logging::info("Starting main loop...");
     let result = program.run();
-    
+
     running.store(false, Ordering::SeqCst);
-    
+
     match &result {
         Ok(()) => logging::info("Program ended normally"),
         Err(e) => logging::error(&format!("Program ended with error: {:?}", e)),
     }
-    
+
     logging::info(&format!("Final result: {:?}", result));
     logging::info("========================================");
-    
+
     result
 }

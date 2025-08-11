@@ -1,9 +1,9 @@
 //! Simple test to verify async bridge functionality
 
 use hojicha_core::commands;
-use hojicha_runtime::program::{Program, ProgramOptions};
-use hojicha_runtime::async_handle::init_async_bridge;
 use hojicha_core::prelude::*;
+use hojicha_core::event::Event;
+use hojicha_runtime::program::{Program, ProgramOptions};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 

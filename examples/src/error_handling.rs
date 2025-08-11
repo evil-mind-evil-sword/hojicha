@@ -1,11 +1,10 @@
-use hojicha_runtime;
-//! Example demonstrating error handling patterns in Hojicha
-//!
-//! This example shows:
-//! - Using the FallibleModel trait for error handling
-//! - Converting errors to messages
-//! - Displaying errors in the UI
-//! - Recovering from errors
+// Example demonstrating error handling patterns in Hojicha
+//
+// This example shows:
+// - Using the FallibleModel trait for error handling
+// - Converting errors to messages
+// - Displaying errors in the UI
+// - Recovering from errors
 
 use hojicha_core::prelude::*;
 use hojicha_core::{

@@ -2,8 +2,8 @@
 //!
 //! A clickable button with various styles and states.
 
-use hojicha_core::event::{Event, Key, KeyEvent};
 use crate::style::{BorderStyle, Color, ColorProfile, Style, Theme};
+use hojicha_core::event::{Event, Key, KeyEvent};
 use ratatui::{
     layout::Rect,
     text::{Line, Span},

@@ -79,6 +79,16 @@ Hojicha follows The Elm Architecture pattern:
 | **View** | Pure function that renders the UI based on state |
 | **Command** | Side effects (async operations, timers, etc.) |
 
+## Documentation
+
+📚 **[Full Documentation Hub](./docs/README.md)** - Start here for comprehensive documentation
+
+- [Architecture Overview](./docs/ARCHITECTURE.md) - System design and components
+- [Development Guide](./docs/DEVELOPMENT.md) - Setup and contribution guidelines
+- [AI Navigation](./docs/AI_NAVIGATION.md) - Guide for AI agents working with the codebase
+- [Testing Best Practices](./docs/TESTING_BEST_PRACTICES.md) - Testing strategies
+- [Async Design](./docs/ASYNC_DESIGN.md) - Async patterns and implementation
+
 ## Advanced Features
 
 ### Async Integration

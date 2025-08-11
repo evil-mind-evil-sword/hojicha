@@ -19,11 +19,11 @@ pub use terminal_manager::{TerminalConfig, TerminalManager};
 // We'll gradually migrate the implementation to use the extracted components
 
 use crate::async_handle::AsyncHandle;
+use crate::subscription::Subscription;
+use crossterm::event::{self};
 use hojicha_core::core::Model;
 use hojicha_core::error::{Error, Result};
 use hojicha_core::event::Event;
-use crate::subscription::Subscription;
-use crossterm::event::{self};
 use std::io::{self, Read, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{mpsc, Arc};

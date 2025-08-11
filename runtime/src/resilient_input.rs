@@ -4,12 +4,12 @@
 //! from panics and continue processing terminal events.
 
 use crossterm::event;
+use log::{debug, error, info, warn};
 use std::panic::{self, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::Duration;
-use log::{error, warn, info, debug};
 
 /// Statistics for monitoring input thread health
 #[derive(Debug, Clone, Default)]
@@ -28,21 +28,19 @@ pub fn spawn_resilient_input_thread(
 ) -> thread::JoinHandle<InputThreadStats> {
     thread::spawn(move || {
         let mut stats = InputThreadStats::default();
-        
+
         // Supervisor loop - restarts the input reader if it panics
         while running.load(Ordering::SeqCst) && !force_quit.load(Ordering::SeqCst) {
-            info!("Starting input reader (attempt #{})", stats.restart_count + 1);
-            
+            info!(
+                "Starting input reader (attempt #{})",
+                stats.restart_count + 1
+            );
+
             // Run the actual input reading in a panic-safe wrapper
             let result = panic::catch_unwind(AssertUnwindSafe(|| {
-                run_input_loop(
-                    &running,
-                    &force_quit,
-                    &crossterm_tx,
-                    &mut stats,
-                )
+                run_input_loop(&running, &force_quit, &crossterm_tx, &mut stats)
             }));
-            
+
             match result {
                 Ok(()) => {
                     debug!("Input loop ended normally");
@@ -51,7 +49,7 @@ pub fn spawn_resilient_input_thread(
                 Err(panic_info) => {
                     stats.panic_count += 1;
                     stats.restart_count += 1;
-                    
+
                     // Log the panic
                     error!("Input thread panicked (panic #{}):", stats.panic_count);
                     if let Some(s) = panic_info.downcast_ref::<&str>() {
@@ -61,20 +59,20 @@ pub fn spawn_resilient_input_thread(
                     } else {
                         error!("  Unknown panic type");
                     }
-                    
+
                     // Check if we should give up
                     if stats.panic_count > 10 {
                         error!("Too many panics in input thread, giving up");
                         break;
                     }
-                    
+
                     // Brief pause before restart to avoid tight panic loops
                     thread::sleep(Duration::from_millis(100));
                     warn!("Restarting input thread after panic...");
                 }
             }
         }
-        
+
         info!("Input thread supervisor ending. Stats: {:?}", stats);
         stats
     })
@@ -88,16 +86,17 @@ fn run_input_loop(
     stats: &mut InputThreadStats,
 ) {
     let mut consecutive_errors = 0;
-    
+
     loop {
         if !running.load(Ordering::SeqCst) || force_quit.load(Ordering::SeqCst) {
-            debug!("Input loop stopping (running={}, force_quit={})",
+            debug!(
+                "Input loop stopping (running={}, force_quit={})",
                 running.load(Ordering::SeqCst),
                 force_quit.load(Ordering::SeqCst)
             );
             break;
         }
-        
+
         // Poll for events with error handling
         match event::poll(Duration::from_millis(100)) {
             Ok(true) => {
@@ -106,7 +105,7 @@ fn run_input_loop(
                     Ok(evt) => {
                         consecutive_errors = 0; // Reset error counter on success
                         stats.total_events += 1;
-                        
+
                         // Try to send the event
                         if let Err(e) = crossterm_tx.send(evt) {
                             debug!("Failed to send event (receiver disconnected): {:?}", e);
@@ -116,7 +115,7 @@ fn run_input_loop(
                     Err(e) => {
                         consecutive_errors += 1;
                         stats.error_count += 1;
-                        
+
                         // Handle specific error types
                         use std::io::ErrorKind;
                         match e.kind() {
@@ -132,13 +131,15 @@ fn run_input_loop(
                             }
                             _ => {
                                 warn!("Error reading input: {}", e);
-                                
+
                                 // If we get too many consecutive errors, bail out
                                 if consecutive_errors > 10 {
-                                    error!("Too many consecutive input errors, stopping input thread");
+                                    error!(
+                                        "Too many consecutive input errors, stopping input thread"
+                                    );
                                     break;
                                 }
-                                
+
                                 // Brief pause to avoid tight error loops
                                 thread::sleep(Duration::from_millis(50));
                             }
@@ -153,14 +154,14 @@ fn run_input_loop(
             Err(e) => {
                 consecutive_errors += 1;
                 stats.error_count += 1;
-                
+
                 warn!("Error polling for events: {}", e);
-                
+
                 if consecutive_errors > 10 {
                     error!("Too many consecutive polling errors, stopping input thread");
                     break;
                 }
-                
+
                 // Longer pause for polling errors
                 thread::sleep(Duration::from_millis(100));
             }
@@ -169,24 +170,21 @@ fn run_input_loop(
 }
 
 /// Alternative: Create a simple resilient wrapper for existing input code
-pub fn wrap_with_panic_recovery<F>(
-    name: &str,
-    mut f: F,
-) -> thread::JoinHandle<()>
+pub fn wrap_with_panic_recovery<F>(name: &str, mut f: F) -> thread::JoinHandle<()>
 where
     F: FnMut() -> bool + Send + 'static,
 {
     let thread_name = name.to_string();
-    
+
     thread::spawn(move || {
         let mut attempt = 0;
-        
+
         loop {
             attempt += 1;
             info!("{}: Starting (attempt #{})", thread_name, attempt);
-            
+
             let result = panic::catch_unwind(AssertUnwindSafe(|| f()));
-            
+
             match result {
                 Ok(should_continue) => {
                     if !should_continue {
@@ -199,12 +197,12 @@ where
                     if let Some(s) = panic_info.downcast_ref::<&str>() {
                         error!("  Panic message: {}", s);
                     }
-                    
+
                     if attempt > 10 {
                         error!("{}: Too many panics, giving up", thread_name);
                         break;
                     }
-                    
+
                     thread::sleep(Duration::from_millis(100));
                     warn!("{}: Restarting after panic...", thread_name);
                 }

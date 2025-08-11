@@ -37,52 +37,18 @@ pub mod style;
 
 // Re-export commonly used components
 pub use components::{
-    Button,
-    Help,
-    List,
-    Modal,
-    Paginator,
-    ProgressBar,
-    Spinner, SpinnerStyle,
-    StatusBar,
-    Stopwatch,
-    StyledList,
-    StyledTable,
-    Table,
-    Tabs,
-    TextInput,
-    TextArea,
-    Timer,
-    Viewport,
+    Button, Help, List, Modal, Paginator, ProgressBar, Spinner, SpinnerStyle, StatusBar, Stopwatch,
+    StyledList, StyledTable, Table, Tabs, TextArea, TextInput, Timer, Viewport,
 };
 
 // Re-export styling utilities
-pub use style::{
-    StyleBuilder,
-    Color, ColorProfile,
-    FloatingElement,
-    Gradient,
-    Grid,
-    Theme,
-};
+pub use style::{Color, ColorProfile, FloatingElement, Gradient, Grid, StyleBuilder, Theme};
 
 /// Prelude for convenient imports
 pub mod prelude {
     pub use crate::components::{
-        Button,
-        Spinner, SpinnerStyle,
-        ProgressBar,
-        Tabs,
-        Modal,
-        Table,
-        List,
-        TextInput,
-        TextArea,
+        Button, List, Modal, ProgressBar, Spinner, SpinnerStyle, Table, Tabs, TextArea, TextInput,
     };
-    
-    pub use crate::style::{
-        Theme,
-        ColorProfile,
-        StyleBuilder,
-    };
+
+    pub use crate::style::{ColorProfile, StyleBuilder, Theme};
 }

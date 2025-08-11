@@ -1,24 +1,24 @@
-//! Complete UI Component Showcase
-//!
-//! This example demonstrates all UI components available in Hojicha.
-//! Navigate through different component categories to see them in action.
-//!
-//! Controls:
-//! - Tab/Shift+Tab: Navigate between categories
-//! - Arrow keys: Navigate within components
-//! - Space: Interact with components
-//! - q: Quit
+// Complete UI Component Showcase
+//
+// This example demonstrates all UI components available in Hojicha.
+// Navigate through different component categories to see them in action.
+//
+// Controls:
+// - Tab/Shift+Tab: Navigate between categories
+// - Arrow keys: Navigate within components
+// - Space: Interact with components
+// - q: Quit
 
 use hojicha_core::commands;
-use hojicha_pearls::PLACEHOLDER_COMPONENTS;
 use hojicha_core::event::{Key, KeyModifiers};
 use hojicha_core::prelude::*;
-use hojicha_runtime::hojicha_runtime::program::Program, ProgramOptions};
+use hojicha_pearls::style::{ColorProfile, Theme};
+use hojicha_pearls::PLACEHOLDER_COMPONENTS;
+use hojicha_runtime::program::{Program, ProgramOptions};
+use ratatui::widgets::{Block, Borders, Paragraph, Tabs};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    hojicha_pearls::style::{ColorProfile, Theme},
     text::Line,
-    widgets::{Block, Borders, Paragraph, Tabs},
 };
 use std::time::Duration;
 

@@ -1,7 +1,0 @@
----
-source: tests/snapshot_tests.rs
-expression: output
----
-Item A              
-Item B              
-Item C

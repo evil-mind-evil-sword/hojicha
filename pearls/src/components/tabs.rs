@@ -2,8 +2,8 @@
 //!
 //! A flexible tab bar component with support for icons, badges, and closeable tabs.
 
-use hojicha_core::event::{Event, Key, KeyEvent};
 use crate::style::{Color, ColorProfile, Style, Theme};
+use hojicha_core::event::{Event, Key, KeyEvent};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     text::{Line, Span},

@@ -5,7 +5,7 @@ use hojicha_core::{
     core::{Cmd, Model},
     event::{Event, Key, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind},
 };
-use hojicha_runtime::program::{Program, ProgramOptions, MouseMode};
+use hojicha_runtime::program::{MouseMode, Program, ProgramOptions};
 use std::time::Duration;
 
 // Simple test model

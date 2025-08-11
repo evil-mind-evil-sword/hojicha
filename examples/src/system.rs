@@ -1,19 +1,19 @@
-use hojicha_runtime;
-//! System integration example
-//!
-//! This example demonstrates system-level features:
-//! - External command execution
-//! - Suspend/resume with Ctrl+Z
-//! - Error handling and recovery
-//! - Async operations
-//! - Window management
+// System integration example
+//
+// This example demonstrates system-level features:
+// - External command execution
+// - Suspend/resume with Ctrl+Z
+// - Error handling and recovery
+// - Async operations
+// - Window management
 
 use hojicha_core::commands;
-use hojicha_pearls::{components, style};use hojicha_core::event::Key;
-use hojicha_pearls::{components, style};use hojicha_core::prelude::*;
-use hojicha_pearls::{components, style};use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+use hojicha_core::event::Key;
+use hojicha_core::prelude::*;
+use hojicha_pearls::{components, style};
+use ratatui::{
     hojicha_pearls::style::{ColorProfile, Theme},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };

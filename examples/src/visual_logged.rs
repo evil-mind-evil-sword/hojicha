@@ -7,14 +7,10 @@ use hojicha_core::{
     commands::{self, tick},
     core::{Cmd, Model},
     event::{Event, Key},
-    logging,
-    Result,
+    logging, Result,
 };
+use hojicha_pearls::{components::*, style::*};
 use hojicha_runtime::program::Program;
-use hojicha_pearls::{
-    components::*,
-    style::*,
-};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     text::{Line, Span},
@@ -73,7 +69,7 @@ impl Model for VisualShowcase {
     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
         // Log every event received
         logging::debug(&format!("update() received event: {:?}", event));
-        
+
         let result = match event {
             Event::User(msg) if msg == "tick" => {
                 self.tick_count += 1;
@@ -99,33 +95,43 @@ impl Model for VisualShowcase {
                     "Key event - key: {:?}, modifiers: {:?}",
                     event.key, event.modifiers
                 ));
-                
+
                 match event.key {
                     Key::Char('q') | Key::Esc => {
                         logging::warn("QUIT key pressed - returning quit command");
                         commands::quit()
                     }
-                    Key::Tab if event.modifiers.contains(crossterm::event::KeyModifiers::SHIFT) => {
+                    Key::Tab
+                        if event
+                            .modifiers
+                            .contains(crossterm::event::KeyModifiers::SHIFT) =>
+                    {
                         logging::info("Shift+Tab pressed");
                         self.prev_page();
                         let cmd = Cmd::none();
-                        logging::debug(&format!("Returning Cmd::none() - is_quit: {}", 
-                            cmd.is_quit()));
+                        logging::debug(&format!(
+                            "Returning Cmd::none() - is_quit: {}",
+                            cmd.is_quit()
+                        ));
                         cmd
                     }
                     Key::Tab => {
                         logging::info("Tab pressed");
                         self.next_page();
                         let cmd = Cmd::none();
-                        logging::debug(&format!("Returning Cmd::none() - is_quit: {}", 
-                            cmd.is_quit()));
+                        logging::debug(&format!(
+                            "Returning Cmd::none() - is_quit: {}",
+                            cmd.is_quit()
+                        ));
                         cmd
                     }
                     _ => {
                         logging::warn(&format!("Unhandled key: {:?}", event.key));
                         let cmd = Cmd::none();
-                        logging::debug(&format!("Returning Cmd::none() for unhandled key - is_quit: {}", 
-                            cmd.is_quit()));
+                        logging::debug(&format!(
+                            "Returning Cmd::none() for unhandled key - is_quit: {}",
+                            cmd.is_quit()
+                        ));
                         cmd
                     }
                 }
@@ -135,9 +141,11 @@ impl Model for VisualShowcase {
                 Cmd::none()
             }
         };
-        
-        logging::debug(&format!("update() returning - is_quit: {}", 
-            result.is_quit()));
+
+        logging::debug(&format!(
+            "update() returning - is_quit: {}",
+            result.is_quit()
+        ));
         result
     }
 
@@ -153,9 +161,12 @@ impl Model for VisualShowcase {
             .split(area);
 
         // Render header
-        let header = Paragraph::new(format!("Visual Showcase - Page {}/4 (Check /tmp/visual_debug.log)", self.current_page + 1))
-            .alignment(Alignment::Center)
-            .style(ratatui::style::Style::default().add_modifier(ratatui::style::Modifier::BOLD));
+        let header = Paragraph::new(format!(
+            "Visual Showcase - Page {}/4 (Check /tmp/visual_debug.log)",
+            self.current_page + 1
+        ))
+        .alignment(Alignment::Center)
+        .style(ratatui::style::Style::default().add_modifier(ratatui::style::Modifier::BOLD));
         frame.render_widget(header, main_chunks[0]);
 
         // Simple content for debugging
@@ -175,20 +186,19 @@ impl Model for VisualShowcase {
 
 fn main() -> Result<()> {
     // Initialize file logger for application logging
-    logging::init_file_logger("/tmp/visual_debug.log")
-        .expect("Failed to initialize logger");
-    
+    logging::init_file_logger("/tmp/visual_debug.log").expect("Failed to initialize logger");
+
     logging::info("========================================");
     logging::info("Starting Visual Showcase with logging");
     logging::info("========================================");
-    
+
     let program = Program::new(VisualShowcase::new())?;
     logging::info("Program created successfully");
-    
+
     let result = program.run();
-    
+
     logging::info(&format!("Program ended with result: {:?}", result));
     logging::info("========================================");
-    
+
     result
 }

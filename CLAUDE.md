@@ -20,15 +20,22 @@ cargo run --example components_gallery  # All components showcase
 # Code quality
 cargo fmt --all                   # Format
 cargo clippy --all-targets        # Lint
+
+# Test GitHub Actions locally with act (requires Docker/Colima)
+cargo act-examples                # Test examples workflow
+cargo act-ci                      # Test CI workflow
+cargo act-coverage                # Test coverage workflow
+cargo act-security                # Test security workflow
 ```
 
 ## Key Files to Know
 
 - `src/core.rs` - Model trait and Cmd type (heart of the framework)
-- `src/program.rs` - Main event loop and async integration
+- `runtime/src/program.rs` - Main event loop and async integration
 - `src/event.rs` - Event types (Key, Mouse, User messages)
 - `src/commands.rs` - Side effect commands
-- `tests/readme_examples_test.rs` - Tests for all README code
+- `docs/README.md` - Documentation hub (START HERE for navigation)
+- `docs/AI_NAVIGATION.md` - AI-specific navigation guide
 
 ## Current Focus Areas
 

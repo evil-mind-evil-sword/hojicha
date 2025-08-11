@@ -4,8 +4,8 @@
 //! allowing the queue to grow during high load and shrink during low load
 //! to optimize memory usage.
 
-use hojicha_core::core::Message;
 use crate::priority_queue::{PriorityEventQueue, QueueStats};
+use hojicha_core::core::Message;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 

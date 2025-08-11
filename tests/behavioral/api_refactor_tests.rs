@@ -7,9 +7,10 @@
 
 use futures::stream::StreamExt;
 use hojicha_core::commands;
-use hojicha_runtime::program::{Program, ProgramOptions};
-use hojicha_runtime::subscription::subscribe;
 use hojicha_core::prelude::*;
+use hojicha_core::event::Event;
+use hojicha_runtime::program::{Program, ProgramOptions};
+use hojicha_runtime::stream_builders::interval_stream;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -175,7 +176,7 @@ fn test_spawn_simple_async_task() {
 #[test]
 #[ignore = "Stream builders need more implementation"]
 fn test_stream_builder_helpers() {
-    use hojicha::stream_builders::*;
+    use hojicha_runtime::stream_builders::*;
 
     #[derive(Clone)]
     enum Msg {
@@ -228,7 +229,7 @@ fn test_stream_builder_helpers() {
 #[test]
 #[ignore = "Stream builders need more implementation"]
 fn test_multiple_streams() {
-    use hojicha::stream_builders::*;
+    use hojicha_runtime::stream_builders::*;
 
     #[derive(Clone)]
     enum Msg {

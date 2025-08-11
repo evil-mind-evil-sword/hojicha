@@ -1,22 +1,19 @@
-use hojicha_runtime;
-use hojicha_pearls;
-//! Clean Visual Showcase - Beautiful Terminal UI Demo
-//!
-//! A well-structured demonstration of Hojicha's visual capabilities.
-//!
-//! Controls:
-//! - Tab/Shift+Tab: Navigate between demos
-//! - Arrow keys: Navigate within demos
-//! - q: Quit
+// Clean Visual Showcase - Beautiful Terminal UI Demo
+//
+// A well-structured demonstration of Hojicha's visual capabilities.
+//
+// Controls:
+// - Tab/Shift+Tab: Navigate between demos
+// - Arrow keys: Navigate within demos
+// - q: Quit
 
 use hojicha_core::{
     commands::{self, tick},
-    components::*,
     core::{Cmd, Model},
     event::{Event, Key},
-    hojicha_runtime::program::Program,
-    style::*,
 };
+use hojicha_pearls::{components::*, style::*};
+use hojicha_runtime::program::Program;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     text::{Line, Span},

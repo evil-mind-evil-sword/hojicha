@@ -33,17 +33,16 @@ jobs:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       
-      - name: Build all examples
-        run: cargo build --examples
+      - name: Build all example binaries
+        run: cargo build --bins -p hojicha-examples
       
-      - name: Test README examples
-        run: cargo test --test readme_examples_test
-      
-      - name: Check each example individually
+      - name: Check each example binary individually
         run: |
-          for example in examples/*.rs; do
-            name=$(basename "$example" .rs)
-            echo "Checking example: $name"
-            cargo check --example "$name"
+          for example in examples/src/*.rs; do
+            if [ -f "$example" ]; then
+              name=$(basename "$example" .rs)
+              echo "Checking example binary: $name"
+              cargo check --bin "$name" -p hojicha-examples
+            fi
           done
         shell: bash

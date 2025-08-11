@@ -2,8 +2,8 @@
 //!
 //! A table with rich styling, sorting, and selection capabilities.
 
-use hojicha_core::event::{Event, Key, KeyEvent};
 use crate::style::{BorderStyle, Color, ColorProfile, Style, Theme};
+use hojicha_core::event::{Event, Key, KeyEvent};
 use ratatui::{
     layout::{Constraint, Rect},
     style::Modifier,

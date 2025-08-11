@@ -3,9 +3,9 @@
 //! This module provides a safe way to detect event priority without
 //! using unsafe memory transmutation.
 
-use hojicha_core::event::Event;
 use crate::priority_queue::Priority;
 use hojicha_core::core::Message;
+use hojicha_core::event::Event;
 
 /// Detect the priority of an event without unsafe operations
 pub fn detect_priority<M: Message>(event: &Event<M>) -> Priority {
@@ -15,14 +15,14 @@ pub fn detect_priority<M: Message>(event: &Event<M>) -> Priority {
         Event::Key(_) => Priority::High,
         Event::Suspend => Priority::High,
         Event::Resume => Priority::High,
-        
+
         Event::Mouse(_) => Priority::Normal,
         Event::User(_) => Priority::Normal,
         Event::Paste(_) => Priority::Normal,
         Event::Focus => Priority::Normal,
         Event::Blur => Priority::Normal,
         Event::ExecProcess => Priority::Normal,
-        
+
         Event::Resize { .. } => Priority::Low,
         Event::Tick => Priority::Low,
     }
@@ -56,19 +56,19 @@ impl EventKind {
             EventKind::Key => Priority::High,
             EventKind::Suspend => Priority::High,
             EventKind::Resume => Priority::High,
-            
+
             EventKind::Mouse => Priority::Normal,
             EventKind::User => Priority::Normal,
             EventKind::Paste => Priority::Normal,
             EventKind::Focus => Priority::Normal,
             EventKind::Blur => Priority::Normal,
             EventKind::ExecProcess => Priority::Normal,
-            
+
             EventKind::Resize => Priority::Low,
             EventKind::Tick => Priority::Low,
         }
     }
-    
+
     /// Create from an event
     pub fn from_event<M: Message>(event: &Event<M>) -> Self {
         match event {
@@ -131,43 +131,59 @@ impl<M: Message> SafePriorityMapper<M> for CustomPriorityMapper<M> {
 mod tests {
     use super::*;
     use hojicha_core::event::{Event, Key, KeyEvent, KeyModifiers};
-    
+
     #[test]
     fn test_priority_detection() {
         // High priority events
         assert_eq!(detect_priority::<()>(&Event::Quit), Priority::High);
-        assert_eq!(detect_priority::<()>(&Event::Key(KeyEvent::new(Key::Char('a'), KeyModifiers::empty()))), Priority::High);
-        
+        assert_eq!(
+            detect_priority::<()>(&Event::Key(KeyEvent::new(
+                Key::Char('a'),
+                KeyModifiers::empty()
+            ))),
+            Priority::High
+        );
+
         // Normal priority events
-        assert_eq!(detect_priority::<String>(&Event::User("test".to_string())), Priority::Normal);
-        
+        assert_eq!(
+            detect_priority::<String>(&Event::User("test".to_string())),
+            Priority::Normal
+        );
+
         // Low priority events
         assert_eq!(detect_priority::<()>(&Event::Tick), Priority::Low);
-        assert_eq!(detect_priority::<()>(&Event::Resize { width: 80, height: 24 }), Priority::Low);
+        assert_eq!(
+            detect_priority::<()>(&Event::Resize {
+                width: 80,
+                height: 24
+            }),
+            Priority::Low
+        );
     }
-    
+
     #[test]
     fn test_event_kind() {
         let quit_event: Event<()> = Event::Quit;
-        assert_eq!(EventKind::from_event(&quit_event).priority(), Priority::High);
-        
+        assert_eq!(
+            EventKind::from_event(&quit_event).priority(),
+            Priority::High
+        );
+
         let tick_event: Event<()> = Event::Tick;
         assert_eq!(EventKind::from_event(&tick_event).priority(), Priority::Low);
     }
-    
+
     #[test]
     fn test_custom_mapper() {
         // Create a custom mapper that makes all User events high priority
-        let mapper = CustomPriorityMapper::new(|event| {
-            match event {
-                Event::User(_) => Some(Priority::High),
-                _ => None,
-            }
+        let mapper = CustomPriorityMapper::new(|event| match event {
+            Event::User(_) => Some(Priority::High),
+            _ => None,
         });
-        
+
         let user_event = Event::User("important".to_string());
         assert_eq!(mapper.map_priority(&user_event), Priority::High);
-        
+
         let tick_event: Event<String> = Event::Tick;
         assert_eq!(mapper.map_priority(&tick_event), Priority::Low);
     }

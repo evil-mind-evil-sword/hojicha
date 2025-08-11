@@ -1,15 +1,14 @@
-use hojicha_runtime;
-//! Example demonstrating headless mode
-//!
-//! This example shows how to run a Hojicha program in headless mode,
-//! which is useful for testing or running TUI logic without actual rendering.
+// Example demonstrating headless mode
+//
+// This example shows how to run a Hojicha program in headless mode,
+// which is useful for testing or running TUI logic without actual rendering.
 
 use hojicha_core::{
     commands::{self, quit},
     core::{Cmd, Model},
     event::Event,
-    hojicha_runtime::program::Program, ProgramOptions},
 };
+use hojicha_runtime::program::{Program, ProgramOptions};
 use ratatui::{layout::Rect, Frame};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

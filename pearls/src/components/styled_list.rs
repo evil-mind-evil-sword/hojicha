@@ -2,8 +2,8 @@
 //!
 //! A scrollable list with selection, filtering, and rich styling options.
 
-use hojicha_core::event::{Event, Key, KeyEvent};
 use crate::style::{ColorProfile, Style, Theme};
+use hojicha_core::event::{Event, Key, KeyEvent};
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style as RatatuiStyle},

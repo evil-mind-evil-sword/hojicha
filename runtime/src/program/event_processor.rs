@@ -1,7 +1,7 @@
 //! Event processing logic extracted from Program for testability
 
-use hojicha_core::event::{Event, KeyEvent};
 use crossterm::event::{Event as CrosstermEvent, KeyEventKind};
+use hojicha_core::event::{Event, KeyEvent};
 use std::sync::mpsc;
 use std::time::Duration;
 

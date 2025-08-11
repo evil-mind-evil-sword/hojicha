@@ -3,12 +3,12 @@
 //! This module implements the default event processing with built-in prioritization
 //! to ensure UI responsiveness even under heavy event load.
 
-use hojicha_core::core::Message;
-use hojicha_core::event::Event;
 use crate::metrics::{AdvancedEventStats, MetricsCollector, MetricsConfig};
 use crate::priority_queue::{Priority, PriorityEventQueue, ResizeError};
 use crate::queue_scaling::{AutoScaleConfig, QueueAutoScaler, ScalingDecision};
 use crossterm::event::{Event as CrosstermEvent, KeyEventKind};
+use hojicha_core::core::Message;
+use hojicha_core::event::Event;
 use log::{debug, info, trace, warn};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};

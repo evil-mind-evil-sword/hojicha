@@ -4,9 +4,9 @@
 //! instead of panicking, allowing the TUI to continue running even if
 //! a thread panics while holding a lock.
 
-use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
-use std::ops::{Deref, DerefMut};
 use log::warn;
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 /// A mutex wrapper that automatically recovers from poison errors
 pub struct SafeMutex<T> {
@@ -20,36 +20,36 @@ impl<T> SafeMutex<T> {
             inner: Mutex::new(value),
         }
     }
-    
+
     /// Lock the mutex, recovering from poison if necessary
     pub fn lock(&self) -> SafeGuard<T> {
         match self.inner.lock() {
-            Ok(guard) => SafeGuard { 
+            Ok(guard) => SafeGuard {
                 guard: Ok(guard),
                 recovered: false,
             },
             Err(poisoned) => {
                 warn!("Mutex was poisoned, recovering...");
                 let guard = poisoned.into_inner();
-                SafeGuard { 
+                SafeGuard {
                     guard: Ok(guard),
                     recovered: true,
                 }
             }
         }
     }
-    
+
     /// Try to lock the mutex without blocking
     pub fn try_lock(&self) -> Option<SafeGuard<T>> {
         match self.inner.try_lock() {
-            Ok(guard) => Some(SafeGuard { 
+            Ok(guard) => Some(SafeGuard {
                 guard: Ok(guard),
                 recovered: false,
             }),
             Err(std::sync::TryLockError::Poisoned(poisoned)) => {
                 warn!("Mutex was poisoned during try_lock, recovering...");
                 let guard = poisoned.into_inner();
-                Some(SafeGuard { 
+                Some(SafeGuard {
                     guard: Ok(guard),
                     recovered: true,
                 })
@@ -74,7 +74,7 @@ impl<'a, T> SafeGuard<'a, T> {
 
 impl<'a, T> Deref for SafeGuard<'a, T> {
     type Target = T;
-    
+
     fn deref(&self) -> &Self::Target {
         match &self.guard {
             Ok(guard) => guard.deref(),
