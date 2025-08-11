@@ -2,6 +2,7 @@
 
 // Module components
 mod command_executor;
+pub mod error_handler;
 mod event_processor;
 mod fps_limiter;
 mod priority_event_processor;
@@ -170,7 +171,7 @@ pub struct Program<M: Model> {
     model: M,
     options: ProgramOptions,
     terminal_manager: TerminalManager,
-    command_executor: CommandExecutor,
+    command_executor: CommandExecutor<M::Message>,
     fps_limiter: FpsLimiter,
     message_tx: Option<mpsc::SyncSender<Event<M::Message>>>,
     message_rx: Option<mpsc::Receiver<Event<M::Message>>>,
