@@ -80,6 +80,7 @@ chrono = "0.4"
 futures = { workspace = true }
 tokio-stream = { workspace = true }
 tokio = { workspace = true, features = ["full", "test-util"] }
+criterion = "0.5"
 
 [features]
 default = []
@@ -100,3 +101,7 @@ path = "tests/behavioral/async_simple_test.rs"
 [[test]]
 name = "behavioral_headless"
 path = "tests/behavioral/headless_program_test.rs"
+
+[[bench]]
+name = "async_runtime_bench"
+harness = false

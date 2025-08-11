@@ -307,11 +307,7 @@ where
     F: FnOnce() -> Fut + Send + 'static,
     Fut: std::future::Future<Output = Option<M>> + Send + 'static,
 {
-    Cmd::new(move || {
-        // Create a new runtime for this async operation
-        let runtime = tokio::runtime::Runtime::new().ok()?;
-        runtime.block_on(f())
-    })
+    Cmd::async_cmd(f())
 }
 
 /// Spawn a simple async task
@@ -333,9 +329,7 @@ where
     M: Message,
     Fut: std::future::Future<Output = Option<M>> + Send + 'static,
 {
-    // For now, this is implemented using custom_async
-    // In the future, we should integrate with the CommandExecutor's runtime
-    custom_async(move || fut)
+    Cmd::async_cmd(fut)
 }
 
 /// Create a custom command from a blocking function

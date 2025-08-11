@@ -91,6 +91,8 @@ pub(crate) enum CmdInner<M: Message> {
         duration: std::time::Duration,
         callback: Box<dyn FnOnce(std::time::Instant) -> M + Send>,
     },
+    /// Execute an async future
+    Async(Box<dyn std::future::Future<Output = Option<M>> + Send>),
 }
 
 impl<M: Message> Cmd<M> {
@@ -194,6 +196,17 @@ impl<M: Message> Cmd<M> {
         }
     }
 
+    /// Create an async command
+    /// Internal method
+    pub fn async_cmd<Fut>(future: Fut) -> Self
+    where
+        Fut: std::future::Future<Output = Option<M>> + Send + 'static,
+    {
+        Cmd {
+            inner: CmdInner::Async(Box::new(future)),
+        }
+    }
+
     /// Execute the command and return its message
     /// Internal method
     pub fn execute(self) -> crate::Result<Option<M>> {
@@ -224,8 +237,8 @@ impl<M: Message> Cmd<M> {
                 // These are handled specially by the CommandExecutor
                 Ok(None)
             }
-            CmdInner::Tick { .. } | CmdInner::Every { .. } => {
-                // These are handled specially by the CommandExecutor with async delays
+            CmdInner::Tick { .. } | CmdInner::Every { .. } | CmdInner::Async(_) => {
+                // These are handled specially by the CommandExecutor with async runtime
                 Ok(None)
             }
         }
@@ -325,6 +338,19 @@ impl<M: Message> Cmd<M> {
     )> {
         match self.inner {
             CmdInner::Every { duration, callback } => Some((duration, callback)),
+            _ => None,
+        }
+    }
+
+    /// Internal method
+    pub fn is_async(&self) -> bool {
+        matches!(self.inner, CmdInner::Async(_))
+    }
+
+    /// Internal method
+    pub fn take_async(self) -> Option<Box<dyn std::future::Future<Output = Option<M>> + Send>> {
+        match self.inner {
+            CmdInner::Async(future) => Some(future),
             _ => None,
         }
     }
