@@ -60,7 +60,9 @@ impl Column {
 /// Sort direction
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SortDirection {
+    /// Sort in ascending order
     Ascending,
+    /// Sort in descending order
     Descending,
 }
 

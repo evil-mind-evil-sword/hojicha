@@ -2,7 +2,7 @@
 //! This test explores edge cases and documents issues found
 
 use hojicha_core::prelude::*;
-use hojicha_runtime::{Event, Key, KeyEvent, KeyModifiers, Program, ProgramOptions};
+use hojicha_runtime::{Event, Key};
 use std::time::Duration;
 
 // Issue #1: Testing what happens with None vs Cmd::none()
@@ -139,8 +139,7 @@ impl Model for ErrorTestModel {
             Event::User(ErrorMsg::TriggerError) => {
                 // What happens to errors in fallible commands?
                 custom_fallible(|| {
-                    Err(Error::from(std::io::Error::new(
-                        std::io::ErrorKind::Other,
+                    Err(Error::from(std::io::Error::other(
                         "Test error - does this get logged?"
                     )))
                 })
@@ -215,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_none_vs_cmd_none() {
-        let mut model = NoneTestModel { counter: 0 };
+        let model = NoneTestModel { counter: 0 };
         
         // Test Cmd::none()
         let cmd1: Cmd<NoneMsg> = Cmd::none();

@@ -2,7 +2,7 @@
 
 use crate::program::{Program, ProgramOptions};
 use hojicha_core::{
-    core::{Cmd, Model},
+    core::Model,
     error::Result,
     event::Event,
 };

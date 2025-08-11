@@ -58,7 +58,7 @@ fn benchmark_hojicha_async_commands(c: &mut Criterion) {
     use hojicha_core::commands;
     use hojicha_core::core::{Cmd, Model};
     use hojicha_core::event::Event;
-    use hojicha_runtime::testing::TestRunner;
+    
     use ratatui::layout::Rect;
     use ratatui::Frame;
     use std::sync::atomic::{AtomicBool, Ordering};

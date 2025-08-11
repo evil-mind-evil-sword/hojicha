@@ -5,9 +5,8 @@
 
 use log::error;
 use std::io::Write;
-use std::panic::{self, PanicInfo};
+use std::panic::{self, PanicHookInfo};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 
 /// Global flag to track if we're in a TUI context
 static TUI_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -90,7 +89,7 @@ impl Drop for TuiGuard {
 }
 
 /// The actual panic handler
-fn handle_panic(panic_info: &PanicInfo) {
+fn handle_panic(panic_info: &PanicHookInfo) {
     // First, log the panic if logging is available
     error!("PANIC: {}", panic_info);
 

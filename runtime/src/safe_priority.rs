@@ -25,17 +25,29 @@ pub fn detect_priority<M: Message>(event: &Event<M>) -> Priority {
 /// avoiding the need for unsafe transmutes.
 #[derive(Debug, Clone)]
 pub enum EventKind {
+    /// Quit event - terminates the program
     Quit,
+    /// Keyboard input event
     Key,
+    /// Mouse input event
     Mouse,
+    /// User-defined message event
     User,
+    /// Terminal resize event
     Resize,
+    /// Timer tick event
     Tick,
+    /// Text paste event
     Paste,
+    /// Terminal focus gained event
     Focus,
+    /// Terminal focus lost event
     Blur,
+    /// Process suspension event
     Suspend,
+    /// Process resumption event
     Resume,
+    /// Process execution event
     ExecProcess,
 }
 

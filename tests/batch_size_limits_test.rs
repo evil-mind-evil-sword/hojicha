@@ -1,7 +1,7 @@
 //! Test batch command size limits and chunking
 
 use hojicha_core::commands;
-use hojicha_core::core::{Cmd, Message};
+use hojicha_core::core::Cmd;
 
 #[derive(Debug, Clone, PartialEq)]
 enum TestMsg {
