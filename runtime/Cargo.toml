@@ -20,6 +20,7 @@ tokio-util = "0.7"
 futures = "0.3"
 futures-util = "0.3"
 async-trait = "0.1"
+async-stream = "0.3"
 
 # Terminal handling
 crossterm = { workspace = true }
