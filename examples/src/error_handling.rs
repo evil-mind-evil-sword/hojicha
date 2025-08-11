@@ -7,7 +7,7 @@ use hojicha_runtime;
 //! - Displaying errors in the UI
 //! - Recovering from errors
 
-use hojicha::prelude::*;
+use hojicha_core::prelude::*;
 use hojicha_core::{
     commands,
     fallible::{FallibleModel, FallibleModelExt},

@@ -1,0 +1,59 @@
+[package]
+name = "hojicha-examples"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+hojicha-core = { workspace = true }
+hojicha-runtime = { workspace = true }
+hojicha-pearls = { workspace = true }
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+chrono = "0.4"
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[[bin]]
+name = "tutorial"
+path = "src/tutorial.rs"
+
+[[bin]]
+name = "showcase"
+path = "src/showcase.rs"
+
+[[bin]]
+name = "visual"
+path = "src/visual.rs"
+
+[[bin]]
+name = "async_examples"
+path = "src/async_examples.rs"
+
+[[bin]]
+name = "system"
+path = "src/system.rs"
+
+[[bin]]
+name = "debug_features"
+path = "src/debug_features.rs"
+
+[[bin]]
+name = "error_handling"
+path = "src/error_handling.rs"
+
+[[bin]]
+name = "headless"
+path = "src/headless.rs"
+
+[[bin]]
+name = "visual_logged"
+path = "src/visual_logged.rs"
+
+[[bin]]
+name = "visual_logged_fixed"
+path = "src/visual_logged_fixed.rs"

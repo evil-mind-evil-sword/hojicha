@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "pearls", "runtime", "hojicha-examples"]
+members = [".", "pearls", "runtime", "examples"]
 resolver = "2"
 
 [workspace.package]
@@ -17,6 +17,7 @@ license = "GPL-3.0"
 hojicha-core = { path = ".", version = "0.1.0" }
 hojicha-pearls = { path = "pearls", version = "0.1.0" }
 hojicha-runtime = { path = "runtime", version = "0.1.0" }
+hojicha-examples = { path = "examples", version = "0.1.0" }
 
 # External dependencies
 ratatui = "0.29"

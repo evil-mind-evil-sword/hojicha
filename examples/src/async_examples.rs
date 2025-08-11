@@ -10,7 +10,7 @@ use hojicha_runtime;
 //! Press Tab to switch between examples.
 
 use hojicha_core::{
-    commands::{self, spawn, tick},
+use hojicha_pearls::{components, style};    commands::{self, spawn, tick},
     core::{Cmd, Model},
     event::{Event, Key},
     hojicha_runtime::program::Program,

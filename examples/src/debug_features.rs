@@ -8,7 +8,7 @@ use hojicha_runtime;
 //! - Message filtering to intercept and modify events
 
 use hojicha_core::{
-    commands::{self, quit, set_window_title},
+use hojicha_pearls::{components, style};    commands::{self, quit, set_window_title},
     core::{Cmd, Model},
     event::{Event, Key},
     hojicha_runtime::program::Program, ProgramOptions},

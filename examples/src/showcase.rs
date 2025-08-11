@@ -12,7 +12,7 @@
 use hojicha_core::commands;
 use hojicha_pearls::PLACEHOLDER_COMPONENTS;
 use hojicha_core::event::{Key, KeyModifiers};
-use hojicha::prelude::*;
+use hojicha_core::prelude::*;
 use hojicha_runtime::hojicha_runtime::program::Program, ProgramOptions};
 use ratatui::{
     layout::{Constraint, Direction, Layout},

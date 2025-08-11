@@ -2,9 +2,20 @@
 
 This directory contains examples demonstrating various features of Hojicha.
 
+## Running Examples
+
+```bash
+# From the workspace root
+cargo run -p hojicha-examples --example <name>
+
+# Or from the hojicha-examples directory
+cd hojicha-examples
+cargo run --example <name>
+```
+
 ## Core Examples
 
-### 🎓 `tutorial`
+### `tutorial`
 Interactive tutorial that teaches the basics of Hojicha:
 - Basic counter application
 - User input handling  
@@ -15,7 +26,7 @@ Interactive tutorial that teaches the basics of Hojicha:
 cargo run --example tutorial
 ```
 
-### 🎨 `showcase`
+### `showcase`
 Complete demonstration of all UI components:
 - Input components (TextInput, TextArea)
 - Display components (Lists, Tables, Progress bars)
@@ -27,7 +38,7 @@ Complete demonstration of all UI components:
 cargo run --example showcase
 ```
 
-### ✨ `visual`
+### `visual`
 Beautiful visual effects and styling showcase:
 - Color palettes and gradients
 - Border styles and layouts
@@ -38,7 +49,7 @@ Beautiful visual effects and styling showcase:
 cargo run --example visual
 ```
 
-### ⚡ `async_examples`
+### `async_examples`
 Async programming patterns:
 - Async timers
 - Stream subscriptions
@@ -51,7 +62,7 @@ cargo run --example async_examples
 
 ## Advanced Examples
 
-### 🐛 `debug_features`
+### `debug_features`
 Debug and development features:
 - Metrics collection
 - Performance monitoring
@@ -61,7 +72,7 @@ Debug and development features:
 cargo run --example debug_features
 ```
 
-### ⚠️ `error_handling`
+### `error_handling`
 Error handling patterns:
 - Graceful error recovery
 - Error display
@@ -71,7 +82,7 @@ Error handling patterns:
 cargo run --example error_handling
 ```
 
-### 🖥️ `headless`
+### `headless`
 Headless testing capabilities:
 - Running without a terminal
 - Automated testing
@@ -81,7 +92,7 @@ Headless testing capabilities:
 cargo run --example headless
 ```
 
-### 💻 `system`
+### `system`
 System integration features:
 - File operations
 - Process management

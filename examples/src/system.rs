@@ -9,9 +9,9 @@ use hojicha_runtime;
 //! - Window management
 
 use hojicha_core::commands;
-use hojicha_core::event::Key;
-use hojicha::prelude::*;
-use ratatui::{
+use hojicha_pearls::{components, style};use hojicha_core::event::Key;
+use hojicha_pearls::{components, style};use hojicha_core::prelude::*;
+use hojicha_pearls::{components, style};use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     hojicha_pearls::style::{ColorProfile, Theme},
     text::{Line, Span},
