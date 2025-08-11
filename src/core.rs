@@ -543,13 +543,11 @@ impl<M: Message> Cmd<M> {
     ///
     /// # Example
     /// ```no_run
-    /// # use hojicha_core::{Cmd, Message};
+    /// # use hojicha_core::Cmd;
     /// # #[derive(Clone)]
     /// # struct Msg;
-    /// # impl Message for Msg {}
-    /// Cmd::none()
-    ///     .inspect(|cmd| println!("Executing command: {:?}", cmd))
-    /// # ;
+    /// let cmd: Cmd<Msg> = Cmd::none()
+    ///     .inspect(|cmd| println!("Executing command: {:?}", cmd));
     /// ```
     pub fn inspect<F>(self, f: F) -> Self
     where

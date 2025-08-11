@@ -689,8 +689,7 @@ pub fn clear_line<M: Message>() -> Cmd<M> {
 /// # Example
 ///
 /// ```no_run
-/// # use hojicha::prelude::*;
-/// # use hojicha::commands;
+/// # use hojicha_core::prelude::*;
 /// # #[derive(Debug, Clone)]
 /// # enum MyMessage { Quit }
 /// # struct MyModel;
@@ -699,10 +698,10 @@ pub fn clear_line<M: Message>() -> Cmd<M> {
 /// #     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
 /// match event {
 ///     Event::Key(key) if key.key == Key::Char('q') => {
-///         Some(commands::quit())
+///         quit()
 ///     }
 ///     Event::User(MyMessage::Quit) => {
-///         Some(commands::quit())
+///         quit()
 ///     }
 ///     _ => Cmd::none()
 /// }

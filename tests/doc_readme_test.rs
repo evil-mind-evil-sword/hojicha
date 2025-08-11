@@ -64,7 +64,7 @@ mod readme_async_operations {
     
     struct App;
     
-    async fn fetch_api() -> Result<String, Box<dyn std::error::Error>> {
+    async fn fetch_api() -> std::result::Result<String, Box<dyn std::error::Error>> {
         Ok("test data".to_string())
     }
     

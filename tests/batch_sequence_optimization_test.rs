@@ -16,12 +16,12 @@ fn test_batch_optimization_behavior() {
     assert!(empty_batch.is_noop());
     
     // Single-element batch returns the element directly
-    let single = batch(vec![Cmd::none()]);
+    let single = batch(vec![Cmd::<TestMsg>::none()]);
     assert!(single.is_noop()); // Because it returns Cmd::none() directly
     assert!(!single.is_batch()); // NOT a batch!
     
     // Multiple elements return an actual batch
-    let multiple = batch(vec![Cmd::none(), Cmd::none()]);
+    let multiple = batch(vec![Cmd::<TestMsg>::none(), Cmd::none()]);
     assert!(multiple.is_batch());
 }
 
@@ -32,12 +32,12 @@ fn test_sequence_optimization_behavior() {
     assert!(empty_seq.is_noop());
     
     // Single-element sequence returns the element directly
-    let single = sequence(vec![Cmd::none()]);
+    let single = sequence(vec![Cmd::<TestMsg>::none()]);
     assert!(single.is_noop()); // Because it returns Cmd::none() directly
     assert!(!single.is_sequence()); // NOT a sequence!
     
     // Multiple elements return an actual sequence
-    let multiple = sequence(vec![Cmd::none(), Cmd::none()]);
+    let multiple = sequence(vec![Cmd::<TestMsg>::none(), Cmd::none()]);
     assert!(multiple.is_sequence());
 }
 
@@ -47,10 +47,10 @@ fn test_batch_strict_always_returns_batch() {
     let empty = batch_strict::<TestMsg>(vec![]);
     assert!(empty.is_batch());
     
-    let single = batch_strict(vec![Cmd::none()]);
+    let single = batch_strict(vec![Cmd::<TestMsg>::none()]);
     assert!(single.is_batch());
     
-    let multiple = batch_strict(vec![Cmd::none(), Cmd::none()]);
+    let multiple = batch_strict(vec![Cmd::<TestMsg>::none(), Cmd::none()]);
     assert!(multiple.is_batch());
 }
 
@@ -60,9 +60,9 @@ fn test_sequence_strict_always_returns_sequence() {
     let empty = sequence_strict::<TestMsg>(vec![]);
     assert!(empty.is_sequence());
     
-    let single = sequence_strict(vec![Cmd::none()]);
+    let single = sequence_strict(vec![Cmd::<TestMsg>::none()]);
     assert!(single.is_sequence());
     
-    let multiple = sequence_strict(vec![Cmd::none(), Cmd::none()]);
+    let multiple = sequence_strict(vec![Cmd::<TestMsg>::none(), Cmd::none()]);
     assert!(multiple.is_sequence());
 }

@@ -39,10 +39,11 @@
 //! impl Model for App {
 //!     type Message = Msg;
 //!
-//!     fn update(&mut self, msg: Self::Message) -> Cmd<Self::Message> {
-//!         match msg {
-//!             Msg::Increment => self.counter += 1,
-//!             Msg::Decrement => self.counter -= 1,
+//!     fn update(&mut self, event: hojicha_core::Event<Self::Message>) -> Cmd<Self::Message> {
+//!         match event {
+//!             hojicha_core::Event::User(Msg::Increment) => self.counter += 1,
+//!             hojicha_core::Event::User(Msg::Decrement) => self.counter -= 1,
+//!             _ => {}
 //!         }
 //!         Cmd::none()
 //!     }
@@ -124,7 +125,7 @@ pub mod prelude {
     
     // Essential commands
     pub use crate::commands::{
-        batch, custom, custom_fallible, every, none, quit, sequence, spawn, tick,
+        batch, custom, custom_async, custom_fallible, every, none, quit, sequence, spawn, tick,
     };
     
     // Error handling

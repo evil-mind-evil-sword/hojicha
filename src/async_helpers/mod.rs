@@ -75,8 +75,8 @@ pub mod timer;
 
 pub use http::{http_get, http_post, http_request, HttpMethod, HttpError};
 pub use websocket::{websocket, WebSocketEvent, WebSocketError};
-pub use file_io::{read_file, write_file, watch_file, FileError};
-pub use timer::{interval, delay};
+pub use file_io::{read_file, write_file, watch_file, FileError, FileEvent};
+pub use timer::{delay, interval, with_timeout, debounce, throttle};
 
 use crate::core::{Cmd, Message};
 

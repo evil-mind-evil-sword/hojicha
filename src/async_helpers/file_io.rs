@@ -53,7 +53,6 @@ pub enum FileEvent {
 /// #     FileLoaded(String),
 /// #     Error(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// read_file("config.json", |result| {
 ///     match result {
@@ -122,7 +121,6 @@ where
 /// #     FileSaved,
 /// #     Error(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// write_file("output.txt", "Hello, World!", |result| {
 ///     match result {
@@ -169,7 +167,6 @@ where
 /// # enum Msg {
 /// #     FileChanged(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// watch_file("config.json", |event| {
 ///     match event {
