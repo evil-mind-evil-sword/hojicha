@@ -1,5 +1,5 @@
 [workspace]
-members = ["hojicha", "hojicha-core", "pearls", "runtime", "examples"]
+members = ["hojicha", "hojicha-core", "hojicha-pearls", "hojicha-runtime", "examples"]
 resolver = "2"
 
 [workspace.package]
@@ -16,8 +16,8 @@ license = "GPL-3.0"
 # Internal crates
 hojicha = { path = "hojicha", version = "0.2.0" }
 hojicha-core = { path = "hojicha-core", version = "0.2.0" }
-hojicha-pearls = { path = "pearls", version = "0.2.0" }
-hojicha-runtime = { path = "runtime", version = "0.2.0" }
+hojicha-pearls = { path = "hojicha-pearls", version = "0.2.0" }
+hojicha-runtime = { path = "hojicha-runtime", version = "0.2.0" }
 hojicha-examples = { path = "examples", version = "0.2.0" }
 
 # External dependencies

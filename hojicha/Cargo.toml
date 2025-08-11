@@ -15,8 +15,8 @@ categories = ["command-line-interface", "gui"]
 
 [dependencies]
 hojicha-core = { version = "0.2.0", path = "../hojicha-core" }
-hojicha-runtime = { version = "0.2.0", path = "../runtime" }
-hojicha-pearls = { version = "0.2.0", path = "../pearls", optional = true }
+hojicha-runtime = { version = "0.2.0", path = "../hojicha-runtime" }
+hojicha-pearls = { version = "0.2.0", path = "../hojicha-pearls", optional = true }
 
 [features]
 default = ["full"]
