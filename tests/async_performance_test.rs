@@ -1,9 +1,10 @@
 //! Test that async commands use shared runtime instead of creating new ones
+//! This file demonstrates the use of AsyncTestHarness for testing async behavior
 
 use hojicha_core::commands;
 use hojicha_core::core::{Cmd, Model};
 use hojicha_core::event::Event;
-use hojicha_runtime::testing::TestRunner;
+use hojicha_runtime::testing::{AsyncTestHarness, CmdTestExt, TestRunner};
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -26,10 +27,11 @@ impl Clone for AsyncTestModel {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum AsyncMsg {
     AsyncComplete,
     BatchComplete,
+    TimerExpired,
 }
 
 impl Model for AsyncTestModel {
@@ -68,7 +70,77 @@ impl Model for AsyncTestModel {
 }
 
 #[test]
+fn test_async_commands_with_harness() {
+    // NEW: Using AsyncTestHarness for cleaner async testing
+    let harness = AsyncTestHarness::new();
+    
+    // Test a simple async command
+    let cmd = commands::spawn(async {
+        tokio::time::sleep(Duration::from_millis(5)).await;
+        Some(AsyncMsg::AsyncComplete)
+    });
+    
+    let messages = harness.execute_command(cmd);
+    assert_eq!(messages, vec![AsyncMsg::AsyncComplete]);
+}
+
+#[test]
+fn test_batch_async_with_harness() {
+    // NEW: Using AsyncTestHarness for batch testing
+    let harness = AsyncTestHarness::new();
+    
+    let batch = commands::batch(vec![
+        commands::spawn(async {
+            tokio::time::sleep(Duration::from_millis(2)).await;
+            Some(AsyncMsg::AsyncComplete)
+        }),
+        commands::custom(|| Some(AsyncMsg::BatchComplete)),
+        commands::spawn(async {
+            Some(AsyncMsg::TimerExpired)
+        }),
+    ]);
+    
+    let messages = harness.execute_and_wait(batch, Duration::from_millis(10));
+    
+    // All three messages should be present (batch runs concurrently)
+    assert!(messages.contains(&AsyncMsg::AsyncComplete));
+    assert!(messages.contains(&AsyncMsg::BatchComplete));
+    assert!(messages.contains(&AsyncMsg::TimerExpired));
+}
+
+#[test]
+fn test_tick_command_with_harness() {
+    // NEW: Testing tick commands with AsyncTestHarness
+    let harness = AsyncTestHarness::new();
+    
+    let tick_cmd = commands::tick(Duration::from_millis(5), || AsyncMsg::TimerExpired);
+    let messages = harness.execute_command(tick_cmd);
+    
+    assert_eq!(messages, vec![AsyncMsg::TimerExpired]);
+}
+
+#[test]
+fn test_immediate_tick_execution() {
+    // NEW: Demonstrating immediate tick execution for tests
+    let harness = AsyncTestHarness::new();
+    
+    // Execute tick immediately, ignoring the delay
+    let msg = harness.execute_tick_now(Duration::from_secs(100), || AsyncMsg::TimerExpired);
+    assert_eq!(msg, AsyncMsg::TimerExpired);
+}
+
+#[test]
+fn test_sync_extension() {
+    // NEW: Using the CmdTestExt trait for simple commands
+    let cmd = commands::custom(|| Some(AsyncMsg::BatchComplete));
+    let msg = cmd.execute_sync();
+    
+    assert_eq!(msg, Some(AsyncMsg::BatchComplete));
+}
+
+#[test]
 fn test_async_commands_use_shared_runtime() {
+    // Original test, kept to verify performance
     // This test verifies that async commands complete quickly
     // If they were creating new runtimes, this would be much slower
     
@@ -164,4 +236,18 @@ fn test_custom_async_uses_shared_runtime() {
     // Should complete quickly with shared runtime
     assert!(elapsed < Duration::from_millis(50), 
             "custom_async took too long: {:?}", elapsed);
+}
+
+#[test]
+fn test_custom_async_with_harness() {
+    // NEW: Testing custom_async with AsyncTestHarness
+    let harness = AsyncTestHarness::new();
+    
+    let cmd = commands::custom_async(|| async {
+        tokio::time::sleep(Duration::from_millis(2)).await;
+        Some(AsyncMsg::TimerExpired)
+    });
+    
+    let messages = harness.execute_command(cmd);
+    assert_eq!(messages, vec![AsyncMsg::TimerExpired]);
 }
