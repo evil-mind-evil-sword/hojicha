@@ -1,39 +1,37 @@
 # Hojicha
 
-> The Elm Architecture for terminal UIs in Rust, built on [Ratatui](https://github.com/ratatui-org/ratatui)
+> The Elm Architecture for Terminal UIs in Rust
 
 [![Crates.io](https://img.shields.io/crates/v/hojicha.svg)](https://crates.io/crates/hojicha)
 [![Documentation](https://docs.rs/hojicha/badge.svg)](https://docs.rs/hojicha)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
-Hojicha is a Rust TUI framework inspired by [Bubbletea](https://github.com/charmbracelet/bubbletea) (Go) and [The Elm Architecture](https://guide.elm-lang.org/architecture/). Build interactive terminal applications using a simple, declarative model-view-update pattern.
+Hojicha implements [The Elm Architecture](https://guide.elm-lang.org/architecture/) for terminal applications. Built on [Ratatui](https://github.com/ratatui-org/ratatui), inspired by [Bubbletea](https://github.com/charmbracelet/bubbletea).
 
 ## Features
 
-- **Simple Architecture** - Model, Message, Update, View - that's it!
-- **High Performance** - Priority-based event processing with adaptive queue management
-- **Async Native** - First-class async/await support with cancellable operations
-- **Built-in Components** - TextArea, List, Table, Viewport, Spinner, and more
-- **Advanced Metrics** - Performance monitoring with HDR histograms and export capabilities
-- **Testable** - Headless mode and deterministic testing utilities
-- **Flexible Rendering** - Full Ratatui compatibility for custom widgets
+- **Simple Architecture** - Model-View-Update pattern
+- **High Performance** - Priority event processing with adaptive queues
+- **Async Native** - First-class async/await, cancellation, streams
+- **Component Library** - Pre-built UI components
+- **Testing Utilities** - Headless mode, deterministic testing
+- **Metrics** - Built-in performance monitoring
 
 ## Installation
 
 ```toml
 [dependencies]
-hojicha = "0.1.0"
-ratatui = "0.29"
+hojicha-core = "0.1"
+hojicha-runtime = "0.1"
 ```
 
 ## Quick Start
 
 ```rust
-use hojicha::prelude::*;
-use ratatui::prelude::*;
+use hojicha_core::prelude::*;
+use hojicha_runtime::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
-#[derive(Default)]
 struct Counter {
     value: i32,
 }
@@ -41,12 +39,12 @@ struct Counter {
 impl Model for Counter {
     type Message = ();
 
-    fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+    fn update(&mut self, event: Event<()>) -> Cmd<()> {
         match event {
             Event::Key(key) => match key.key {
                 Key::Up => self.value += 1,
                 Key::Down => self.value -= 1,
-                Key::Char('q') => return commands::quit(), // Quit
+                Key::Char('q') => return quit(),
                 _ => {}
             },
             _ => {}
@@ -55,176 +53,136 @@ impl Model for Counter {
     }
 
     fn view(&self, frame: &mut Frame, area: Rect) {
-        let text = format!("Counter: {}\n\n↑/↓: change | q: quit", self.value);
+        let text = format!("Counter: {}\n\nUp/Down: change | q: quit", self.value);
         let widget = Paragraph::new(text)
             .block(Block::default().borders(Borders::ALL).title("Counter"));
         frame.render_widget(widget, area);
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Program::new(Counter::default())?.run()
+fn main() -> Result<()> {
+    Program::new(Counter { value: 0 })?.run()
 }
 ```
 
-## Core Concepts
+## Architecture
 
-Hojicha follows The Elm Architecture pattern:
+The Elm Architecture consists of:
 
-| Concept | Description |
-|---------|-------------|
-| **Model** | Your application state |
+| Component | Purpose |
+|-----------|---------|
+| **Model** | Application state |
 | **Message** | Events that trigger state changes |
-| **Update** | Pure function that handles messages and updates state |
-| **View** | Pure function that renders the UI based on state |
-| **Command** | Side effects (async operations, timers, etc.) |
+| **Update** | Handle events and update state |
+| **View** | Render UI from state |
+| **Command** | Side effects (async operations, I/O) |
 
-## Documentation
+## Common Patterns
 
-📚 **[Full Documentation Hub](./docs/README.md)** - Start here for comprehensive documentation
+### Async Operations
 
-- [Architecture Overview](./docs/ARCHITECTURE.md) - System design and components
-- [Development Guide](./docs/DEVELOPMENT.md) - Setup and contribution guidelines
-- [AI Navigation](./docs/AI_NAVIGATION.md) - Guide for AI agents working with the codebase
-- [Testing Best Practices](./docs/TESTING_BEST_PRACTICES.md) - Testing strategies
-- [Async Design](./docs/ASYNC_DESIGN.md) - Async patterns and implementation
-
-## Advanced Features
-
-### Async Integration
-
-Hojicha provides multiple patterns for async operations:
 ```rust
-// External event injection
-let sender = program.init_async_bridge();
-thread::spawn(move || {
-    sender.send(Event::User(Msg::Tick)).ok();
-});
+fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
+    match event {
+        Event::User(Msg::FetchData) => {
+            spawn(async {
+                let data = fetch_api().await.ok()?;
+                Some(Msg::DataLoaded(data))
+            })
+        }
+        _ => Cmd::none()
+    }
+}
+```
 
-// Stream subscriptions
-let stream = IntervalStream::new(interval).map(|_| Msg::Tick);
+### Timers
+
+```rust
+fn init(&mut self) -> Cmd<Msg> {
+    every(Duration::from_secs(1), |_| Msg::Tick)
+}
+```
+
+### Stream Subscriptions
+
+```rust
+let stream = websocket.messages().map(Msg::WsMessage);
 let subscription = program.subscribe(stream);
-
-// Cancellable operations
-let handle = program.spawn_cancellable(|token| async move {
-    // Long-running task with cancellation support
-});
 ```
 
-### Performance & Reliability
+## Components
 
-#### Priority Event Processing
-Automatic event prioritization ensures UI responsiveness:
-- **Critical**: Quit, suspend/resume signals
-- **High**: Keyboard input
-- **Normal**: Mouse, user messages, paste
-- **Low**: Tick, resize, focus/blur
+Available via `hojicha-pearls`:
 
-#### Dynamic Queue Management
-```rust
-// Adaptive queue resizing based on load
-program.resize_queue(new_capacity)?;
-let capacity = program.queue_capacity();
-
-// Custom priority configuration
-let config = PriorityConfig {
-    max_queue_size: 10000,
-    priority_mapper: Some(Box::new(custom_priority_fn)),
-};
-program.with_priority_config(config);
-```
-
-#### Advanced Metrics
-```rust
-// Real-time performance monitoring
-let stats = program.advanced_stats();
-println!("P99 latency: {:?}", stats.event_latency_p99());
-
-// Export metrics in various formats
-let json = stats.export_json();
-let prometheus = stats.export_prometheus();
-```
-
-### Built-in Components
-
-| Component | Description |
-|-----------|-------------|
-| `TextArea` | Multi-line text editor with vim-like keybindings |
-| `List` | Scrollable lists with keyboard navigation |
-| `Table` | Data tables with sortable headers |
-| `Viewport` | Scrollable content area for large text |
-| `Spinner` | Animated loading indicators |
-| `KeyBinding` | Display keyboard shortcuts |
-
-### Terminal Features
-- Alt screen mode
-- Mouse tracking (click, drag, scroll)
-- Cursor control
-- Bracketed paste
-- Focus change detection
-- External process execution with TTY management
-
-## Examples
-
-Explore the examples to learn different aspects of Hojicha:
-
-```bash
-# Basic counter application
-cargo run --example counter
-
-# All components showcase
-cargo run --example components_gallery
-
-# Async operations demo
-cargo run --example async_timer
-
-# Cancellable tasks
-cargo run --example cancellable_demo
-
-# Stream integration
-cargo run --example stream_demo
-```
+**Input**: TextInput, TextArea, Button  
+**Display**: List, Table, Tabs, Modal, ProgressBar, Spinner  
+**Layout**: Grid, FloatingElement, StatusBar, Viewport
 
 ## Testing
 
-Hojicha provides optimized testing strategies for fast feedback:
-
-```bash
-# Run all tests (~1 second for unit tests)
-cargo test --all-features
-
-# Run specific test categories
-cargo test --test readme_examples  # Verify README code
-cargo test program                 # Core functionality
-cargo test async                   # Async integration
-
-# Run benchmarks
-cargo bench
+```rust
+#[test]
+fn test_counter() {
+    TestHarness::new(Counter { value: 0 })
+        .send_event(Event::Key(KeyEvent::new(Key::Up)))
+        .run()
+        .assert_model(|m| m.value == 1);
+}
 ```
 
-Tests use deterministic patterns without timing dependencies for reliability.
+## Performance Metrics
+
+```rust
+let program = Program::new(model)?
+    .with_priority_config(PriorityConfig {
+        enable_metrics: true,
+        ..Default::default()
+    });
+
+// Export metrics
+program.metrics_json();
+program.metrics_prometheus();
+```
+
+## Advanced Features
+
+### Priority Event Processing
+
+1. **Critical**: Quit, suspend
+2. **High**: User input (keyboard, mouse)
+3. **Normal**: User messages, timers
+4. **Low**: Resize, background tasks
+
+### Cancellable Operations
+
+```rust
+let handle = program.spawn_cancellable(|token| async move {
+    while !token.is_cancelled() {
+        process_batch().await;
+    }
+});
+```
 
 ## Documentation
 
-- **API Reference**: [docs.rs/hojicha](https://docs.rs/hojicha)
-- **Development Guide**: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
-- **Async Design**: [docs/ASYNC_DESIGN.md](docs/ASYNC_DESIGN.md)
-- **Testing Guide**: [docs/TESTING_BEST_PRACTICES.md](docs/TESTING_BEST_PRACTICES.md)
+- [Common Patterns](./docs/COMMON_PATTERNS.md)
+- [Architecture Guide](./docs/ARCHITECTURE.md)
+- [Development Guide](./docs/DEVELOPMENT.md)
+- [Testing Guide](./docs/TESTING_BEST_PRACTICES.md)
+- [API Reference](https://docs.rs/hojicha)
+
+## Examples
+
+```bash
+cargo run --example counter
+cargo run --example todo_list
+cargo run --example text_editor
+```
 
 ## Contributing
 
-Contributions are welcome! Please read our [development guide](docs/DEVELOPMENT.md) for:
-- Architecture overview
-- Testing requirements
-- Code style guidelines
-- Performance considerations
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-GPL v3.0 - See [LICENSE](LICENSE) for details.
-
-## Acknowledgments
-
-- [Bubbletea](https://github.com/charmbracelet/bubbletea) - Original inspiration from the Go ecosystem
-- [The Elm Architecture](https://guide.elm-lang.org/architecture/) - Architectural pattern
-- [Ratatui](https://github.com/ratatui-org/ratatui) - Outstanding TUI rendering library
+GPL-3.0

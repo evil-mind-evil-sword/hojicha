@@ -1,4 +1,52 @@
 //! Core traits and types for the Elm Architecture
+//! 
+//! This module contains the foundational traits and types that implement
+//! The Elm Architecture (TEA) pattern in Hojicha.
+//! 
+//! ## The Elm Architecture
+//! 
+//! TEA is a pattern for organizing interactive applications with:
+//! - **Unidirectional data flow**: Events flow through update to modify state
+//! - **Pure functions**: Update and view are pure, side effects use commands
+//! - **Clear separation**: Model (state), Update (logic), View (presentation)
+//! 
+//! ## Core Components
+//! 
+//! ### Model Trait
+//! Your application struct implements this trait:
+//! ```
+//! # use hojicha_core::{Model, Cmd, Event};
+//! # use ratatui::{Frame, layout::Rect};
+//! struct MyApp {
+//!     counter: i32,
+//! }
+//! 
+//! impl Model for MyApp {
+//!     type Message = MyMessage;
+//!     
+//!     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+//!         // Handle events and return commands
+//!         Cmd::none()
+//!     }
+//!     
+//!     fn view(&self, frame: &mut Frame, area: Rect) {
+//!         // Render the UI
+//!     }
+//! }
+//! # enum MyMessage {}
+//! ```
+//! 
+//! ### Commands
+//! Commands represent side effects that produce messages:
+//! ```
+//! # use hojicha_core::Cmd;
+//! # enum Msg { DataLoaded(String) }
+//! let cmd: Cmd<Msg> = Cmd::new(|| {
+//!     // Perform side effect
+//!     let data = std::fs::read_to_string("data.txt").ok()?;
+//!     Some(Msg::DataLoaded(data))
+//! });
+//! ```
 
 use crate::event::Event;
 use ratatui::layout::Rect;
@@ -32,22 +80,95 @@ pub trait Model: Sized {
 
     /// Initialize the model and return a command to run
     ///
+    /// This method is called once when the program starts. Use it to:
+    /// - Load initial data
+    /// - Start timers
+    /// - Perform initial setup
+    ///
     /// Returns:
     /// - `Cmd::none()` - Start the event loop without any initial command
     /// - Any other command - Execute the command before starting the event loop
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, commands};
+    /// # use std::time::Duration;
+    /// # struct MyApp;
+    /// # enum Msg { Tick }
+    /// # impl Model for MyApp {
+    /// #     type Message = Msg;
+    /// fn init(&mut self) -> Cmd<Self::Message> {
+    ///     // Start a timer that ticks every second
+    ///     commands::every(Duration::from_secs(1), |_| Msg::Tick)
+    /// }
+    /// #     fn update(&mut self, _: hojicha_core::Event<Self::Message>) -> Cmd<Self::Message> { Cmd::none() }
+    /// #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+    /// # }
+    /// ```
     fn init(&mut self) -> Cmd<Self::Message> {
         Cmd::none()
     }
 
     /// Update the model based on a message and return a command
     ///
+    /// This is the heart of your application logic. Handle events here and
+    /// update your model's state accordingly.
+    ///
     /// Returns:
     /// - `Cmd::none()` - Continue running without executing any command
     /// - `commands::quit()` - Exit the program
     /// - Any other command - Execute the command and continue
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, Event, Key, commands};
+    /// # struct Counter { value: i32 }
+    /// # enum Msg { Increment, Decrement }
+    /// # impl Model for Counter {
+    /// #     type Message = Msg;
+    /// fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+    ///     match event {
+    ///         Event::Key(key) if key.key == Key::Char('q') => {
+    ///             commands::quit()
+    ///         }
+    ///         Event::User(Msg::Increment) => {
+    ///             self.value += 1;
+    ///             Cmd::none()
+    ///         }
+    ///         Event::User(Msg::Decrement) => {
+    ///             self.value -= 1;
+    ///             Cmd::none()
+    ///         }
+    ///         _ => Cmd::none()
+    ///     }
+    /// }
+    /// #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+    /// # }
+    /// ```
     fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message>;
 
     /// Render the model to the screen
+    /// 
+    /// This method is called after each update to render your UI.
+    /// Use ratatui widgets to draw your interface.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Model;
+    /// # use ratatui::{Frame, layout::Rect, widgets::{Block, Borders, Paragraph}};
+    /// # struct MyApp { message: String }
+    /// # impl Model for MyApp {
+    /// #     type Message = ();
+    /// #     fn update(&mut self, _: hojicha_core::Event<Self::Message>) -> hojicha_core::Cmd<Self::Message> { hojicha_core::Cmd::none() }
+    /// fn view(&self, frame: &mut Frame, area: Rect) {
+    ///     let widget = Paragraph::new(self.message.as_str())
+    ///         .block(Block::default()
+    ///             .title("My App")
+    ///             .borders(Borders::ALL));
+    ///     frame.render_widget(widget, area);
+    /// }
+    /// # }
+    /// ```
     fn view(&self, frame: &mut Frame, area: Rect);
 }
 
@@ -100,6 +221,17 @@ impl<M: Message> Cmd<M> {
     /// 
     /// Note: If the function returns `None`, consider using `Cmd::none()` instead
     /// for better performance and clearer intent.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Cmd;
+    /// # enum Msg { DataLoaded(String) }
+    /// let cmd: Cmd<Msg> = Cmd::new(|| {
+    ///     // Perform a side effect
+    ///     let data = std::fs::read_to_string("config.json").ok()?;
+    ///     Some(Msg::DataLoaded(data))
+    /// });
+    /// ```
     pub fn new<F>(f: F) -> Self
     where
         F: FnOnce() -> Option<M> + Send + 'static,
@@ -110,6 +242,18 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Create a new fallible command that can return errors
+    /// 
+    /// Use this when your command might fail and you want to handle errors gracefully.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Cmd, Result};
+    /// # enum Msg { ConfigLoaded(String) }
+    /// let cmd: Cmd<Msg> = Cmd::fallible(|| {
+    ///     let data = std::fs::read_to_string("config.json")?;
+    ///     Ok(Some(Msg::ConfigLoaded(data)))
+    /// });
+    /// ```
     pub fn fallible<F>(f: F) -> Self
     where
         F: FnOnce() -> crate::Result<Option<M>> + Send + 'static,
@@ -123,14 +267,34 @@ impl<M: Message> Cmd<M> {
     ///
     /// This is the idiomatic way to return "no command" from update().
     /// The program will continue running without executing any side effects.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, Event};
+    /// # use ratatui::{Frame, layout::Rect};
+    /// # struct MyApp;
+    /// # impl Model for MyApp {
+    /// #     type Message = ();
+    /// fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+    ///     match event {
+    ///         Event::Tick => {
+    ///             // Update internal state but don't trigger side effects
+    ///             Cmd::none()
+    ///         }
+    ///         _ => Cmd::none()
+    ///     }
+    /// }
+    /// #     fn view(&self, _: &mut Frame, _: Rect) {}
+    /// # }
+    /// ```
     pub fn none() -> Self {
         Cmd {
             inner: CmdInner::NoOp,
         }
     }
 
-    /// Create a command that executes an external process
     /// Internal method
+    #[doc(hidden)]
     pub fn exec_process<F>(program: String, args: Vec<String>, callback: F) -> Self
     where
         F: Fn(Option<i32>) -> M + Send + 'static,
@@ -146,6 +310,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a batch command that executes commands concurrently
     /// Internal method
+    #[doc(hidden)]
     pub fn batch(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Batch(cmds),
@@ -154,6 +319,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a sequence command that executes commands in order
     /// Internal method
+    #[doc(hidden)]
     pub fn sequence(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Sequence(cmds),
@@ -162,6 +328,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a quit command
     /// Internal method
+    #[doc(hidden)]
     pub fn quit() -> Self {
         Cmd {
             inner: CmdInner::Quit,
@@ -170,6 +337,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create a tick command
     /// Internal method
+    #[doc(hidden)]
     pub fn tick<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce() -> M + Send + 'static,
@@ -184,6 +352,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create an every command
     /// Internal method
+    #[doc(hidden)]
     pub fn every<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce(std::time::Instant) -> M + Send + 'static,
@@ -198,6 +367,7 @@ impl<M: Message> Cmd<M> {
 
     /// Create an async command
     /// Internal method
+    #[doc(hidden)]
     pub fn async_cmd<Fut>(future: Fut) -> Self
     where
         Fut: std::future::Future<Output = Option<M>> + Send + 'static,
@@ -209,6 +379,7 @@ impl<M: Message> Cmd<M> {
 
     /// Execute the command and return its message
     /// Internal method
+    #[doc(hidden)]
     pub fn execute(self) -> crate::Result<Option<M>> {
         match self.inner {
             CmdInner::Function(func) => Ok(func()),
@@ -269,6 +440,7 @@ impl<M: Message> Cmd<M> {
     /// Extract exec process details if this is an exec process command
     #[allow(clippy::type_complexity)]
     /// Internal method
+    #[doc(hidden)]
     pub fn take_exec_process(self) -> Option<ExecDetails<M>> {
         match self.inner {
             CmdInner::ExecProcess {
@@ -282,12 +454,14 @@ impl<M: Message> Cmd<M> {
 
     /// Check if this is a batch command
     /// Internal method
+    #[doc(hidden)]
     pub fn is_batch(&self) -> bool {
         matches!(self.inner, CmdInner::Batch(_))
     }
 
     /// Take the batch commands (consumes the command)
     /// Internal method
+    #[doc(hidden)]
     pub fn take_batch(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Batch(cmds) => Some(cmds),
@@ -297,12 +471,14 @@ impl<M: Message> Cmd<M> {
 
     /// Check if this is a sequence command
     /// Internal method
+    #[doc(hidden)]
     pub fn is_sequence(&self) -> bool {
         matches!(self.inner, CmdInner::Sequence(_))
     }
 
     /// Take the sequence commands (consumes the command)
     /// Internal method
+    #[doc(hidden)]
     pub fn take_sequence(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Sequence(cmds) => Some(cmds),
@@ -311,16 +487,19 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_tick(&self) -> bool {
         matches!(self.inner, CmdInner::Tick { .. })
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_every(&self) -> bool {
         matches!(self.inner, CmdInner::Every { .. })
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn take_tick(self) -> Option<(std::time::Duration, Box<dyn FnOnce() -> M + Send>)> {
         match self.inner {
             CmdInner::Tick { duration, callback } => Some((duration, callback)),
@@ -330,6 +509,7 @@ impl<M: Message> Cmd<M> {
 
     #[allow(clippy::type_complexity)]
     /// Internal method
+    #[doc(hidden)]
     pub fn take_every(
         self,
     ) -> Option<(
@@ -343,11 +523,13 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn is_async(&self) -> bool {
         matches!(self.inner, CmdInner::Async(_))
     }
 
     /// Internal method
+    #[doc(hidden)]
     pub fn take_async(self) -> Option<Box<dyn std::future::Future<Output = Option<M>> + Send>> {
         match self.inner {
             CmdInner::Async(future) => Some(future),
@@ -361,13 +543,11 @@ impl<M: Message> Cmd<M> {
     ///
     /// # Example
     /// ```no_run
-    /// # use hojicha_core::{Cmd, Message};
+    /// # use hojicha_core::Cmd;
     /// # #[derive(Clone)]
     /// # struct Msg;
-    /// # impl Message for Msg {}
-    /// Cmd::none()
-    ///     .inspect(|cmd| println!("Executing command: {:?}", cmd))
-    /// # ;
+    /// let cmd: Cmd<Msg> = Cmd::none()
+    ///     .inspect(|cmd| println!("Executing command: {:?}", cmd));
     /// ```
     pub fn inspect<F>(self, f: F) -> Self
     where
@@ -380,6 +560,17 @@ impl<M: Message> Cmd<M> {
     /// Conditionally inspect this command
     ///
     /// Only runs the inspection function if the condition is true.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Cmd;
+    /// # enum Msg { Data(String) }
+    /// # let debug_mode = true;
+    /// let cmd: Cmd<Msg> = Cmd::new(|| Some(Msg::Data("test".into())))
+    ///     .inspect_if(debug_mode, |cmd| {
+    ///         eprintln!("Debug: executing {}", cmd.debug_name());
+    ///     });
+    /// ```
     pub fn inspect_if<F>(self, condition: bool, f: F) -> Self
     where
         F: FnOnce(&Self),
@@ -391,6 +582,18 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Get a string representation of the command type for debugging
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Cmd, commands};
+    /// # enum Msg { Tick }
+    /// # use std::time::Duration;
+    /// let cmd: Cmd<Msg> = commands::tick(Duration::from_secs(1), || Msg::Tick);
+    /// assert_eq!(cmd.debug_name(), "Tick");
+    /// 
+    /// let noop: Cmd<Msg> = Cmd::none();
+    /// assert_eq!(noop.debug_name(), "NoOp");
+    /// ```
     pub fn debug_name(&self) -> &'static str {
         match self.inner {
             CmdInner::Function(_) => "Function",

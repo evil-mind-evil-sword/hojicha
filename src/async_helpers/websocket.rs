@@ -97,7 +97,6 @@ impl WebSocketHandle {
 /// #     WsMessage(String),
 /// #     WsDisconnected,
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// websocket("wss://echo.websocket.org", |event| {
 ///     match event {

@@ -1,4 +1,55 @@
 //! Command utilities for handling side effects
+//! 
+//! This module provides functions for creating commands that perform side effects
+//! in your Hojicha application. Commands are the Elm Architecture's way of handling
+//! operations that interact with the outside world.
+//! 
+//! ## Core Command Types
+//! 
+//! - **Synchronous**: Simple functions that return messages
+//! - **Asynchronous**: Futures that eventually produce messages
+//! - **Timed**: Commands that execute after delays or at intervals
+//! - **Composite**: Batch and sequence commands for complex flows
+//! 
+//! ## Common Patterns
+//! 
+//! ### No-op Command
+//! ```
+//! # use hojicha_core::commands::none;
+//! # use hojicha_core::{Model, Cmd, Event};
+//! # struct MyModel;
+//! # impl Model for MyModel {
+//! #     type Message = ();
+//! fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+//!     // Handle event but don't trigger side effects
+//!     none()
+//! }
+//! #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+//! # }
+//! ```
+//! 
+//! ### Concurrent Commands
+//! ```
+//! # use hojicha_core::commands::{batch, tick};
+//! # use hojicha_core::Cmd;
+//! # use std::time::Duration;
+//! # enum Msg { Tick1, Tick2 }
+//! let cmd: Cmd<Msg> = batch(vec![
+//!     tick(Duration::from_secs(1), || Msg::Tick1),
+//!     tick(Duration::from_secs(2), || Msg::Tick2),
+//! ]);
+//! ```
+//! 
+//! ### Sequential Commands
+//! ```
+//! # use hojicha_core::commands::sequence;
+//! # use hojicha_core::Cmd;
+//! # enum Msg { First, Second }
+//! let cmd: Cmd<Msg> = sequence(vec![
+//!     Cmd::new(|| Some(Msg::First)),
+//!     Cmd::new(|| Some(Msg::Second)),
+//! ]);
+//! ```
 
 use crate::core::{Cmd, Message};
 use crate::event::WindowSize;
@@ -45,11 +96,11 @@ pub enum TerminalControlMsg {
 /// Create a no-op command
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     // Handle message but don't trigger any side effects
-///     none()
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::none};
+/// # enum Msg {}
+/// // Returns a no-op command that continues running without side effects
+/// let cmd: Cmd<Msg> = none();
 /// ```
 pub fn none<M: Message>() -> Cmd<M> {
     Cmd::none()
@@ -67,13 +118,16 @@ pub fn none<M: Message>() -> Cmd<M> {
 /// - Batches larger than 1000 commands will be automatically chunked
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     batch(vec![
-///         fetch_data(),
-///         start_timer(),
-///     ])
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::batch};
+/// # enum Msg { Data, Timer }
+/// # fn fetch_data() -> Cmd<Msg> { Cmd::none() }
+/// # fn start_timer() -> Cmd<Msg> { Cmd::none() }
+/// // Batch multiple commands to run concurrently
+/// let cmd: Cmd<Msg> = batch(vec![
+///     fetch_data(),
+///     start_timer(),
+/// ]);
 /// ```
 pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     match cmds.len() {
@@ -102,13 +156,16 @@ pub fn batch<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 /// - Use `sequence_strict()` if you need guaranteed sequence semantics
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     sequence(vec![
-///         save_to_disk(),
-///         show_notification(),
-///     ])
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::sequence};
+/// # enum Msg { Save, Notify }
+/// # fn save_to_disk() -> Cmd<Msg> { Cmd::none() }
+/// # fn show_notification() -> Cmd<Msg> { Cmd::none() }
+/// // Sequence commands to run one after another
+/// let cmd: Cmd<Msg> = sequence(vec![
+///     save_to_disk(),
+///     show_notification(),
+/// ]);
 /// ```
 pub fn sequence<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     match cmds.len() {
@@ -124,9 +181,13 @@ pub fn sequence<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 /// number of elements. Use this when you need guaranteed batch behavior.
 ///
 /// # Example
-/// ```ignore
+/// ```no_run
+/// # use hojicha_core::{Cmd, commands::batch_strict};
+/// # enum Msg { Action }
+/// # fn maybe_cmd() -> Cmd<Msg> { Cmd::none() }
 /// // Always returns a batch, even with 0 or 1 elements
 /// batch_strict(vec![maybe_cmd()])
+/// # ;
 /// ```
 pub fn batch_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     Cmd::batch(cmds)
@@ -137,9 +198,13 @@ pub fn batch_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 /// Batches larger than the limit will be automatically chunked.
 ///
 /// # Example
-/// ```ignore
+/// ```no_run
+/// # use hojicha_core::{Cmd, commands::batch_with_limit};
+/// # enum Msg { Action }
+/// # let large_vec_of_commands: Vec<Cmd<Msg>> = vec![];
 /// // Create batches with max 50 commands each
 /// batch_with_limit(large_vec_of_commands, 50)
+/// # ;
 /// ```
 pub fn batch_with_limit<M: Message>(cmds: Vec<Cmd<M>>, limit: usize) -> Cmd<M> {
     if cmds.len() <= limit {
@@ -150,7 +215,8 @@ pub fn batch_with_limit<M: Message>(cmds: Vec<Cmd<M>>, limit: usize) -> Cmd<M> {
 }
 
 /// Internal helper to chunk large batches
-fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M> {
+#[doc(hidden)]
+pub(crate) fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M> {
     let mut chunks = Vec::new();
     
     while !cmds.is_empty() {
@@ -171,9 +237,13 @@ fn batch_chunked<M: Message>(mut cmds: Vec<Cmd<M>>, chunk_size: usize) -> Cmd<M>
 /// number of elements. Use this when you need guaranteed sequence behavior.
 ///
 /// # Example
-/// ```ignore
+/// ```no_run
+/// # use hojicha_core::{Cmd, commands::sequence_strict};
+/// # enum Msg { Action }
+/// # fn maybe_cmd() -> Cmd<Msg> { Cmd::none() }
 /// // Always returns a sequence, even with 0 or 1 elements
 /// sequence_strict(vec![maybe_cmd()])
+/// # ;
 /// ```
 pub fn sequence_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
     Cmd::sequence(cmds)
@@ -182,14 +252,12 @@ pub fn sequence_strict<M: Message>(cmds: Vec<Cmd<M>>) -> Cmd<M> {
 /// Create a command that sends a message after a delay
 ///
 /// # Example
-/// ```ignore
-/// enum Msg {
-///     Timeout,
-/// }
-///
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     tick(Duration::from_secs(5), || Msg::Timeout)
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::tick};
+/// # use std::time::Duration;
+/// # enum Msg { Timeout }
+/// // Send a message after 5 seconds
+/// let cmd: Cmd<Msg> = tick(Duration::from_secs(5), || Msg::Timeout);
 /// ```
 pub fn tick<M, F>(duration: Duration, f: F) -> Cmd<M>
 where
@@ -206,14 +274,12 @@ where
 /// at the start of each second.
 ///
 /// # Example
-/// ```ignore
-/// enum Msg {
-///     Tick(std::time::Instant),
-/// }
-///
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     every(Duration::from_secs(1), |instant| Msg::Tick(instant))
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::every};
+/// # use std::time::{Duration, Instant};
+/// # enum Msg { Tick(Instant) }
+/// // Send a message every second
+/// let cmd: Cmd<Msg> = every(Duration::from_secs(1), |instant| Msg::Tick(instant));
 /// ```
 pub fn every<M, F>(duration: Duration, f: F) -> Cmd<M>
 where
@@ -230,16 +296,11 @@ where
 /// so you typically won't need to use this command directly.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::GetWindowSize) => {
-///             return Some(window_size(|size| Msg::GotSize(size)));
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::window_size, event::WindowSize};
+/// # enum Msg { GotSize(WindowSize) }
+/// // Query the terminal size
+/// let cmd: Cmd<Msg> = window_size(|size| Msg::GotSize(size));
 /// ```
 pub fn window_size<M, F>(f: F) -> Cmd<M>
 where
@@ -264,10 +325,11 @@ where
 /// Set the terminal window title
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     set_window_title("My Awesome App")
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::set_window_title};
+/// # enum Msg {}
+/// // Set the terminal window title
+/// let cmd: Cmd<Msg> = set_window_title("My Awesome App");
 /// ```
 pub fn set_window_title<M: Message>(title: impl Into<String>) -> Cmd<M> {
     let title = title.into();
@@ -283,13 +345,11 @@ pub fn set_window_title<M: Message>(title: impl Into<String>) -> Cmd<M> {
 /// This is useful for graceful shutdown or interrupting long-running operations.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::Shutdown) => Some(interrupt()),
-///         _ => None
-///     }
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::interrupt};
+/// # enum Msg {}
+/// // Send an interrupt signal (simulates Ctrl+C)
+/// let cmd: Cmd<Msg> = interrupt();
 /// ```
 pub fn interrupt<M: Message>() -> Cmd<M> {
     Cmd::new(|| {
@@ -307,16 +367,11 @@ pub fn interrupt<M: Message>() -> Cmd<M> {
 /// Hide the terminal cursor
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::HideCursor) => {
-///             return Some(hide_cursor());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::hide_cursor};
+/// # enum Msg {}
+/// // Hide the terminal cursor
+/// let cmd: Cmd<Msg> = hide_cursor();
 /// ```
 pub fn hide_cursor<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -343,23 +398,15 @@ pub fn exit_alt_screen<M: Message>() -> Cmd<M> {
 /// HTTP requests, database queries, or other I/O operations.
 ///
 /// # Example
-/// ```ignore
-/// async fn fetch_data() -> String {
+/// ```
+/// # use hojicha_core::{Cmd, commands::custom_async};
+/// # enum Message { DataFetched(String) }
+/// // Create an async command
+/// let cmd: Cmd<Message> = custom_async(|| async {
 ///     // Perform async operation
-///     reqwest::get("https://api.example.com/data")
-///         .await
-///         .unwrap()
-///         .text()
-///         .await
-///         .unwrap()
-/// }
-///
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     custom_async(|| async {
-///         let data = fetch_data().await;
-///         Some(Message::DataFetched(data))
-///     })
-/// }
+///     let data = "example data".to_string();
+///     Some(Message::DataFetched(data))
+/// });
 /// ```
 pub fn custom_async<M, F, Fut>(f: F) -> Cmd<M>
 where
@@ -376,13 +423,15 @@ where
 /// Unlike `custom_async`, this uses the existing runtime rather than creating a new one.
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     commands::spawn(async {
-///         tokio::time::sleep(Duration::from_secs(1)).await;
-///         Some(Message::TimerComplete)
-///     })
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::spawn};
+/// # use std::time::Duration;
+/// # enum Message { TimerComplete }
+/// // Spawn an async task
+/// let cmd: Cmd<Message> = spawn(async {
+///     tokio::time::sleep(Duration::from_secs(1)).await;
+///     Some(Message::TimerComplete)
+/// });
 /// ```
 pub fn spawn<M, Fut>(fut: Fut) -> Cmd<M>
 where
@@ -397,14 +446,16 @@ where
 /// This is a convenience wrapper for creating simple custom commands.
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     custom(|| {
-///         // Perform some custom logic
-///         let result = expensive_computation();
-///         Some(Message::ComputationComplete(result))
-///     })
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::custom};
+/// # enum Message { ComputationComplete(i32) }
+/// # fn expensive_computation() -> i32 { 42 }
+/// // Create a custom command
+/// let cmd: Cmd<Message> = custom(|| {
+///     // Perform some custom logic
+///     let result = expensive_computation();
+///     Some(Message::ComputationComplete(result))
+/// });
 /// ```
 pub fn custom<M, F>(f: F) -> Cmd<M>
 where
@@ -419,14 +470,15 @@ where
 /// This allows you to create commands that can fail and handle errors gracefully.
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     custom_fallible(|| {
-///         // Perform operation that might fail
-///         let data = std::fs::read_to_string("config.json")?;
-///         Ok(Some(Message::ConfigLoaded(data)))
-///     })
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::custom_fallible};
+/// # enum Message { ConfigLoaded(String) }
+/// // Create a fallible command
+/// let cmd: Cmd<Message> = custom_fallible(|| {
+///     // Perform operation that might fail
+///     let data = std::fs::read_to_string("config.json")?;
+///     Ok(Some(Message::ConfigLoaded(data)))
+/// });
 /// ```
 pub fn custom_fallible<M, F>(f: F) -> Cmd<M>
 where
@@ -442,21 +494,17 @@ where
 /// just being logged.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, event: Event<Msg>) -> Cmd<Msg> {
-///     match event {
-///         Event::User(Msg::LoadData) => {
-///             fallible_with_error(
-///                 || {
-///                     let data = std::fs::read_to_string("data.json")?;
-///                     Ok(Some(Msg::DataLoaded(data)))
-///                 },
-///                 |err| Msg::ErrorOccurred(err.to_string())
-///             )
-///         }
-///         _ => Cmd::none()
-///     }
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::fallible_with_error};
+/// # enum Msg { DataLoaded(String), ErrorOccurred(String) }
+/// // Create a fallible command with error handling
+/// let cmd: Cmd<Msg> = fallible_with_error(
+///     || {
+///         let data = std::fs::read_to_string("data.json")?;
+///         Ok(Some(Msg::DataLoaded(data)))
+///     },
+///     |err| Msg::ErrorOccurred(err.to_string())
+/// );
 /// ```
 pub fn fallible_with_error<M, F, E>(f: F, error_handler: E) -> Cmd<M>
 where
@@ -476,18 +524,13 @@ where
 /// The terminal will be restored after the command completes.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::EditFile) => {
-///             return Some(exec("vim", vec!["file.txt"], |exit_status| {
-///                 Msg::EditorClosed(exit_status)
-///             }));
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::exec};
+/// # enum Msg { EditorClosed(Option<i32>) }
+/// // Execute an external program
+/// let cmd: Cmd<Msg> = exec("vim", vec!["file.txt"], |exit_status| {
+///     Msg::EditorClosed(exit_status)
+/// });
 /// ```
 pub fn exec<M, F>(program: impl Into<String>, args: Vec<impl Into<String>>, callback: F) -> Cmd<M>
 where
@@ -503,18 +546,13 @@ where
 /// Execute a shell command, releasing the terminal while it runs
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::RunShellCommand) => {
-///             return Some(exec_command("ls -la", |exit_status| {
-///                 Msg::CommandFinished(exit_status)
-///             }));
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::exec_command};
+/// # enum Msg { CommandFinished(Option<i32>) }
+/// // Execute a shell command
+/// let cmd: Cmd<Msg> = exec_command("ls -la", |exit_status| {
+///     Msg::CommandFinished(exit_status)
+/// });
 /// ```
 pub fn exec_command<M, F>(command: impl Into<String>, callback: F) -> Cmd<M>
 where
@@ -540,16 +578,11 @@ where
 /// This enables mouse events only when a button is pressed.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::EnableMouse) => {
-///             return Some(enable_mouse_cell_motion());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::enable_mouse_cell_motion};
+/// # enum Msg {}
+/// // Enable mouse tracking for cell motion (button pressed)
+/// let cmd: Cmd<Msg> = enable_mouse_cell_motion();
 /// ```
 pub fn enable_mouse_cell_motion<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -561,16 +594,11 @@ pub fn enable_mouse_cell_motion<M: Message>() -> Cmd<M> {
 /// allowing for hover interactions.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::EnableHoverTracking) => {
-///             return Some(enable_mouse_all_motion());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::enable_mouse_all_motion};
+/// # enum Msg {}
+/// // Enable mouse tracking for all motion (including hover)
+/// let cmd: Cmd<Msg> = enable_mouse_all_motion();
 /// ```
 pub fn enable_mouse_all_motion<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -579,16 +607,11 @@ pub fn enable_mouse_all_motion<M: Message>() -> Cmd<M> {
 /// Disable mouse tracking
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::DisableMouse) => {
-///             return Some(disable_mouse());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::disable_mouse};
+/// # enum Msg {}
+/// // Disable all mouse tracking
+/// let cmd: Cmd<Msg> = disable_mouse();
 /// ```
 pub fn disable_mouse<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -597,16 +620,11 @@ pub fn disable_mouse<M: Message>() -> Cmd<M> {
 /// Clear the entire screen
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::ClearScreen) => {
-///             return Some(clear_screen());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::clear_screen};
+/// # enum Msg {}
+/// // Clear the entire screen
+/// let cmd: Cmd<Msg> = clear_screen();
 /// ```
 pub fn clear_screen<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -615,16 +633,11 @@ pub fn clear_screen<M: Message>() -> Cmd<M> {
 /// Clear the current line
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::ClearLine) => {
-///             return Some(clear_line());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::clear_line};
+/// # enum Msg {}
+/// // Clear the current line
+/// let cmd: Cmd<Msg> = clear_line();
 /// ```
 pub fn clear_line<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -637,8 +650,7 @@ pub fn clear_line<M: Message>() -> Cmd<M> {
 /// # Example
 ///
 /// ```no_run
-/// # use hojicha::prelude::*;
-/// # use hojicha::commands;
+/// # use hojicha_core::prelude::*;
 /// # #[derive(Debug, Clone)]
 /// # enum MyMessage { Quit }
 /// # struct MyModel;
@@ -647,10 +659,10 @@ pub fn clear_line<M: Message>() -> Cmd<M> {
 /// #     fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
 /// match event {
 ///     Event::Key(key) if key.key == Key::Char('q') => {
-///         Some(commands::quit())
+///         quit()
 ///     }
 ///     Event::User(MyMessage::Quit) => {
-///         Some(commands::quit())
+///         quit()
 ///     }
 ///     _ => Cmd::none()
 /// }
@@ -668,19 +680,11 @@ pub fn quit<M: Message>() -> Cmd<M> {
 /// When the program is resumed, a Resume event will be sent.
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::Key(key) if key.key == Key::Char('z') && key.modifiers.contains(KeyModifiers::CONTROL) => {
-///             return Some(suspend());
-///         }
-///         Event::Resume => {
-///             // Handle resume
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::suspend};
+/// # enum Msg {}
+/// // Suspend the program (Ctrl+Z)
+/// let cmd: Cmd<Msg> = suspend();
 /// ```
 pub fn suspend<M: Message>() -> Cmd<M> {
     Cmd::new(|| None) // This will be handled by the runtime
@@ -693,20 +697,12 @@ pub fn suspend<M: Message>() -> Cmd<M> {
 /// accidentally triggering keyboard shortcuts.
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     enable_bracketed_paste()
-/// }
-///
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::Paste(text) => {
-///             self.input.push_str(&text);
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::enable_bracketed_paste};
+/// # enum Msg {}
+/// // Enable bracketed paste mode
+/// let cmd: Cmd<Msg> = enable_bracketed_paste();
+/// // Now pasted text will be delivered as Event::Paste(String)
 /// ```
 pub fn enable_bracketed_paste<M: Message>() -> Cmd<M> {
     Cmd::new(|| {
@@ -722,16 +718,11 @@ pub fn enable_bracketed_paste<M: Message>() -> Cmd<M> {
 /// Disable bracketed paste mode
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::DisablePaste) => {
-///             return Some(disable_bracketed_paste());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::disable_bracketed_paste};
+/// # enum Msg {}
+/// // Disable bracketed paste mode
+/// let cmd: Cmd<Msg> = disable_bracketed_paste();
 /// ```
 pub fn disable_bracketed_paste<M: Message>() -> Cmd<M> {
     Cmd::new(|| {
@@ -750,23 +741,12 @@ pub fn disable_bracketed_paste<M: Message>() -> Cmd<M> {
 /// gains focus and Event::Blur when it loses focus.
 ///
 /// # Example
-/// ```ignore
-/// fn init(&mut self) -> Cmd<Self::Message> {
-///     enable_focus_change()
-/// }
-///
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::Focus => {
-///             self.has_focus = true;
-///         }
-///         Event::Blur => {
-///             self.has_focus = false;
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::enable_focus_change};
+/// # enum Msg {}
+/// // Enable focus change reporting
+/// let cmd: Cmd<Msg> = enable_focus_change();
+/// // Now the program will receive Event::Focus and Event::Blur
 /// ```
 pub fn enable_focus_change<M: Message>() -> Cmd<M> {
     Cmd::new(|| {
@@ -782,16 +762,11 @@ pub fn enable_focus_change<M: Message>() -> Cmd<M> {
 /// Disable focus change reporting
 ///
 /// # Example
-/// ```ignore
-/// fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message> {
-///     match msg {
-///         Event::User(Msg::DisableFocus) => {
-///             return Some(disable_focus_change());
-///         }
-///         _ => {}
-///     }
-///     None
-/// }
+/// ```
+/// # use hojicha_core::{Cmd, commands::disable_focus_change};
+/// # enum Msg {}
+/// // Disable focus change reporting
+/// let cmd: Cmd<Msg> = disable_focus_change();
 /// ```
 pub fn disable_focus_change<M: Message>() -> Cmd<M> {
     Cmd::new(|| {

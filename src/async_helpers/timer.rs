@@ -16,7 +16,6 @@ use std::time::Duration;
 /// # enum Msg {
 /// #     DelayComplete,
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// delay(Duration::from_secs(2), || Msg::DelayComplete)
 /// # ;
@@ -44,7 +43,6 @@ where
 /// # enum Msg {
 /// #     Tick(usize),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// // Sends Msg::Tick(0), Msg::Tick(1), Msg::Tick(2), ...
 /// interval(Duration::from_secs(1), |count| Msg::Tick(count))
@@ -84,7 +82,6 @@ where
 /// #     Success(String),
 /// #     Timeout,
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// with_timeout(
 ///     Duration::from_secs(5),
@@ -130,11 +127,10 @@ where
 /// # enum Msg {
 /// #     Search(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// debounce(
 ///     Duration::from_millis(300),
-///     "search query",
+///     "search query".to_string(),
 ///     |query| Msg::Search(query)
 /// )
 /// # ;
@@ -163,7 +159,6 @@ where
 /// # enum Msg {
 /// #     Update,
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// // Will execute at most once per second
 /// throttle(Duration::from_secs(1), || Msg::Update)

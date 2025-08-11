@@ -15,7 +15,7 @@ fn test_cmd_none_vs_new_none_difference() {
     assert!(cmd_none.is_noop());
     
     // Cmd::new(|| None) creates a Function variant that returns None
-    let cmd_new_none = Cmd::new(|| None);
+    let cmd_new_none: Cmd<TestMsg> = Cmd::new(|| None);
     assert!(!cmd_new_none.is_noop());
     
     // Both return None when executed, but have different internal representations

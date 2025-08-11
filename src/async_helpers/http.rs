@@ -74,7 +74,6 @@ pub struct HttpResponse {
 /// #     DataLoaded(String),
 /// #     Error(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// http_get("https://api.example.com/data", |result| {
 ///     match result {
@@ -102,7 +101,6 @@ where
 /// #     Posted,
 /// #     Error(String),
 /// # }
-/// # impl hojicha_core::Message for Msg {}
 /// 
 /// let json_body = r#"{"name": "test"}"#;
 /// http_post("https://api.example.com/data", json_body, |result| {
