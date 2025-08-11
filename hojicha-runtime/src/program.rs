@@ -20,6 +20,7 @@ pub use terminal_manager::{TerminalConfig, TerminalManager};
 // We'll gradually migrate the implementation to use the extracted components
 
 use crate::async_handle::AsyncHandle;
+use crate::panic_recovery::{self, PanicRecoveryStrategy};
 use crate::subscription::Subscription;
 use crossterm::event::{self};
 use hojicha_core::core::Model;
@@ -73,6 +74,8 @@ pub struct ProgramOptions {
     pub output: Option<Box<dyn Write + Send + Sync>>,
     /// Custom input reader
     pub input: Option<Box<dyn Read + Send + Sync>>,
+    /// Panic recovery strategy for Model methods
+    pub panic_recovery_strategy: PanicRecoveryStrategy,
 }
 
 impl ProgramOptions {
@@ -89,6 +92,7 @@ impl ProgramOptions {
             without_renderer: false,
             output: None,
             input: None,
+            panic_recovery_strategy: PanicRecoveryStrategy::default(),
         }
     }
 
@@ -137,6 +141,12 @@ impl ProgramOptions {
     /// Disable renderer
     pub fn without_renderer(mut self) -> Self {
         self.without_renderer = true;
+        self
+    }
+    
+    /// Set panic recovery strategy for Model methods
+    pub fn with_panic_recovery(mut self, strategy: PanicRecoveryStrategy) -> Self {
+        self.panic_recovery_strategy = strategy;
         self
     }
 
@@ -871,8 +881,17 @@ where
             self.input_thread = Some(input_thread);
         }
 
-        // Run initial command
-        let init_cmd = self.model.init();
+        // Run initial command with panic recovery
+        let init_cmd = panic_recovery::safe_init(
+            &mut self.model,
+            self.options.panic_recovery_strategy,
+        );
+        if init_cmd.is_quit() {
+            // If init returns quit due to panic recovery, exit early
+            self.running.store(false, Ordering::SeqCst);
+            self.terminal_manager.cleanup().map_err(Error::from)?;
+            return Ok(());
+        }
         if !init_cmd.is_noop() {
             self.command_executor.execute(init_cmd, message_tx.clone());
         }
@@ -918,9 +937,13 @@ where
                     Some(event)
                 };
 
-                // Update model
+                // Update model with panic recovery
                 if let Some(event) = event {
-                    let cmd = self.model.update(event);
+                    let cmd = panic_recovery::safe_update(
+                        &mut self.model,
+                        event,
+                        self.options.panic_recovery_strategy,
+                    );
 
                     // Check if command is quit
                     if cmd.is_quit() {
@@ -943,12 +966,26 @@ where
 
             // Render if needed and FPS allows
             if !self.options.without_renderer && self.fps_limiter.should_render() {
+                // Capture the panic recovery flag
+                let mut should_quit = false;
+                
                 self.terminal_manager
                     .draw(|f| {
                         let area = f.area();
-                        self.model.view(f, area);
+                        should_quit = panic_recovery::safe_view(
+                            &self.model,
+                            f,
+                            area,
+                            self.options.panic_recovery_strategy,
+                        );
                     })
                     .map_err(Error::from)?;
+                
+                if should_quit {
+                    // View panic requested quit
+                    break;
+                }
+                
                 self.fps_limiter.mark_rendered();
             }
         }
