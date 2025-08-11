@@ -80,22 +80,95 @@ pub trait Model: Sized {
 
     /// Initialize the model and return a command to run
     ///
+    /// This method is called once when the program starts. Use it to:
+    /// - Load initial data
+    /// - Start timers
+    /// - Perform initial setup
+    ///
     /// Returns:
     /// - `Cmd::none()` - Start the event loop without any initial command
     /// - Any other command - Execute the command before starting the event loop
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, commands};
+    /// # use std::time::Duration;
+    /// # struct MyApp;
+    /// # enum Msg { Tick }
+    /// # impl Model for MyApp {
+    /// #     type Message = Msg;
+    /// fn init(&mut self) -> Cmd<Self::Message> {
+    ///     // Start a timer that ticks every second
+    ///     commands::every(Duration::from_secs(1), |_| Msg::Tick)
+    /// }
+    /// #     fn update(&mut self, _: hojicha_core::Event<Self::Message>) -> Cmd<Self::Message> { Cmd::none() }
+    /// #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+    /// # }
+    /// ```
     fn init(&mut self) -> Cmd<Self::Message> {
         Cmd::none()
     }
 
     /// Update the model based on a message and return a command
     ///
+    /// This is the heart of your application logic. Handle events here and
+    /// update your model's state accordingly.
+    ///
     /// Returns:
     /// - `Cmd::none()` - Continue running without executing any command
     /// - `commands::quit()` - Exit the program
     /// - Any other command - Execute the command and continue
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, Event, Key, commands};
+    /// # struct Counter { value: i32 }
+    /// # enum Msg { Increment, Decrement }
+    /// # impl Model for Counter {
+    /// #     type Message = Msg;
+    /// fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+    ///     match event {
+    ///         Event::Key(key) if key.key == Key::Char('q') => {
+    ///             commands::quit()
+    ///         }
+    ///         Event::User(Msg::Increment) => {
+    ///             self.value += 1;
+    ///             Cmd::none()
+    ///         }
+    ///         Event::User(Msg::Decrement) => {
+    ///             self.value -= 1;
+    ///             Cmd::none()
+    ///         }
+    ///         _ => Cmd::none()
+    ///     }
+    /// }
+    /// #     fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {}
+    /// # }
+    /// ```
     fn update(&mut self, msg: Event<Self::Message>) -> Cmd<Self::Message>;
 
     /// Render the model to the screen
+    /// 
+    /// This method is called after each update to render your UI.
+    /// Use ratatui widgets to draw your interface.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Model;
+    /// # use ratatui::{Frame, layout::Rect, widgets::{Block, Borders, Paragraph}};
+    /// # struct MyApp { message: String }
+    /// # impl Model for MyApp {
+    /// #     type Message = ();
+    /// #     fn update(&mut self, _: hojicha_core::Event<Self::Message>) -> hojicha_core::Cmd<Self::Message> { hojicha_core::Cmd::none() }
+    /// fn view(&self, frame: &mut Frame, area: Rect) {
+    ///     let widget = Paragraph::new(self.message.as_str())
+    ///         .block(Block::default()
+    ///             .title("My App")
+    ///             .borders(Borders::ALL));
+    ///     frame.render_widget(widget, area);
+    /// }
+    /// # }
+    /// ```
     fn view(&self, frame: &mut Frame, area: Rect);
 }
 
@@ -148,6 +221,17 @@ impl<M: Message> Cmd<M> {
     /// 
     /// Note: If the function returns `None`, consider using `Cmd::none()` instead
     /// for better performance and clearer intent.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Cmd;
+    /// # enum Msg { DataLoaded(String) }
+    /// let cmd: Cmd<Msg> = Cmd::new(|| {
+    ///     // Perform a side effect
+    ///     let data = std::fs::read_to_string("config.json").ok()?;
+    ///     Some(Msg::DataLoaded(data))
+    /// });
+    /// ```
     pub fn new<F>(f: F) -> Self
     where
         F: FnOnce() -> Option<M> + Send + 'static,
@@ -158,6 +242,18 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Create a new fallible command that can return errors
+    /// 
+    /// Use this when your command might fail and you want to handle errors gracefully.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Cmd, Result};
+    /// # enum Msg { ConfigLoaded(String) }
+    /// let cmd: Cmd<Msg> = Cmd::fallible(|| {
+    ///     let data = std::fs::read_to_string("config.json")?;
+    ///     Ok(Some(Msg::ConfigLoaded(data)))
+    /// });
+    /// ```
     pub fn fallible<F>(f: F) -> Self
     where
         F: FnOnce() -> crate::Result<Option<M>> + Send + 'static,
@@ -171,6 +267,26 @@ impl<M: Message> Cmd<M> {
     ///
     /// This is the idiomatic way to return "no command" from update().
     /// The program will continue running without executing any side effects.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Model, Cmd, Event};
+    /// # use ratatui::{Frame, layout::Rect};
+    /// # struct MyApp;
+    /// # impl Model for MyApp {
+    /// #     type Message = ();
+    /// fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
+    ///     match event {
+    ///         Event::Tick => {
+    ///             // Update internal state but don't trigger side effects
+    ///             Cmd::none()
+    ///         }
+    ///         _ => Cmd::none()
+    ///     }
+    /// }
+    /// #     fn view(&self, _: &mut Frame, _: Rect) {}
+    /// # }
+    /// ```
     pub fn none() -> Self {
         Cmd {
             inner: CmdInner::NoOp,
@@ -446,6 +562,17 @@ impl<M: Message> Cmd<M> {
     /// Conditionally inspect this command
     ///
     /// Only runs the inspection function if the condition is true.
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::Cmd;
+    /// # enum Msg { Data(String) }
+    /// # let debug_mode = true;
+    /// let cmd: Cmd<Msg> = Cmd::new(|| Some(Msg::Data("test".into())))
+    ///     .inspect_if(debug_mode, |cmd| {
+    ///         eprintln!("Debug: executing {}", cmd.debug_name());
+    ///     });
+    /// ```
     pub fn inspect_if<F>(self, condition: bool, f: F) -> Self
     where
         F: FnOnce(&Self),
@@ -457,6 +584,18 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Get a string representation of the command type for debugging
+    /// 
+    /// # Example
+    /// ```
+    /// # use hojicha_core::{Cmd, commands};
+    /// # enum Msg { Tick }
+    /// # use std::time::Duration;
+    /// let cmd: Cmd<Msg> = commands::tick(Duration::from_secs(1), || Msg::Tick);
+    /// assert_eq!(cmd.debug_name(), "Tick");
+    /// 
+    /// let noop: Cmd<Msg> = Cmd::none();
+    /// assert_eq!(noop.debug_name(), "NoOp");
+    /// ```
     pub fn debug_name(&self) -> &'static str {
         match self.inner {
             CmdInner::Function(_) => "Function",
