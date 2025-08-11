@@ -1,3 +1,4 @@
+use hojicha_runtime;
 //! Example demonstrating error handling patterns in Hojicha
 //!
 //! This example shows:
@@ -7,7 +8,7 @@
 //! - Recovering from errors
 
 use hojicha::prelude::*;
-use hojicha::{
+use hojicha_core::{
     commands,
     fallible::{FallibleModel, FallibleModelExt},
 };

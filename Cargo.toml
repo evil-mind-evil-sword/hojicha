@@ -1,20 +1,49 @@
 [workspace]
-members = ["."]
+members = [".", "pearls", "runtime", "hojicha-examples"]
+resolver = "2"
 
-[package]
-name = "hojicha"
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.80.0"
 authors = ["McCoy Reynolds Becker <mccoybecker@gmail.com>"]
-description = "Elm Architecture for terminal UIs in Rust, built on Ratatui"
 homepage = "https://github.com/evil-mind-evil-sword/hojicha"
 documentation = "https://docs.rs/hojicha"
-readme = "README.md"
 repository = "https://github.com/evil-mind-evil-sword/hojicha"
 license = "GPL-3.0"
-keywords = ["tui", "terminal", "elm", "ratatui", "cli"]
-categories = ["command-line-interface", "gui", "asynchronous"]
+
+[workspace.dependencies]
+# Internal crates
+hojicha-core = { path = ".", version = "0.1.0" }
+hojicha-pearls = { path = "pearls", version = "0.1.0" }
+hojicha-runtime = { path = "runtime", version = "0.1.0" }
+
+# External dependencies
+ratatui = "0.29"
+crossterm = "0.29"
+tokio = { version = "1.47", features = ["full"] }
+tokio-util = "0.7"
+tokio-stream = "0.1"
+futures = "0.3"
+anyhow = "1.0"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[package]
+name = "hojicha-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Core Elm Architecture abstractions for terminal UIs in Rust"
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+repository.workspace = true
+license.workspace = true
+keywords = ["tui", "terminal", "elm", "architecture", "tea"]
+categories = ["command-line-interface", "gui"]
 exclude = [
     ".github",
     "docs/",
@@ -26,59 +55,47 @@ exclude = [
 ]
 
 [dependencies]
-ratatui = "0.29"
-crossterm = "0.29"
-tokio = { version = "1.47", features = ["full"] }
-tokio-util = "0.7"
-tokio-stream = "0.1"
-futures = "0.3"
-anyhow = "1.0"
-log = "0.4"
-hdrhistogram = "7.5"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-once_cell = "1.20"
-
-# Logging
+# Core dependencies needed for TEA abstractions
+anyhow = { workspace = true }
+log = { workspace = true }
+crossterm = { workspace = true }
+ratatui = { workspace = true }
+tokio = { workspace = true }
 chrono = "0.4"
 
+
 [target.'cfg(unix)'.dependencies]
-signal-hook = "0.3"
 libc = "0.2"
 
 [dev-dependencies]
+# For testing only - not direct dependencies
+hojicha-runtime = { path = "runtime" }
+hojicha-pearls = { path = "pearls" }
 proptest = "1.6"
 tempfile = "3.14"
 pretty_assertions = "1.4"
 insta = { version = "1.43", features = ["colors", "filters"] }
 chrono = "0.4"
-futures = "0.3"
-tokio-stream = "0.1"
-tokio = { version = "1.47", features = ["full", "test-util"] }
+futures = { workspace = true }
+tokio-stream = { workspace = true }
+tokio = { workspace = true, features = ["full", "test-util"] }
 
 [features]
 default = []
 
-[[example]]
-name = "tutorial"
 
-[[example]]
-name = "showcase"
+[[test]]
+name = "behavioral_integration"
+path = "tests/behavioral/integration_tests.rs"
 
-[[example]]
-name = "visual"
+[[test]]
+name = "behavioral_api"
+path = "tests/behavioral/api_refactor_tests.rs"
 
-[[example]]
-name = "async_examples"
+[[test]]
+name = "behavioral_async"
+path = "tests/behavioral/async_simple_test.rs"
 
-[[example]]
-name = "system"
-
-[[example]]
-name = "debug_features"
-
-[[example]]
-name = "error_handling"
-
-[[example]]
-name = "headless"
+[[test]]
+name = "behavioral_headless"
+path = "tests/behavioral/headless_program_test.rs"

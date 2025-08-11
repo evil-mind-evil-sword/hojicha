@@ -1,3 +1,4 @@
+use hojicha_runtime;
 //! Async Programming Examples
 //!
 //! This example demonstrates Hojicha's async capabilities:
@@ -8,12 +9,12 @@
 //!
 //! Press Tab to switch between examples.
 
-use hojicha::{
+use hojicha_core::{
     commands::{self, spawn, tick},
     core::{Cmd, Model},
     event::{Event, Key},
-    program::Program,
-    style::{ColorProfile, Theme},
+    hojicha_runtime::program::Program,
+    hojicha_pearls::style::{ColorProfile, Theme},
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -367,7 +368,7 @@ impl Model for AsyncExamples {
     }
 }
 
-fn main() -> hojicha::Result<()> {
+fn main() -> hojicha_core::Result<()> {
     let program = Program::new(AsyncExamples::new())?;
     program.run()
 }

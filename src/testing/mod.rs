@@ -6,14 +6,12 @@ pub mod event_recorder;
 pub mod event_test_harness;
 pub mod mock_terminal;
 pub mod test_backend;
-pub mod test_runner;
 pub mod time_control;
 
 pub use event_recorder::{EventRecorder, RecordedEvent};
 pub use event_test_harness::{EventTestHarness, PriorityEventTestHarness};
 pub use mock_terminal::MockTerminal;
 pub use test_backend::TestBackend;
-pub use test_runner::TestRunner;
 
 use crate::{
     core::{Cmd, Model},

@@ -9,14 +9,14 @@
 //! - Space: Interact with components
 //! - q: Quit
 
-use hojicha::commands;
-use hojicha::components::{List, Spinner, SpinnerStyle, Table, TextArea, Viewport};
-use hojicha::event::{Key, KeyModifiers};
+use hojicha_core::commands;
+use hojicha_pearls::PLACEHOLDER_COMPONENTS;
+use hojicha_core::event::{Key, KeyModifiers};
 use hojicha::prelude::*;
-use hojicha::program::{MouseMode, ProgramOptions};
+use hojicha_runtime::hojicha_runtime::program::Program, ProgramOptions};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
+    hojicha_pearls::style::{ColorProfile, Theme},
     text::Line,
     widgets::{Block, Borders, Paragraph, Tabs},
 };

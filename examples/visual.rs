@@ -1,3 +1,5 @@
+use hojicha_runtime;
+use hojicha_pearls;
 //! Clean Visual Showcase - Beautiful Terminal UI Demo
 //!
 //! A well-structured demonstration of Hojicha's visual capabilities.
@@ -7,12 +9,12 @@
 //! - Arrow keys: Navigate within demos
 //! - q: Quit
 
-use hojicha::{
+use hojicha_core::{
     commands::{self, tick},
     components::*,
     core::{Cmd, Model},
     event::{Event, Key},
-    program::Program,
+    hojicha_runtime::program::Program,
     style::*,
 };
 use ratatui::{
@@ -433,7 +435,7 @@ impl Model for VisualShowcase {
     }
 }
 
-fn main() -> hojicha::Result<()> {
+fn main() -> hojicha_core::Result<()> {
     let program = Program::new(VisualShowcase::new())?;
     program.run()
 }

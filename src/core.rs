@@ -1,6 +1,6 @@
 //! Core traits and types for the Elm Architecture
 
-use crate::Event;
+use crate::event::Event;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::fmt::Debug;
@@ -125,7 +125,8 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Create a command that executes an external process
-    pub(crate) fn exec_process<F>(program: String, args: Vec<String>, callback: F) -> Self
+    /// Internal method
+    pub fn exec_process<F>(program: String, args: Vec<String>, callback: F) -> Self
     where
         F: Fn(Option<i32>) -> M + Send + 'static,
     {
@@ -139,28 +140,32 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Create a batch command that executes commands concurrently
-    pub(crate) fn batch(cmds: Vec<Cmd<M>>) -> Self {
+    /// Internal method
+    pub fn batch(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Batch(cmds),
         }
     }
 
     /// Create a sequence command that executes commands in order
-    pub(crate) fn sequence(cmds: Vec<Cmd<M>>) -> Self {
+    /// Internal method
+    pub fn sequence(cmds: Vec<Cmd<M>>) -> Self {
         Cmd {
             inner: CmdInner::Sequence(cmds),
         }
     }
 
     /// Create a quit command
-    pub(crate) fn quit() -> Self {
+    /// Internal method
+    pub fn quit() -> Self {
         Cmd {
             inner: CmdInner::Quit,
         }
     }
 
     /// Create a tick command
-    pub(crate) fn tick<F>(duration: std::time::Duration, callback: F) -> Self
+    /// Internal method
+    pub fn tick<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce() -> M + Send + 'static,
     {
@@ -173,7 +178,8 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Create an every command
-    pub(crate) fn every<F>(duration: std::time::Duration, callback: F) -> Self
+    /// Internal method
+    pub fn every<F>(duration: std::time::Duration, callback: F) -> Self
     where
         F: FnOnce(std::time::Instant) -> M + Send + 'static,
     {
@@ -186,7 +192,8 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Execute the command and return its message
-    pub(crate) fn execute(self) -> crate::Result<Option<M>> {
+    /// Internal method
+    pub fn execute(self) -> crate::Result<Option<M>> {
         match self.inner {
             CmdInner::Function(func) => Ok(func()),
             CmdInner::Fallible(func) => func(),
@@ -228,12 +235,13 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Check if this is an exec process command
-    pub(crate) fn is_exec_process(&self) -> bool {
+    /// Check if this is an exec process command
+    pub fn is_exec_process(&self) -> bool {
         matches!(self.inner, CmdInner::ExecProcess { .. })
     }
 
     /// Check if this is a no-op command
-    pub(crate) fn is_noop(&self) -> bool {
+    pub fn is_noop(&self) -> bool {
         matches!(self.inner, CmdInner::NoOp)
     }
 
@@ -244,7 +252,8 @@ impl<M: Message> Cmd<M> {
 
     /// Extract exec process details if this is an exec process command
     #[allow(clippy::type_complexity)]
-    pub(crate) fn take_exec_process(self) -> Option<ExecDetails<M>> {
+    /// Internal method
+    pub fn take_exec_process(self) -> Option<ExecDetails<M>> {
         match self.inner {
             CmdInner::ExecProcess {
                 program,
@@ -256,12 +265,14 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Check if this is a batch command
-    pub(crate) fn is_batch(&self) -> bool {
+    /// Internal method
+    pub fn is_batch(&self) -> bool {
         matches!(self.inner, CmdInner::Batch(_))
     }
 
     /// Take the batch commands (consumes the command)
-    pub(crate) fn take_batch(self) -> Option<Vec<Cmd<M>>> {
+    /// Internal method
+    pub fn take_batch(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Batch(cmds) => Some(cmds),
             _ => None,
@@ -269,27 +280,32 @@ impl<M: Message> Cmd<M> {
     }
 
     /// Check if this is a sequence command
-    pub(crate) fn is_sequence(&self) -> bool {
+    /// Internal method
+    pub fn is_sequence(&self) -> bool {
         matches!(self.inner, CmdInner::Sequence(_))
     }
 
     /// Take the sequence commands (consumes the command)
-    pub(crate) fn take_sequence(self) -> Option<Vec<Cmd<M>>> {
+    /// Internal method
+    pub fn take_sequence(self) -> Option<Vec<Cmd<M>>> {
         match self.inner {
             CmdInner::Sequence(cmds) => Some(cmds),
             _ => None,
         }
     }
 
-    pub(crate) fn is_tick(&self) -> bool {
+    /// Internal method
+    pub fn is_tick(&self) -> bool {
         matches!(self.inner, CmdInner::Tick { .. })
     }
 
-    pub(crate) fn is_every(&self) -> bool {
+    /// Internal method
+    pub fn is_every(&self) -> bool {
         matches!(self.inner, CmdInner::Every { .. })
     }
 
-    pub(crate) fn take_tick(self) -> Option<(std::time::Duration, Box<dyn FnOnce() -> M + Send>)> {
+    /// Internal method
+    pub fn take_tick(self) -> Option<(std::time::Duration, Box<dyn FnOnce() -> M + Send>)> {
         match self.inner {
             CmdInner::Tick { duration, callback } => Some((duration, callback)),
             _ => None,
@@ -297,7 +313,8 @@ impl<M: Message> Cmd<M> {
     }
 
     #[allow(clippy::type_complexity)]
-    pub(crate) fn take_every(
+    /// Internal method
+    pub fn take_every(
         self,
     ) -> Option<(
         std::time::Duration,

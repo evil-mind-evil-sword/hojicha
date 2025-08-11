@@ -3,13 +3,16 @@
 //! Run with: cargo run --example visual_logged
 //! Check the log file at: /tmp/visual_debug.log
 
-use hojicha::{
+use hojicha_core::{
     commands::{self, tick},
-    components::*,
     core::{Cmd, Model},
     event::{Event, Key},
     logging,
-    program::Program,
+    Result,
+};
+use hojicha_runtime::program::Program;
+use hojicha_pearls::{
+    components::*,
     style::*,
 };
 use ratatui::{
@@ -170,7 +173,7 @@ impl Model for VisualShowcase {
     }
 }
 
-fn main() -> hojicha::Result<()> {
+fn main() -> Result<()> {
     // Initialize file logger for application logging
     logging::init_file_logger("/tmp/visual_debug.log")
         .expect("Failed to initialize logger");

@@ -8,12 +8,15 @@
 //!
 //! Press Tab to switch between examples, or follow the on-screen instructions.
 
-use hojicha::{
+use hojicha_core::{
     commands,
-    components::{Help, TextInput},
     core::{Cmd, Model},
     event::{Event, Key},
-    program::Program,
+    Result,
+};
+use hojicha_runtime::program::Program;
+use hojicha_pearls::{
+    components::{Help, TextInput},
     style::{ColorProfile, Theme},
 };
 use ratatui::{
@@ -328,7 +331,7 @@ impl Model for Tutorial {
     }
 }
 
-fn main() -> hojicha::Result<()> {
+fn main() -> Result<()> {
     println!("Welcome to the Hojicha Tutorial!");
     println!("This interactive tutorial will teach you the basics.");
     println!("Press any key to start...");
