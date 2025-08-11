@@ -739,51 +739,29 @@ mod tests {
         let resume_event = Event::<String>::Resume;
         let paste_event = Event::<String>::Paste("pasted text".to_string());
 
-        // Test that all variants can be created and pattern matched
-        match key_event {
-            Event::Key(_) => {}
-            _ => panic!("Expected Key event"),
-        }
-        match mouse_event {
-            Event::Mouse(_) => {}
-            _ => panic!("Expected Mouse event"),
-        }
-        match resize_event {
-            Event::Resize { .. } => {}
-            _ => panic!("Expected Resize event"),
-        }
-        match tick_event {
-            Event::Tick => {}
-            _ => panic!("Expected Tick event"),
-        }
-        match user_event {
-            Event::User(_) => {}
-            _ => panic!("Expected User event"),
-        }
-        match quit_event {
-            Event::Quit => {}
-            _ => panic!("Expected Quit event"),
-        }
-        match focus_event {
-            Event::Focus => {}
-            _ => panic!("Expected Focus event"),
-        }
-        match blur_event {
-            Event::Blur => {}
-            _ => panic!("Expected Blur event"),
-        }
-        match suspend_event {
-            Event::Suspend => {}
-            _ => panic!("Expected Suspend event"),
-        }
-        match resume_event {
-            Event::Resume => {}
-            _ => panic!("Expected Resume event"),
-        }
-        match paste_event {
-            Event::Paste(_) => {}
-            _ => panic!("Expected Paste event"),
-        }
+        // Test using new helper methods
+        assert!(key_event.is_key());
+        assert!(key_event.as_key().is_some());
+        
+        assert!(mouse_event.is_mouse());
+        assert!(mouse_event.as_mouse().is_some());
+        
+        assert!(resize_event.is_resize());
+        assert_eq!(resize_event.as_resize(), Some((80, 24)));
+        
+        assert!(tick_event.is_tick());
+        
+        assert!(user_event.is_user());
+        assert_eq!(user_event.as_user(), Some(&"test".to_string()));
+        
+        assert!(quit_event.is_quit());
+        assert!(focus_event.is_focus());
+        assert!(blur_event.is_blur());
+        assert!(suspend_event.is_suspend());
+        assert!(resume_event.is_resume());
+        
+        assert!(paste_event.is_paste());
+        assert_eq!(paste_event.as_paste(), Some("pasted text"));
     }
 
     #[test]
@@ -1007,10 +985,8 @@ mod tests {
         ) {
             let event = Event::User(message.clone());
 
-            match event {
-                Event::User(msg) => prop_assert_eq!(msg, message),
-                _ => prop_assert!(false, "Expected User event"),
-            }
+            prop_assert!(event.is_user());
+            prop_assert_eq!(event.as_user(), Some(&message));
         }
 
         #[test]
@@ -1020,13 +996,8 @@ mod tests {
         ) {
             let event = Event::<String>::Resize { width, height };
 
-            match event {
-                Event::Resize { width: w, height: h } => {
-                    prop_assert_eq!(w, width);
-                    prop_assert_eq!(h, height);
-                }
-                _ => prop_assert!(false, "Expected Resize event"),
-            }
+            prop_assert!(event.is_resize());
+            prop_assert_eq!(event.as_resize(), Some((width, height)));
         }
 
         #[test]
@@ -1035,10 +1006,8 @@ mod tests {
         ) {
             let event = Event::<String>::Paste(paste_text.clone());
 
-            match event {
-                Event::Paste(text) => prop_assert_eq!(text, paste_text),
-                _ => prop_assert!(false, "Expected Paste event"),
-            }
+            prop_assert!(event.is_paste());
+            prop_assert_eq!(event.as_paste(), Some(paste_text.as_str()));
         }
 
         #[test]

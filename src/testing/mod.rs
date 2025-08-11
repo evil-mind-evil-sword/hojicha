@@ -166,13 +166,10 @@ mod tests {
         }
 
         fn update(&mut self, event: Event<Self::Message>) -> Cmd<Self::Message> {
-            match event {
-                Event::User(n) => {
-                    self.counter += n;
-                    Cmd::none()
-                }
-                _ => Cmd::none(),
+            if let Some(n) = event.as_user() {
+                self.counter += *n;
             }
+            Cmd::none()
         }
 
         fn view(&self, _: &mut ratatui::Frame, _: ratatui::layout::Rect) {

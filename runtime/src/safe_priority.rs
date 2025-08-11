@@ -9,22 +9,13 @@ use hojicha_core::event::Event;
 
 /// Detect the priority of an event without unsafe operations
 pub fn detect_priority<M: Message>(event: &Event<M>) -> Priority {
-    // Use pattern matching instead of transmutes
-    match event {
-        Event::Quit => Priority::High,
-        Event::Key(_) => Priority::High,
-        Event::Suspend => Priority::High,
-        Event::Resume => Priority::High,
-
-        Event::Mouse(_) => Priority::Normal,
-        Event::User(_) => Priority::Normal,
-        Event::Paste(_) => Priority::Normal,
-        Event::Focus => Priority::Normal,
-        Event::Blur => Priority::Normal,
-        Event::ExecProcess => Priority::Normal,
-
-        Event::Resize { .. } => Priority::Low,
-        Event::Tick => Priority::Low,
+    // Use helper methods for cleaner priority detection
+    if event.is_quit() || event.is_key() || event.is_suspend() || event.is_resume() {
+        Priority::High
+    } else if event.is_resize() || event.is_tick() {
+        Priority::Low  
+    } else {
+        Priority::Normal
     }
 }
 
@@ -71,20 +62,18 @@ impl EventKind {
 
     /// Create from an event
     pub fn from_event<M: Message>(event: &Event<M>) -> Self {
-        match event {
-            Event::Quit => EventKind::Quit,
-            Event::Key(_) => EventKind::Key,
-            Event::Mouse(_) => EventKind::Mouse,
-            Event::User(_) => EventKind::User,
-            Event::Resize { .. } => EventKind::Resize,
-            Event::Tick => EventKind::Tick,
-            Event::Paste(_) => EventKind::Paste,
-            Event::Focus => EventKind::Focus,
-            Event::Blur => EventKind::Blur,
-            Event::Suspend => EventKind::Suspend,
-            Event::Resume => EventKind::Resume,
-            Event::ExecProcess => EventKind::ExecProcess,
-        }
+        if event.is_quit() { EventKind::Quit }
+        else if event.is_key() { EventKind::Key }
+        else if event.is_mouse() { EventKind::Mouse }
+        else if event.is_user() { EventKind::User }
+        else if event.is_resize() { EventKind::Resize }
+        else if event.is_tick() { EventKind::Tick }
+        else if event.is_paste() { EventKind::Paste }
+        else if event.is_focus() { EventKind::Focus }
+        else if event.is_blur() { EventKind::Blur }
+        else if event.is_suspend() { EventKind::Suspend }
+        else if event.is_resume() { EventKind::Resume }
+        else { EventKind::ExecProcess }
     }
 }
 
@@ -176,9 +165,12 @@ mod tests {
     #[test]
     fn test_custom_mapper() {
         // Create a custom mapper that makes all User events high priority
-        let mapper = CustomPriorityMapper::new(|event| match event {
-            Event::User(_) => Some(Priority::High),
-            _ => None,
+        let mapper = CustomPriorityMapper::new(|event| {
+            if event.is_user() {
+                Some(Priority::High)
+            } else {
+                None
+            }
         });
 
         let user_event = Event::User("important".to_string());
