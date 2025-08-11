@@ -2,11 +2,9 @@
 //! Tests async operations, subscriptions, and error handling
 
 use hojicha_core::prelude::*;
-use hojicha_core::event::{MouseEventKind, MouseButton};
-use hojicha_runtime::{Event, Key, KeyEvent, KeyModifiers, MouseEvent, Program, ProgramOptions};
+use hojicha_runtime::{Event, Key, KeyEvent, KeyModifiers, Program, ProgramOptions};
 use std::time::Duration;
 use std::thread;
-use std::sync::{Arc, Mutex};
 
 // Test Model for advanced features
 #[derive(Debug, Clone)]
@@ -188,8 +186,7 @@ impl AdvancedTestModel {
             TestMsg::TriggerError => {
                 // Test error handling
                 custom_fallible(|| {
-                    Err(Error::from(std::io::Error::new(
-                        std::io::ErrorKind::Other,
+                    Err(Error::from(std::io::Error::other(
                         "Test error"
                     )))
                 })
@@ -214,7 +211,7 @@ impl AdvancedTestModel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::mpsc;
+    
 
     #[test]
     fn test_async_bridge_event_injection() {
@@ -276,7 +273,7 @@ mod tests {
             assert_eq!(cmds.len(), 3, "Sequence should contain 3 commands");
             
             // Execute commands in order (skip tick as it needs async runtime)
-            let mut expected_steps = vec![1, 3]; // Step 2 is a tick command
+            let expected_steps = [1, 3]; // Step 2 is a tick command
             let mut idx = 0;
             
             for cmd in cmds {
@@ -306,7 +303,7 @@ mod tests {
 
     #[test]
     fn test_tick_command() {
-        let mut model = AdvancedTestModel::default();
+        let model = AdvancedTestModel::default();
         
         // Create a tick command
         let cmd = tick(Duration::from_millis(100), || TestMsg::TimerTick);
@@ -321,7 +318,7 @@ mod tests {
 
     #[test]
     fn test_every_command() {
-        let cmd = every(Duration::from_secs(1), |instant| TestMsg::EveryTick(instant));
+        let cmd = every(Duration::from_secs(1), TestMsg::EveryTick);
         
         assert!(cmd.is_every(), "Should be an every command");
         

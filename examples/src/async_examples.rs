@@ -13,10 +13,6 @@ use hojicha_core::{
     core::{Cmd, Model},
     event::{Event, Key},
 };
-use hojicha_pearls::{
-    components,
-    style::{ColorProfile, Theme},
-};
 use hojicha_runtime::program::Program;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -82,10 +78,6 @@ struct AsyncExamples {
 
     // External events
     external_messages: Vec<String>,
-
-    // Theme
-    theme: Theme,
-    color_profile: ColorProfile,
 }
 
 impl AsyncExamples {
@@ -100,8 +92,6 @@ impl AsyncExamples {
             task_status: "No task running".to_string(),
             task_progress: 0.0,
             external_messages: Vec::new(),
-            theme: Theme::default(),
-            color_profile: ColorProfile::default(),
         }
     }
 

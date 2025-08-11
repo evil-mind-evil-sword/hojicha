@@ -8,9 +8,13 @@ use ratatui::style::{Modifier, Style as RatatuiStyle};
 /// Padding configuration for styled elements
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Padding {
+    /// Top padding
     pub top: u16,
+    /// Right padding
     pub right: u16,
+    /// Bottom padding
     pub bottom: u16,
+    /// Left padding
     pub left: u16,
 }
 
@@ -39,9 +43,13 @@ impl Padding {
 /// Margin configuration for styled elements
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Margin {
+    /// Top margin
     pub top: u16,
+    /// Right margin
     pub right: u16,
+    /// Bottom margin
     pub bottom: u16,
+    /// Left margin
     pub left: u16,
 }
 

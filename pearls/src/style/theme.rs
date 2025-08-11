@@ -8,17 +8,29 @@ use std::collections::HashMap;
 /// A color palette for theming
 #[derive(Debug, Clone)]
 pub struct ColorPalette {
+    /// Primary color for main actions and highlights
     pub primary: Color,
+    /// Secondary color for accents
     pub secondary: Color,
+    /// Tertiary color for additional accents
     pub tertiary: Color,
+    /// Success state color
     pub success: Color,
+    /// Warning state color
     pub warning: Color,
+    /// Error state color
     pub error: Color,
+    /// Information state color
     pub info: Color,
+    /// Main background color
     pub background: Color,
+    /// Surface/card background color
     pub surface: Color,
+    /// Primary text color
     pub text: Color,
+    /// Secondary text color for less important content
     pub text_secondary: Color,
+    /// Border color for separators and boundaries
     pub border: Color,
 }
 

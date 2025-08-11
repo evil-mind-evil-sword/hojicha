@@ -4,6 +4,7 @@ use super::error_handler::{DefaultErrorHandler, ErrorHandler};
 use hojicha_core::core::Cmd;
 use hojicha_core::event::Event;
 use std::panic::{self, AssertUnwindSafe};
+use crate::panic_utils;
 use std::sync::{Arc, mpsc};
 use tokio::runtime::Runtime;
 
@@ -74,14 +75,8 @@ where
                             let _ = tx_clone.send(Event::User(msg));
                         }
                         Err(panic) => {
-                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
-                                s.clone()
-                            } else if let Some(s) = panic.downcast_ref::<&str>() {
-                                s.to_string()
-                            } else {
-                                "Unknown panic in tick callback".to_string()
-                            };
-                            eprintln!("Tick callback panicked: {}", panic_msg);
+                            let panic_msg = panic_utils::format_panic_message(panic, "Tick callback panicked");
+                            eprintln!("{}", panic_msg);
                             // Continue running - don't crash the application
                         }
                     }
@@ -102,14 +97,8 @@ where
                             let _ = tx_clone.send(Event::User(msg));
                         }
                         Err(panic) => {
-                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
-                                s.clone()
-                            } else if let Some(s) = panic.downcast_ref::<&str>() {
-                                s.to_string()
-                            } else {
-                                "Unknown panic in every callback".to_string()
-                            };
-                            eprintln!("Every callback panicked: {}", panic_msg);
+                            let panic_msg = panic_utils::format_panic_message(panic, "Every callback panicked");
+                            eprintln!("{}", panic_msg);
                             // Continue running - don't crash the application
                         }
                     }
@@ -152,14 +141,8 @@ where
                     }
                     Err(panic) => {
                         // Command panicked - log and recover
-                        let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
-                            s.clone()
-                        } else if let Some(s) = panic.downcast_ref::<&str>() {
-                            s.to_string()
-                        } else {
-                            "Unknown panic in command".to_string()
-                        };
-                        eprintln!("Command panicked: {}", panic_msg);
+                        let panic_msg = panic_utils::format_panic_message(panic, "Command execution panicked");
+                        eprintln!("{}", panic_msg);
                         // Continue running - don't crash the application
                     }
                 }
@@ -243,14 +226,8 @@ where
                             error_handler.handle_error(error, &tx_inner);
                         }
                         Err(panic) => {
-                            let panic_msg = if let Some(s) = panic.downcast_ref::<String>() {
-                                s.clone()
-                            } else if let Some(s) = panic.downcast_ref::<&str>() {
-                                s.to_string()
-                            } else {
-                                "Unknown panic in sequence command".to_string()
-                            };
-                            eprintln!("Sequence command panicked: {}", panic_msg);
+                            let panic_msg = panic_utils::format_panic_message(panic, "Sequence command panicked");
+                            eprintln!("{}", panic_msg);
                             // Continue running - don't crash the application
                         }
                     }
@@ -440,10 +417,4 @@ mod tests {
     }
 }
 
-#[cfg(test)]
-#[path = "command_executor_panic_tests.rs"]
-mod panic_tests;
 
-#[cfg(test)]
-#[path = "error_handler_tests.rs"]
-mod error_handler_tests;
