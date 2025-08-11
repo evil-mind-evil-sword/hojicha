@@ -107,19 +107,19 @@ impl Gradient {
             // 3-point gradient
             let half_steps = self.steps / 2;
             let mut colors = Vec::with_capacity(self.steps);
-            
+
             // First half: start to middle
             for i in 0..half_steps {
                 let t = i as f32 / half_steps as f32;
                 colors.push(self.interpolate_colors(&self.start_color, middle, t, profile));
             }
-            
+
             // Second half: middle to end
             for i in 0..=(self.steps - half_steps) {
                 let t = i as f32 / (self.steps - half_steps) as f32;
                 colors.push(self.interpolate_colors(middle, &self.end_color, t, profile));
             }
-            
+
             colors
         } else {
             // 2-point gradient
@@ -133,15 +133,21 @@ impl Gradient {
     }
 
     /// Interpolate between two colors
-    fn interpolate_colors(&self, start: &Color, end: &Color, t: f32, profile: &ColorProfile) -> RatatuiColor {
+    fn interpolate_colors(
+        &self,
+        start: &Color,
+        end: &Color,
+        t: f32,
+        profile: &ColorProfile,
+    ) -> RatatuiColor {
         // Convert colors to RGB for interpolation
         let start_rgb = self.color_to_rgb(start, profile);
         let end_rgb = self.color_to_rgb(end, profile);
-        
+
         let r = (start_rgb.0 as f32 * (1.0 - t) + end_rgb.0 as f32 * t) as u8;
         let g = (start_rgb.1 as f32 * (1.0 - t) + end_rgb.1 as f32 * t) as u8;
         let b = (start_rgb.2 as f32 * (1.0 - t) + end_rgb.2 as f32 * t) as u8;
-        
+
         RatatuiColor::Rgb(r, g, b)
     }
 
@@ -171,7 +177,12 @@ impl Gradient {
     }
 
     /// Generate a gradient for a specific area size
-    pub fn generate_for_area(&self, width: u16, height: u16, profile: &ColorProfile) -> Vec<Vec<RatatuiColor>> {
+    pub fn generate_for_area(
+        &self,
+        width: u16,
+        height: u16,
+        profile: &ColorProfile,
+    ) -> Vec<Vec<RatatuiColor>> {
         match self.gradient_type {
             GradientType::Linear(LinearDirection::Horizontal) => {
                 let colors = self.generate_colors(profile);
@@ -200,7 +211,7 @@ impl Gradient {
                 let colors = self.generate_colors(profile);
                 let mut grid = Vec::new();
                 let diagonal_len = (width + height) as usize;
-                
+
                 for y in 0..height {
                     let mut row = Vec::new();
                     for x in 0..width {
@@ -216,7 +227,7 @@ impl Gradient {
                 let colors = self.generate_colors(profile);
                 let mut grid = Vec::new();
                 let diagonal_len = (width + height) as usize;
-                
+
                 for y in 0..height {
                     let mut row = Vec::new();
                     for x in 0..width {
@@ -233,8 +244,8 @@ impl Gradient {
                 let mut grid = Vec::new();
                 let center_x = width as f32 / 2.0;
                 let center_y = height as f32 / 2.0;
-                let max_radius = ((center_x * center_x + center_y * center_y).sqrt()) as f32;
-                
+                let max_radius = (center_x * center_x + center_y * center_y).sqrt();
+
                 for y in 0..height {
                     let mut row = Vec::new();
                     for x in 0..width {
@@ -294,10 +305,7 @@ impl Gradient {
 
     /// Night sky gradient (dark blue to black)
     pub fn night_sky() -> Self {
-        Self::radial(
-            Color::rgb(25, 25, 112),
-            Color::rgb(0, 0, 0),
-        )
+        Self::radial(Color::rgb(25, 25, 112), Color::rgb(0, 0, 0))
     }
 
     /// Rainbow gradient
@@ -319,9 +327,9 @@ pub fn render_gradient_background(
     profile: &ColorProfile,
 ) {
     use ratatui::widgets::Block;
-    
+
     let colors = gradient.generate_for_area(area.width, area.height, profile);
-    
+
     for (y, row) in colors.iter().enumerate() {
         for (x, color) in row.iter().enumerate() {
             let cell_area = ratatui::layout::Rect {
@@ -330,9 +338,8 @@ pub fn render_gradient_background(
                 width: 1,
                 height: 1,
             };
-            
-            let block = Block::default()
-                .style(ratatui::style::Style::default().bg(*color));
+
+            let block = Block::default().style(ratatui::style::Style::default().bg(*color));
             frame.render_widget(block, cell_area);
         }
     }

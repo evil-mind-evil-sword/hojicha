@@ -11,7 +11,7 @@ use ratatui::{
 use std::time::Duration;
 
 /// Display format for the stopwatch
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum StopwatchFormat {
     /// HH:MM:SS format
     HoursMinutesSeconds,
@@ -21,6 +21,18 @@ pub enum StopwatchFormat {
     SecondsMilliseconds,
     /// Custom format function
     Custom(fn(Duration) -> String),
+}
+
+impl PartialEq for StopwatchFormat {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::HoursMinutesSeconds, Self::HoursMinutesSeconds) => true,
+            (Self::MinutesSeconds, Self::MinutesSeconds) => true,
+            (Self::SecondsMilliseconds, Self::SecondsMilliseconds) => true,
+            (Self::Custom(_), Self::Custom(_)) => false, // Function pointers can't be meaningfully compared
+            _ => false,
+        }
+    }
 }
 
 /// Stopwatch state
@@ -249,7 +261,7 @@ impl Stopwatch {
         self.normal_style = Style::new().fg(theme.colors.text.clone());
         self.running_style = Style::new().fg(theme.colors.success.clone());
         self.paused_style = Style::new().fg(theme.colors.warning.clone());
-        
+
         if let Some(style) = theme.get_style("stopwatch.container") {
             self.container_style = style.clone();
         }
@@ -263,7 +275,7 @@ impl Stopwatch {
                 let hours = total_secs / 3600;
                 let minutes = (total_secs % 3600) / 60;
                 let seconds = total_secs % 60;
-                
+
                 if self.show_milliseconds && hours == 0 {
                     let millis = duration.as_millis() % 1000;
                     format!("{:02}:{:02}:{:02}.{:03}", hours, minutes, seconds, millis)
@@ -275,7 +287,7 @@ impl Stopwatch {
                 let total_secs = duration.as_secs();
                 let minutes = total_secs / 60;
                 let seconds = total_secs % 60;
-                
+
                 if self.show_milliseconds {
                     let millis = duration.as_millis() % 1000;
                     format!("{:02}:{:02}.{:03}", minutes, seconds, millis)
@@ -295,8 +307,12 @@ impl Stopwatch {
 
     /// Render the stopwatch
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let time_text = self.format_duration(self.elapsed);
-        
+
         // Determine style based on state
         let style = match self.state {
             StopwatchState::Running => self.running_style.clone(),
@@ -342,6 +358,10 @@ impl Stopwatch {
 
     /// Render lap times
     pub fn render_laps(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         use ratatui::text::{Line, Span};
 
         if self.laps.is_empty() {
@@ -349,7 +369,7 @@ impl Stopwatch {
         }
 
         let mut lines = Vec::new();
-        
+
         // Find best lap for highlighting
         let best_lap_num = self.best_lap().map(|l| l.number);
 
@@ -368,12 +388,13 @@ impl Stopwatch {
                 self.format_duration(lap.total_time)
             );
 
-            lines.push(Line::from(Span::styled(lap_text, style.to_ratatui(profile))));
+            lines.push(Line::from(Span::styled(
+                lap_text,
+                style.to_ratatui(profile),
+            )));
         }
 
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .title("Lap Times");
+        let block = Block::default().borders(Borders::ALL).title("Lap Times");
 
         let paragraph = Paragraph::new(lines)
             .block(block)

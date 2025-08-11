@@ -96,11 +96,7 @@ fn test_priority_is_default() {
             let _ = sender.send(Event::User(TestMsg::HighPriority(i)));
         }
 
-        // Give time for events to queue up
-        thread::sleep(Duration::from_millis(50));
-
-        // Send quit to end the test
-        let _ = sender.send(Event::User(TestMsg::Quit));
+        // Don't send Quit - let the model quit after 30 events
     });
 
     // Run the program
@@ -207,8 +203,6 @@ fn test_backpressure_handling() {
         for i in 0..50 {
             let _ = sender.send(Event::User(TestMsg::LowPriority(i)));
         }
-
-        thread::sleep(Duration::from_millis(100));
 
         // High priority quit should still get through
         let _ = sender.send(Event::User(TestMsg::Quit));

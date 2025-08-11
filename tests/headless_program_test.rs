@@ -112,13 +112,8 @@ fn test_program_headless_basic() {
 
     // The program will process events
 
-    // The program will run until it receives quit from the tick command
-    std::thread::spawn(move || {
-        let _ = program.run();
-    });
-
-    // Give it time to process
-    std::thread::sleep(Duration::from_millis(50));
+    // Run the program with a timeout instead of using thread::sleep
+    let _ = program.run_with_timeout(Duration::from_millis(10));
 
     // Check that messages were processed
     let msgs = messages.lock().unwrap();

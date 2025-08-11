@@ -185,15 +185,11 @@ impl Paginator {
 
     /// Apply a theme
     pub fn apply_theme(&mut self, theme: &Theme) {
-        self.active_style = Style::new()
-            .bold()
-            .fg(theme.colors.primary.clone());
-        
-        self.inactive_style = Style::new()
-            .fg(theme.colors.text_secondary.clone());
-        
-        self.nav_style = Style::new()
-            .fg(theme.colors.border.clone());
+        self.active_style = Style::new().bold().fg(theme.colors.primary.clone());
+
+        self.inactive_style = Style::new().fg(theme.colors.text_secondary.clone());
+
+        self.nav_style = Style::new().fg(theme.colors.border.clone());
 
         if let Some(style) = theme.get_style("paginator.container") {
             self.container_style = style.clone();
@@ -202,6 +198,10 @@ impl Paginator {
 
     /// Render the paginator
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         if self.total_pages <= 1 {
             return; // No pagination needed
         }
@@ -229,7 +229,7 @@ impl Paginator {
     }
 
     /// Render dots style
-    fn render_dots(&self, profile: &ColorProfile) -> Line {
+    fn render_dots(&self, profile: &ColorProfile) -> Line<'_> {
         let mut spans = Vec::new();
 
         // Add left arrow if enabled
@@ -290,7 +290,7 @@ impl Paginator {
     }
 
     /// Render numeric style
-    fn render_numeric(&self, profile: &ColorProfile) -> Line {
+    fn render_numeric(&self, profile: &ColorProfile) -> Line<'_> {
         let mut spans = Vec::new();
 
         // Add left arrow if enabled
@@ -320,7 +320,10 @@ impl Paginator {
             if i == self.current_page {
                 // Add brackets around current page
                 spans.push(Span::styled("[", self.active_style.to_ratatui(profile)));
-                spans.push(Span::styled(format!("{}", i + 1), self.active_style.to_ratatui(profile)));
+                spans.push(Span::styled(
+                    format!("{}", i + 1),
+                    self.active_style.to_ratatui(profile),
+                ));
                 spans.push(Span::styled("]", self.active_style.to_ratatui(profile)));
             } else {
                 spans.push(Span::styled(
@@ -352,19 +355,25 @@ impl Paginator {
     }
 
     /// Render text style
-    fn render_text(&self, profile: &ColorProfile) -> Line {
+    fn render_text(&self, profile: &ColorProfile) -> Line<'_> {
         let mut spans = Vec::new();
 
         if self.show_arrows && !self.is_first_page() {
             spans.push(Span::styled("◀ ", self.nav_style.to_ratatui(profile)));
         }
 
-        spans.push(Span::styled("Page ", self.inactive_style.to_ratatui(profile)));
+        spans.push(Span::styled(
+            "Page ",
+            self.inactive_style.to_ratatui(profile),
+        ));
         spans.push(Span::styled(
             format!("{}", self.current_page + 1),
             self.active_style.to_ratatui(profile),
         ));
-        spans.push(Span::styled(" of ", self.inactive_style.to_ratatui(profile)));
+        spans.push(Span::styled(
+            " of ",
+            self.inactive_style.to_ratatui(profile),
+        ));
         spans.push(Span::styled(
             format!("{}", self.total_pages),
             self.inactive_style.to_ratatui(profile),
@@ -378,14 +387,15 @@ impl Paginator {
     }
 
     /// Render progress bar style
-    fn render_progress(&self, profile: &ColorProfile) -> Line {
+    fn render_progress(&self, profile: &ColorProfile) -> Line<'_> {
         let width = 20; // Fixed width for progress bar
-        let filled = ((self.current_page as f32 + 1.0) / self.total_pages as f32 * width as f32) as usize;
-        
+        let filled =
+            ((self.current_page as f32 + 1.0) / self.total_pages as f32 * width as f32) as usize;
+
         let mut spans = Vec::new();
 
         spans.push(Span::styled("[", self.nav_style.to_ratatui(profile)));
-        
+
         // Filled portion
         if filled > 0 {
             spans.push(Span::styled(
@@ -393,7 +403,7 @@ impl Paginator {
                 self.active_style.to_ratatui(profile),
             ));
         }
-        
+
         // Empty portion
         if filled < width {
             spans.push(Span::styled(
@@ -401,9 +411,9 @@ impl Paginator {
                 self.inactive_style.to_ratatui(profile),
             ));
         }
-        
+
         spans.push(Span::styled("]", self.nav_style.to_ratatui(profile)));
-        
+
         // Add percentage
         let percentage = ((self.current_page as f32 + 1.0) / self.total_pages as f32 * 100.0) as u8;
         spans.push(Span::styled(
@@ -421,7 +431,7 @@ impl Paginator {
         }
 
         let half = self.max_visible / 2;
-        
+
         if self.current_page <= half {
             (0, self.max_visible - 1)
         } else if self.current_page >= self.total_pages - half - 1 {

@@ -145,7 +145,7 @@ impl Spinner {
     }
 
     /// Get the current frame
-    fn current_frame(&self) -> &str {
+    pub fn current_frame(&self) -> &str {
         if self.running {
             let frames = self.style.frames();
             frames[self.frame_index]

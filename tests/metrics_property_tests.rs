@@ -210,8 +210,10 @@ proptest! {
         events in prop::collection::vec(1u64..1000, 100..500),
         sampling_rate in 0.1f64..0.9f64
     ) {
-        let mut config = MetricsConfig::default();
-        config.sampling_rate = sampling_rate;
+        let config = MetricsConfig {
+            sampling_rate,
+            ..Default::default()
+        };
         let collector = MetricsCollector::new(config);
 
         for latency_us in &events {
@@ -339,8 +341,10 @@ proptest! {
             10..200
         )
     ) {
-        let mut config = MetricsConfig::default();
-        config.track_by_type = true;
+        let config = MetricsConfig {
+            track_by_type: true,
+            ..Default::default()
+        };
         let collector = MetricsCollector::new(config);
 
         let mut type_counts = std::collections::HashMap::new();
@@ -366,5 +370,5 @@ proptest! {
 #[test]
 fn test_metrics_property_compilation() {
     // This test ensures the property tests compile
-    assert!(true);
+    // Test passes if no panic occurs
 }

@@ -54,36 +54,31 @@ insta = { version = "1.43", features = ["colors", "filters"] }
 chrono = "0.4"
 futures = "0.3"
 tokio-stream = "0.1"
+tokio = { version = "1.47", features = ["full", "test-util"] }
 
 [features]
 default = []
 
 [[example]]
-name = "getting_started"
-
-[[example]]
-name = "counter"
-
-[[example]]
-name = "components_gallery"
+name = "tutorial"
 
 [[example]]
 name = "showcase"
 
 [[example]]
-name = "interactive"
+name = "visual"
 
 [[example]]
-name = "layouts"
-
-[[example]]
-name = "chat"
+name = "async_examples"
 
 [[example]]
 name = "system"
 
 [[example]]
 name = "debug_features"
+
+[[example]]
+name = "error_handling"
 
 [[example]]
 name = "headless"

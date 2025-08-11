@@ -138,7 +138,7 @@ fn test_spawn_simple_async_task() {
         fn init(&mut self) -> Cmd<Self::Message> {
             // This API doesn't exist yet but should
             commands::spawn(async {
-                tokio::time::sleep(Duration::from_millis(10)).await;
+                tokio::task::yield_now().await; // Yield instead of sleep
                 Some(Msg::DataLoaded("async data".to_string()))
             })
         }
@@ -161,7 +161,7 @@ fn test_spawn_simple_async_task() {
 
     // Alternative API using program.spawn()
     program.spawn(async {
-        tokio::time::sleep(Duration::from_millis(10)).await;
+        tokio::task::yield_now().await; // Yield instead of sleep
         Some(Msg::DataLoaded("async data".to_string()))
     });
 

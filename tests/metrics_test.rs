@@ -1,6 +1,5 @@
 use hojicha::metrics::{MetricsCollector, MetricsConfig};
 use hojicha::priority_queue::Priority;
-use std::thread;
 use std::time::Duration;
 
 #[test]
@@ -102,10 +101,9 @@ fn test_throughput_calculation() {
     let config = MetricsConfig::default();
     let collector = MetricsCollector::new(config);
 
-    // Record events over time
+    // Record events without artificial delays
     for _ in 0..10 {
         collector.record_event(Priority::Normal, Duration::from_micros(100), None);
-        thread::sleep(Duration::from_millis(10));
     }
 
     let stats = collector.snapshot();

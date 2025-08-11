@@ -5,7 +5,6 @@
 use crate::style::{Color, ColorProfile, Style, TextAlign, Theme};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
@@ -225,13 +224,11 @@ impl StatusBar {
         self.container_style = Style::new()
             .bg(theme.colors.surface.clone())
             .fg(theme.colors.text.clone());
-        
-        self.default_style = Style::new()
-            .fg(theme.colors.text_secondary.clone());
-        
-        self.separator_style = Style::new()
-            .fg(theme.colors.border.clone());
-        
+
+        self.default_style = Style::new().fg(theme.colors.text_secondary.clone());
+
+        self.separator_style = Style::new().fg(theme.colors.border.clone());
+
         if let Some(style) = theme.get_style("statusbar.container") {
             self.container_style = style.clone();
         }
@@ -239,16 +236,16 @@ impl StatusBar {
 
     /// Render the status bar
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         if self.segments.is_empty() {
             return;
         }
 
         // Create the layout for segments
-        let constraints: Vec<Constraint> = self
-            .segments
-            .iter()
-            .map(|s| s.constraint)
-            .collect();
+        let constraints: Vec<Constraint> = self.segments.iter().map(|s| s.constraint).collect();
 
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -256,9 +253,8 @@ impl StatusBar {
             .split(area);
 
         // Render background
-        let background = Block::default()
-            .style(self.container_style.to_ratatui(profile));
-        
+        let background = Block::default().style(self.container_style.to_ratatui(profile));
+
         if self.show_borders {
             let bordered = background.borders(Borders::ALL);
             frame.render_widget(bordered, area);
@@ -272,7 +268,7 @@ impl StatusBar {
             if i > 0 && self.separator.is_some() {
                 let sep_text = self.separator.as_ref().unwrap();
                 let sep_width = sep_text.len() as u16;
-                
+
                 if chunk.width > sep_width {
                     let sep_area = Rect {
                         x: chunk.x,
@@ -280,11 +276,11 @@ impl StatusBar {
                         width: sep_width,
                         height: chunk.height,
                     };
-                    
+
                     let separator = Paragraph::new(sep_text.as_str())
                         .style(self.separator_style.to_ratatui(profile));
                     frame.render_widget(separator, sep_area);
-                    
+
                     // Adjust chunk for content
                     let content_area = Rect {
                         x: chunk.x + sep_width,
@@ -292,7 +288,7 @@ impl StatusBar {
                         width: chunk.width - sep_width,
                         height: chunk.height,
                     };
-                    
+
                     self.render_segment(frame, segment, content_area, profile);
                 } else {
                     self.render_segment(frame, segment, *chunk, profile);
@@ -311,37 +307,35 @@ impl StatusBar {
         area: Rect,
         profile: &ColorProfile,
     ) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let alignment = segment.alignment.to_ratatui();
-        
+
         let paragraph = Paragraph::new(segment.content.as_str())
             .style(segment.style.to_ratatui(profile))
             .alignment(alignment);
-        
+
         frame.render_widget(paragraph, area);
     }
 
     /// Create a layout that includes the status bar
     pub fn layout(&self, area: Rect) -> (Rect, Rect) {
         let height = self.height();
-        
+
         match self.position {
             StatusBarPosition::Top => {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Length(height),
-                        Constraint::Min(0),
-                    ])
+                    .constraints([Constraint::Length(height), Constraint::Min(0)])
                     .split(area);
                 (chunks[0], chunks[1]) // (status_bar, main_content)
             }
             StatusBarPosition::Bottom => {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Min(0),
-                        Constraint::Length(height),
-                    ])
+                    .constraints([Constraint::Min(0), Constraint::Length(height)])
                     .split(area);
                 (chunks[1], chunks[0]) // (status_bar, main_content)
             }

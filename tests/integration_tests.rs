@@ -67,8 +67,20 @@ impl Model for TestModel {
                     self.should_quit = true;
                     Cmd::none()
                 }
-                Key::Char('+') => self.update(Event::User(TestMsg::Increment)),
-                Key::Char('-') => self.update(Event::User(TestMsg::Decrement)),
+                Key::Char('+') => {
+                    // Handle increment directly instead of recursive update() call
+                    self.counter += 1;
+                    self.messages
+                        .push(format!("incremented to {}", self.counter));
+                    Cmd::none()
+                }
+                Key::Char('-') => {
+                    // Handle decrement directly instead of recursive update() call
+                    self.counter = self.counter.saturating_sub(1);
+                    self.messages
+                        .push(format!("decremented to {}", self.counter));
+                    Cmd::none()
+                }
                 _ => Cmd::none(),
             },
             Event::Mouse(mouse) => {

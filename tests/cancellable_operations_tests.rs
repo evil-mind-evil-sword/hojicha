@@ -252,14 +252,14 @@ fn test_async_cancellation_flow() {
                 _ = token_clone.cancelled() => {
                     "Cancelled"
                 }
-                _ = tokio::time::sleep(Duration::from_millis(100)) => {
+                _ = tokio::task::yield_now() => { // Yield instead of sleep
                     "Completed"
                 }
             }
         });
 
         // Cancel after short delay
-        tokio::time::sleep(Duration::from_millis(10)).await;
+        tokio::task::yield_now().await; // Yield to allow task to start
         token.cancel();
 
         let result = timeout(Duration::from_millis(100), task).await;

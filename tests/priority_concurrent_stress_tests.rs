@@ -68,7 +68,7 @@ impl Model for StressModel {
                     }
                 }
 
-                let total = self.total_received.fetch_add(1, Ordering::SeqCst);
+                let total = self.total_received.fetch_add(1, Ordering::SeqCst) + 1;
                 if total >= self.target_messages {
                     return commands::quit(); // Exit when target reached
                 }
@@ -363,7 +363,7 @@ fn test_latency_measurement() {
 #[test]
 fn test_priority_ordering_verification() {
     // This is a non-stress test to verify basic priority ordering
-    let model = StressModel::new(30);
+    let model = StressModel::new(30); // Will quit after 30 messages
     let high_count = Arc::clone(&model.high_received);
     let normal_count = Arc::clone(&model.normal_received);
     let low_count = Arc::clone(&model.low_received);
@@ -397,14 +397,8 @@ fn test_priority_ordering_verification() {
             .unwrap();
     }
 
-    // Schedule completion after a short delay
-    let complete_sender = sender.clone();
-    thread::spawn(move || {
-        thread::sleep(Duration::from_millis(10));
-        complete_sender
-            .send(Event::User(StressMsg::Complete))
-            .unwrap();
-    });
+    // Don't send Complete - let the model quit when it reaches target_messages (30)
+    // This ensures all 30 messages are processed before quitting
 
     program.run().unwrap();
 

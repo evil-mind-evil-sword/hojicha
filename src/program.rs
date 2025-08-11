@@ -486,7 +486,11 @@ where
             self.message_rx = Some(message_rx);
             message_tx
         } else {
-            self.message_tx.as_ref().unwrap().clone()
+            // Safe to unwrap here because we just checked is_none() above
+            self.message_tx
+                .as_ref()
+                .expect("message_tx should be Some after init check")
+                .clone()
         }
     }
 
@@ -549,7 +553,11 @@ where
             self.init_async_bridge();
         }
 
-        let sender = self.message_tx.as_ref().unwrap().clone();
+        let sender = self
+            .message_tx
+            .as_ref()
+            .expect("message_tx should be Some after init_async_bridge")
+            .clone();
         let cancel_token = CancellationToken::new();
         let cancel_clone = cancel_token.clone();
 
@@ -678,7 +686,11 @@ where
             self.init_async_bridge();
         }
 
-        let sender = self.message_tx.as_ref().unwrap().clone();
+        let sender = self
+            .message_tx
+            .as_ref()
+            .expect("message_tx should be Some after init_async_bridge")
+            .clone();
         let cancel_token = CancellationToken::new();
         let token_clone = cancel_token.clone();
 
@@ -709,7 +721,11 @@ where
             self.init_async_bridge();
         }
 
-        let sender = self.message_tx.as_ref().unwrap().clone();
+        let sender = self
+            .message_tx
+            .as_ref()
+            .expect("message_tx should be Some after init_async_bridge")
+            .clone();
 
         self.command_executor.spawn(async move {
             if let Some(msg) = fut.await {
@@ -763,7 +779,12 @@ where
         // Use existing message channel if initialized, otherwise create new one
         let (message_tx, message_rx) = if let Some(rx) = self.message_rx.take() {
             // Channel was already initialized via init_async_bridge()
-            (self.message_tx.as_ref().unwrap().clone(), rx)
+            let tx = self
+                .message_tx
+                .as_ref()
+                .expect("message_tx should be Some when message_rx is Some")
+                .clone();
+            (tx, rx)
         } else {
             let (tx, rx) = mpsc::sync_channel(100);
             self.message_tx = Some(tx.clone());

@@ -52,13 +52,13 @@ impl GridTemplate {
     /// Calculate row areas
     fn calculate_rows(&self, area: Rect) -> Vec<Rect> {
         use ratatui::layout::{Direction, Layout};
-        
+
         let total_gaps = self.gap * (self.rows.len().saturating_sub(1)) as u16;
-        let available_height = area.height.saturating_sub(total_gaps);
-        
+        let _available_height = area.height.saturating_sub(total_gaps);
+
         let mut constraints = Vec::new();
         for (i, constraint) in self.rows.iter().enumerate() {
-            constraints.push(constraint.clone());
+            constraints.push(*constraint);
             if i < self.rows.len() - 1 {
                 constraints.push(Constraint::Length(self.gap));
             }
@@ -81,13 +81,13 @@ impl GridTemplate {
     /// Calculate column areas
     fn calculate_columns(&self, area: Rect) -> Vec<Rect> {
         use ratatui::layout::{Direction, Layout};
-        
+
         let total_gaps = self.gap * (self.columns.len().saturating_sub(1)) as u16;
-        let available_width = area.width.saturating_sub(total_gaps);
-        
+        let _available_width = area.width.saturating_sub(total_gaps);
+
         let mut constraints = Vec::new();
         for (i, constraint) in self.columns.iter().enumerate() {
-            constraints.push(constraint.clone());
+            constraints.push(*constraint);
             if i < self.columns.len() - 1 {
                 constraints.push(Constraint::Length(self.gap));
             }
@@ -242,8 +242,7 @@ impl Grid {
 
         // Render container background if styled
         if self.container_style.get_background().is_some() {
-            let block = Block::default()
-                .style(self.container_style.to_ratatui(profile));
+            let block = Block::default().style(self.container_style.to_ratatui(profile));
             frame.render_widget(block, area);
         }
 
@@ -264,7 +263,7 @@ impl Grid {
                         Borders::NONE
                     })
                     .style(cell.style.to_ratatui(profile));
-                
+
                 frame.render_widget(block, cell_area);
             }
         }
@@ -273,7 +272,7 @@ impl Grid {
     /// Render grid lines
     fn render_grid_lines(&self, frame: &mut Frame, grid: &[Vec<Rect>], profile: &ColorProfile) {
         let style = self.grid_line_style.to_ratatui(profile);
-        
+
         // Render horizontal lines
         for (i, row) in grid.iter().enumerate() {
             if i > 0 && !row.is_empty() {
@@ -285,9 +284,7 @@ impl Grid {
                         width: cell.width,
                         height: 1,
                     };
-                    let block = Block::default()
-                        .borders(Borders::TOP)
-                        .border_style(style);
+                    let block = Block::default().borders(Borders::TOP).border_style(style);
                     frame.render_widget(block, line_area);
                 }
             }
@@ -306,9 +303,7 @@ impl Grid {
                                 width: 1,
                                 height: row[i].height,
                             };
-                            let block = Block::default()
-                                .borders(Borders::LEFT)
-                                .border_style(style);
+                            let block = Block::default().borders(Borders::LEFT).border_style(style);
                             frame.render_widget(block, line_area);
                         }
                     }

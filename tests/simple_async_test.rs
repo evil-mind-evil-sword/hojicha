@@ -66,7 +66,7 @@ fn test_simple_async_bridge() {
                 println!("Send failed at {}", i);
                 break;
             }
-            thread::sleep(Duration::from_millis(1));
+            thread::yield_now(); // Yield to scheduler instead of sleeping
         }
         println!("Sender done");
     });

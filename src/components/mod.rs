@@ -3,6 +3,10 @@
 //! This module provides pre-built components similar to Bubbles for Bubbletea,
 //! including text input, scrollable views, and more.
 
+#[macro_use]
+mod render_guard;
+pub use render_guard::SafeRender;
+
 pub mod button;
 pub mod help;
 pub mod keybinding;
@@ -20,6 +24,7 @@ pub mod tabs;
 pub mod text_input;
 pub mod textarea;
 pub mod timer;
+mod utils;
 pub mod viewport;
 
 pub use button::{Button, ButtonSize, ButtonVariant};

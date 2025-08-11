@@ -13,11 +13,16 @@ use ratatui::{
 /// Modal size preset
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ModalSize {
-    Small,            // 40% width, 30% height
-    Medium,           // 60% width, 50% height
-    Large,            // 80% width, 70% height
-    FullScreen,       // 95% width, 95% height
-    Custom(u16, u16), // Custom width and height percentages
+    /// Small modal (40% width, 30% height)
+    Small,
+    /// Medium modal (60% width, 50% height)
+    Medium,
+    /// Large modal (80% width, 70% height)
+    Large,
+    /// Full screen modal (95% width, 95% height)
+    FullScreen,
+    /// Custom modal size with width and height percentages
+    Custom(u16, u16),
 }
 
 /// Modal component
@@ -211,7 +216,11 @@ impl Modal {
     }
 
     /// Render the modal
-    pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme, profile: &ColorProfile) {
+    pub fn render(&self, frame: &mut Frame, area: Rect, _theme: &Theme, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         if !self.open {
             return;
         }

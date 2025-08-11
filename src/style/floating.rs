@@ -4,8 +4,7 @@
 
 use super::{Color, ColorProfile, Style};
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    text::{Line, Span},
+    layout::{Alignment, Rect},
     widgets::{Block, Borders, Clear, Paragraph, Wrap},
     Frame,
 };
@@ -237,13 +236,19 @@ impl Overlay {
     pub fn content_area(&self, parent_area: Rect, width: u16, height: u16) -> Rect {
         let x = parent_area.x + parent_area.width.saturating_sub(width) / 2;
         let y = parent_area.y + parent_area.height.saturating_sub(height) / 2;
-        
+
         Rect {
             x,
             y,
             width: width.min(parent_area.width),
             height: height.min(parent_area.height),
         }
+    }
+}
+
+impl Default for Overlay {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -274,9 +279,7 @@ impl Dropdown {
                 .bg(Color::rgb(30, 30, 30))
                 .fg(Color::white())
                 .border(super::BorderStyle::Rounded),
-            selected_style: Style::new()
-                .bg(Color::blue())
-                .fg(Color::white()),
+            selected_style: Style::new().bg(Color::blue()).fg(Color::white()),
             max_height: 10,
             width: None,
         }
@@ -428,10 +431,10 @@ enum LayerContent {
 pub trait FloatingElement: Send + Sync {
     /// Render the floating element
     fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile);
-    
+
     /// Get the z-index of this element
     fn z_index(&self) -> i32;
-    
+
     /// Clone the element
     fn clone_box(&self) -> Box<dyn FloatingElement>;
 }
@@ -445,20 +448,20 @@ impl Clone for Box<dyn FloatingElement> {
 impl LayerManager {
     /// Create a new layer manager
     pub fn new() -> Self {
-        Self {
-            layers: Vec::new(),
-        }
+        Self { layers: Vec::new() }
     }
 
     /// Add a tooltip to the layers
     pub fn add_tooltip(&mut self, tooltip: Tooltip, area: Rect, z_index: i32) {
-        self.layers.push((z_index, LayerContent::Tooltip(tooltip, area)));
+        self.layers
+            .push((z_index, LayerContent::Tooltip(tooltip, area)));
         self.sort_layers();
     }
 
     /// Add a dropdown to the layers
     pub fn add_dropdown(&mut self, dropdown: Dropdown, area: Rect, z_index: i32) {
-        self.layers.push((z_index, LayerContent::Dropdown(dropdown, area)));
+        self.layers
+            .push((z_index, LayerContent::Dropdown(dropdown, area)));
         self.sort_layers();
     }
 

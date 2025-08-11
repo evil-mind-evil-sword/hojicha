@@ -11,7 +11,7 @@ use ratatui::{
 use std::time::Duration;
 
 /// Display format for the timer
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum TimerFormat {
     /// HH:MM:SS format
     HoursMinutesSeconds,
@@ -21,6 +21,18 @@ pub enum TimerFormat {
     SecondsOnly,
     /// Custom format function
     Custom(fn(Duration) -> String),
+}
+
+impl PartialEq for TimerFormat {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::HoursMinutesSeconds, Self::HoursMinutesSeconds) => true,
+            (Self::MinutesSeconds, Self::MinutesSeconds) => true,
+            (Self::SecondsOnly, Self::SecondsOnly) => true,
+            (Self::Custom(_), Self::Custom(_)) => false, // Function pointers can't be meaningfully compared
+            _ => false,
+        }
+    }
 }
 
 /// Timer state
@@ -239,7 +251,7 @@ impl Timer {
         self.warning_style = Style::new().fg(theme.colors.warning.clone()).bold();
         self.critical_style = Style::new().fg(theme.colors.error.clone()).bold();
         self.finished_style = Style::new().fg(theme.colors.success.clone()).bold();
-        
+
         if let Some(style) = theme.get_style("timer.container") {
             self.container_style = style.clone();
         }
@@ -253,7 +265,7 @@ impl Timer {
                 let hours = total_secs / 3600;
                 let minutes = (total_secs % 3600) / 60;
                 let seconds = total_secs % 60;
-                
+
                 if self.show_milliseconds && duration.as_secs() == 0 {
                     let millis = duration.as_millis() % 1000;
                     format!("{:02}:{:02}:{:02}.{:03}", hours, minutes, seconds, millis)
@@ -265,7 +277,7 @@ impl Timer {
                 let total_secs = duration.as_secs();
                 let minutes = total_secs / 60;
                 let seconds = total_secs % 60;
-                
+
                 if self.show_milliseconds && duration.as_secs() == 0 {
                     let millis = duration.as_millis() % 1000;
                     format!("{:02}:{:02}.{:03}", minutes, seconds, millis)
@@ -275,7 +287,7 @@ impl Timer {
             }
             TimerFormat::SecondsOnly => {
                 let seconds = duration.as_secs();
-                
+
                 if self.show_milliseconds && seconds == 0 {
                     let millis = duration.as_millis();
                     format!("{}.{:03}", millis / 1000, millis % 1000)
@@ -289,10 +301,16 @@ impl Timer {
 
     /// Render the timer
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         // Determine the display text and style
         let (text, style) = if self.state == TimerState::Finished {
             (
-                self.finished_message.clone().unwrap_or_else(|| "00:00".to_string()),
+                self.finished_message
+                    .clone()
+                    .unwrap_or_else(|| "00:00".to_string()),
                 self.finished_style.clone(),
             )
         } else {
@@ -341,10 +359,10 @@ impl Timer {
         if self.initial_duration == Duration::ZERO {
             return 1.0;
         }
-        
+
         let remaining_ms = self.remaining.as_millis() as f32;
         let initial_ms = self.initial_duration.as_millis() as f32;
-        
+
         (initial_ms - remaining_ms) / initial_ms
     }
 }

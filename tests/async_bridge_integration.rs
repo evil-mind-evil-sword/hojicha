@@ -41,11 +41,7 @@ impl Model for CollectorModel {
             _ => {}
         }
 
-        if self.should_quit {
-            Cmd::none()
-        } else {
-            Cmd::none()
-        }
+        Cmd::none()
     }
 
     fn view(&self, _frame: &mut Frame, _area: ratatui::layout::Rect) {
@@ -259,8 +255,7 @@ fn test_usage_pattern_documentation() {
         program.run().unwrap();
     });
 
-    // Wait a bit for program to start
-    thread::sleep(Duration::from_millis(100));
+    // Program should handle this without delay
 
     // Now get sender - but we can't access program from here!
     // This is why we need sender before run() or a different API
@@ -272,7 +267,7 @@ fn test_usage_pattern_documentation() {
     // Start async tasks with sender
     thread::spawn(move || {
         loop {
-            thread::sleep(Duration::from_secs(1));
+            thread::yield_now(); // Yield to scheduler
             sender.send(Event::User(Msg::Tick)).unwrap();
         }
     });
@@ -282,5 +277,5 @@ fn test_usage_pattern_documentation() {
     */
 
     // For now, document that the API exists
-    assert!(true);
+    // Test passes if no panic occurs
 }

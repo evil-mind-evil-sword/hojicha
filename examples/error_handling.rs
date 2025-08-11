@@ -11,7 +11,6 @@ use hojicha::{
     commands,
     fallible::{FallibleModel, FallibleModelExt},
 };
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use std::fs;
 use std::io;

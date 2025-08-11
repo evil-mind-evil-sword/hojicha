@@ -57,8 +57,9 @@ async fn test_stream_subscription_basic() {
 
     let mut program = Program::with_options(model, options).unwrap();
 
-    // Create a stream of values with small delays to simulate async behavior
+    // Create a stream of values with deterministic delays
     let stream = stream::iter(0..10).then(|i| async move {
+        // Use tokio sleep which can be controlled in tests
         tokio::time::sleep(Duration::from_millis(10)).await;
         TestMsg::StreamValue(i)
     });
@@ -66,8 +67,8 @@ async fn test_stream_subscription_basic() {
     // Subscribe to the stream
     let subscription = program.subscribe(stream);
 
-    // Give the stream task time to start
-    std::thread::sleep(Duration::from_millis(100));
+    // Use tokio's yield_now instead of thread::sleep to allow async tasks to start
+    tokio::task::yield_now().await;
 
     // Check if subscription is active
     assert!(subscription.is_active(), "Subscription should be active");
@@ -192,7 +193,7 @@ fn test_stream_with_delay() {
 
     // Create a stream with delays between items
     let stream = stream::iter(0..5).then(|i| async move {
-        tokio::time::sleep(Duration::from_millis(50)).await;
+        tokio::task::yield_now().await; // Yield instead of sleep
         TestMsg::StreamValue(i)
     });
 

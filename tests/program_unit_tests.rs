@@ -5,6 +5,7 @@ use hojicha::{
     core::{Cmd, Model},
     event::{Event, Key},
     prelude::*,
+    program::ProgramOptions,
 };
 
 // Test model for comprehensive testing
@@ -289,7 +290,7 @@ fn test_program_new_default() {
     };
 
     // This might fail in CI but let's try
-    let result = Program::new(model);
+    let result = Program::with_options(model, ProgramOptions::default().headless());
     // Just check it doesn't panic
     let _ = result;
 }

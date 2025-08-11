@@ -337,61 +337,6 @@ impl Element for StyledText {
     }
 }
 
-/// A container that can hold multiple elements
-pub struct Container {
-    layout: LayoutBuilder,
-    style: Style,
-}
-
-impl Container {
-    /// Create a new container with a layout
-    pub fn new(layout: LayoutBuilder) -> Self {
-        Self {
-            layout,
-            style: Style::default(),
-        }
-    }
-}
-
-impl Element for Container {
-    fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
-        // Apply container style (background, border, etc.)
-        if self.style.get_border() != &super::BorderStyle::None {
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .border_type(self.style.get_border().to_ratatui());
-
-            if let Some(border_color) = self.style.get_border_color() {
-                block = block.border_style(
-                    ratatui::style::Style::default().fg(border_color.to_ratatui(profile)),
-                );
-            }
-
-            frame.render_widget(block, area);
-        }
-
-        // Render contained elements
-        let margin = self.style.get_margin();
-        let content_area = Rect {
-            x: area.x + margin.left,
-            y: area.y + margin.top,
-            width: area.width.saturating_sub(margin.left + margin.right),
-            height: area.height.saturating_sub(margin.top + margin.bottom),
-        };
-
-        self.layout.render(frame, content_area, profile);
-    }
-
-    fn style(&self) -> &Style {
-        &self.style
-    }
-
-    fn with_style(mut self, style: Style) -> Self {
-        self.style = style;
-        self
-    }
-}
-
 /// Place content at a specific position within an area
 ///
 /// This function positions content within a given area based on horizontal
@@ -504,7 +449,7 @@ pub fn place_vertical(lines: Vec<String>, height: u16, align: VAlign) -> Vec<Str
             let top_pad = padding / 2;
             let bottom_pad = padding - top_pad;
             let mut result = Vec::with_capacity(height as usize);
-            
+
             for _ in 0..top_pad {
                 result.push(empty_line.clone());
             }

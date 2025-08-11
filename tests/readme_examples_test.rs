@@ -118,7 +118,6 @@ fn test_readme_async_event_injection() {
     let sender = program.init_async_bridge();
     thread::spawn(move || {
         for _ in 0..3 {
-            thread::sleep(Duration::from_millis(10));
             sender.send(Event::User(Msg::Tick)).ok();
         }
     });
@@ -171,8 +170,7 @@ async fn test_readme_stream_subscription_with_interval() {
     let handle =
         tokio::task::spawn_blocking(move || program.run_with_timeout(Duration::from_millis(500)));
 
-    // Wait a bit then cancel
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    // Cancel immediately - the subscription should handle this gracefully
     subscription.cancel();
 
     let result = handle.await.unwrap();
@@ -215,7 +213,7 @@ fn test_readme_cancellable_operations() {
                     was_cancelled.store(true, Ordering::SeqCst);
                     return "Cancelled";
                 }
-                tokio::time::sleep(Duration::from_millis(10)).await;
+                tokio::task::yield_now().await; // Yield instead of sleep
             }
         }
     });
@@ -223,8 +221,7 @@ fn test_readme_cancellable_operations() {
     // Cancel immediately
     handle.cancel();
 
-    // Give it time to process cancellation
-    thread::sleep(Duration::from_millis(100));
+    // Handle cancellation should be immediate, no sleep needed
 
     // Verify cancellation worked
     assert!(handle.is_cancelled());

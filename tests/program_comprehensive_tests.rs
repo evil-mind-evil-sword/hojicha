@@ -11,7 +11,6 @@ use std::io::{Cursor, Read, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
 
 // Mock I/O for testing
 #[derive(Clone)]
@@ -43,8 +42,7 @@ impl Read for MockInput {
         let pos = self.position.load(Ordering::SeqCst);
 
         if pos >= data.len() {
-            // Simulate blocking read
-            thread::sleep(Duration::from_millis(10));
+            // Return 0 to indicate no more data
             return Ok(0);
         }
 
@@ -269,7 +267,7 @@ fn test_program_with_mock_io() {
 fn test_program_message_sending() {
     let model = TestModel::new().with_quit_after(3);
 
-    match Program::new(model) {
+    match Program::with_options(model, ProgramOptions::default().headless()) {
         Ok(program) => {
             // Test quit signaling
             program.quit();
@@ -286,10 +284,10 @@ fn test_program_message_sending() {
 fn test_program_lifecycle_methods() {
     let model = TestModel::new();
 
-    match Program::new(model) {
+    match Program::with_options(model, ProgramOptions::default().headless()) {
         Ok(mut program) => {
-            // Test various lifecycle methods
-            program.wait();
+            // Don't call wait() on a program that isn't running
+            // as it will wait forever for the program to start
 
             // These would normally interact with terminal
             let _ = program.release_terminal();
@@ -478,7 +476,7 @@ fn test_custom_io_streams() {
 fn test_program_with_filter() {
     let model = TestModel::new();
 
-    match Program::new(model) {
+    match Program::with_options(model, ProgramOptions::default().headless()) {
         Ok(program) => {
             // Add a filter that modifies events
             let _filtered = program.with_filter(|_model, event| {

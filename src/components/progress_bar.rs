@@ -20,7 +20,12 @@ pub enum ProgressStyle {
     /// Sparkline graph
     Spark,
     /// Custom characters for filled/empty
-    Custom { filled: char, empty: char },
+    Custom {
+        /// Character to use for filled portion
+        filled: char,
+        /// Character to use for empty portion
+        empty: char,
+    },
 }
 
 /// Progress bar component
@@ -239,11 +244,10 @@ impl ProgressBar {
 
     /// Render the progress bar
     pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme, profile: &ColorProfile) {
-        // Guard against empty areas
-        if area.width == 0 || area.height == 0 {
+        if !super::utils::is_valid_area(area) {
             return;
         }
-        
+
         let label_text = self.build_label();
         let progress_color = self.get_progress_color(theme);
 
@@ -277,7 +281,7 @@ impl ProgressBar {
                 } else {
                     self.history.clone()
                 };
-                
+
                 let sparkline = Sparkline::default()
                     .data(&data)
                     .style(Style::new().fg(progress_color).to_ratatui(profile));
@@ -340,10 +344,7 @@ impl ProgressBar {
                             filled_part,
                             Style::new().fg(progress_color.clone()).to_ratatui(profile),
                         ),
-                        Span::styled(
-                            empty_part,
-                            self.background_style.to_ratatui(profile),
-                        ),
+                        Span::styled(empty_part, self.background_style.to_ratatui(profile)),
                     ])]
                 };
 

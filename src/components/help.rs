@@ -220,16 +220,12 @@ impl Help {
 
     /// Apply a theme to this help component
     pub fn apply_theme(&mut self, theme: &Theme) {
-        self.key_style = Style::new()
-            .bold()
-            .fg(theme.colors.primary.clone());
-        
-        self.description_style = Style::new()
-            .fg(theme.colors.text_secondary.clone());
-        
-        self.separator_style = Style::new()
-            .fg(theme.colors.border.clone());
-        
+        self.key_style = Style::new().bold().fg(theme.colors.primary.clone());
+
+        self.description_style = Style::new().fg(theme.colors.text_secondary.clone());
+
+        self.separator_style = Style::new().fg(theme.colors.border.clone());
+
         self.disabled_style = Style::new()
             .fg(theme.colors.text_secondary.clone())
             .italic();
@@ -241,6 +237,10 @@ impl Help {
 
     /// Render the help component
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let visible_entries: Vec<&HelpEntry> = self
             .entries
             .iter()
@@ -266,6 +266,10 @@ impl Help {
         profile: &ColorProfile,
         entries: &[&HelpEntry],
     ) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let mut spans = Vec::new();
 
         for (i, entry) in entries.iter().enumerate() {
@@ -289,7 +293,10 @@ impl Help {
             };
 
             spans.push(Span::styled(&entry.key, key_style));
-            spans.push(Span::styled(&self.key_separator, self.separator_style.to_ratatui(profile)));
+            spans.push(Span::styled(
+                &self.key_separator,
+                self.separator_style.to_ratatui(profile),
+            ));
             spans.push(Span::styled(&entry.description, desc_style));
         }
 
@@ -319,6 +326,10 @@ impl Help {
         profile: &ColorProfile,
         entries: &[&HelpEntry],
     ) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let mut lines = Vec::new();
 
         for entry in entries {
@@ -342,7 +353,10 @@ impl Help {
 
             lines.push(Line::from(vec![
                 Span::styled(key, key_style),
-                Span::styled(&self.key_separator, self.separator_style.to_ratatui(profile)),
+                Span::styled(
+                    &self.key_separator,
+                    self.separator_style.to_ratatui(profile),
+                ),
                 Span::styled(&entry.description, desc_style),
             ]));
         }
@@ -373,6 +387,10 @@ impl Help {
         profile: &ColorProfile,
         entries: &[&HelpEntry],
     ) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let mut spans = Vec::new();
 
         for (i, entry) in entries.iter().enumerate() {
@@ -386,11 +404,14 @@ impl Help {
                 self.disabled_style.to_ratatui(profile)
             };
 
-            spans.push(Span::styled(format!("{}:{}", entry.key, entry.description), style));
+            spans.push(Span::styled(
+                format!("{}:{}", entry.key, entry.description),
+                style,
+            ));
         }
 
-        let paragraph = Paragraph::new(Line::from(spans))
-            .style(self.container_style.to_ratatui(profile));
+        let paragraph =
+            Paragraph::new(Line::from(spans)).style(self.container_style.to_ratatui(profile));
 
         frame.render_widget(paragraph, area);
     }

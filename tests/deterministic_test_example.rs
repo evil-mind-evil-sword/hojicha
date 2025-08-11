@@ -109,8 +109,6 @@ fn test_with_virtual_steps() {
 #[cfg(test)]
 mod async_tests {
 
-    use std::time::Duration;
-
     // For async tests that truly need timing, use tokio's time control
     #[ignore = "Requires tokio test-util feature"]
     #[tokio::test]

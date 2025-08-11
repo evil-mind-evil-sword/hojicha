@@ -3,10 +3,9 @@
 //! A flexible tab bar component with support for icons, badges, and closeable tabs.
 
 use crate::event::{Event, Key, KeyEvent};
-use crate::style::{Color, ColorProfile, Style, TextAlign, Theme};
+use crate::style::{Color, ColorProfile, Style, Theme};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Modifier, Style as RatatuiStyle},
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
     Frame,
@@ -97,21 +96,6 @@ impl Tab {
         self.custom_style = Some(style);
         self
     }
-
-    /// Get the display width of this tab
-    fn display_width(&self) -> usize {
-        let mut width = self.title.len();
-        if let Some(ref icon) = self.icon {
-            width += icon.len() + 1; // +1 for space
-        }
-        if let Some(ref badge) = self.badge {
-            width += badge.len() + 2; // +2 for brackets
-        }
-        if self.closeable {
-            width += 3; // " ×"
-        }
-        width + 2 // Padding
-    }
 }
 
 /// A tabs component
@@ -154,13 +138,8 @@ impl Tabs {
             position: TabPosition::Top,
             style: TabStyle::Line,
             inactive_style: Style::new().fg(Color::gray()),
-            active_style: Style::new()
-                .fg(Color::white())
-                .bold()
-                .underlined(),
-            disabled_style: Style::new()
-                .fg(Color::gray())
-                .italic(),
+            active_style: Style::new().fg(Color::white()).bold().underlined(),
+            disabled_style: Style::new().fg(Color::gray()).italic(),
             container_style: Style::new(),
             focused: false,
             bar_size: 3,
@@ -335,42 +314,34 @@ impl Tabs {
 
         match event {
             Event::Key(KeyEvent { key, .. }) => match key {
-                Key::Left | Key::Char('h') => {
-                    match self.position {
-                        TabPosition::Top | TabPosition::Bottom => {
-                            self.select_previous();
-                            true
-                        }
-                        _ => false,
+                Key::Left | Key::Char('h') => match self.position {
+                    TabPosition::Top | TabPosition::Bottom => {
+                        self.select_previous();
+                        true
                     }
-                }
-                Key::Right | Key::Char('l') => {
-                    match self.position {
-                        TabPosition::Top | TabPosition::Bottom => {
-                            self.select_next();
-                            true
-                        }
-                        _ => false,
+                    _ => false,
+                },
+                Key::Right | Key::Char('l') => match self.position {
+                    TabPosition::Top | TabPosition::Bottom => {
+                        self.select_next();
+                        true
                     }
-                }
-                Key::Up | Key::Char('k') => {
-                    match self.position {
-                        TabPosition::Left | TabPosition::Right => {
-                            self.select_previous();
-                            true
-                        }
-                        _ => false,
+                    _ => false,
+                },
+                Key::Up | Key::Char('k') => match self.position {
+                    TabPosition::Left | TabPosition::Right => {
+                        self.select_previous();
+                        true
                     }
-                }
-                Key::Down | Key::Char('j') => {
-                    match self.position {
-                        TabPosition::Left | TabPosition::Right => {
-                            self.select_next();
-                            true
-                        }
-                        _ => false,
+                    _ => false,
+                },
+                Key::Down | Key::Char('j') => match self.position {
+                    TabPosition::Left | TabPosition::Right => {
+                        self.select_next();
+                        true
                     }
-                }
+                    _ => false,
+                },
                 Key::Char('w') => {
                     // Close current tab if closeable (Ctrl+W style)
                     if self.selected < self.tabs.len() && self.tabs[self.selected].closeable {
@@ -388,16 +359,11 @@ impl Tabs {
 
     /// Apply a theme
     pub fn apply_theme(&mut self, theme: &Theme) {
-        self.inactive_style = Style::new()
-            .fg(theme.colors.text_secondary.clone());
-        
-        self.active_style = Style::new()
-            .fg(theme.colors.primary.clone())
-            .bold();
-        
-        self.disabled_style = Style::new()
-            .fg(theme.colors.border.clone())
-            .italic();
+        self.inactive_style = Style::new().fg(theme.colors.text_secondary.clone());
+
+        self.active_style = Style::new().fg(theme.colors.primary.clone()).bold();
+
+        self.disabled_style = Style::new().fg(theme.colors.border.clone()).italic();
 
         if let Some(style) = theme.get_style("tabs.container") {
             self.container_style = style.clone();
@@ -410,20 +376,14 @@ impl Tabs {
             TabPosition::Top => {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Length(self.bar_size),
-                        Constraint::Min(0),
-                    ])
+                    .constraints([Constraint::Length(self.bar_size), Constraint::Min(0)])
                     .split(area);
                 (chunks[0], chunks[1]) // (tabs, content)
             }
             TabPosition::Bottom => {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Min(0),
-                        Constraint::Length(self.bar_size),
-                    ])
+                    .constraints([Constraint::Min(0), Constraint::Length(self.bar_size)])
                     .split(area);
                 (chunks[1], chunks[0]) // (tabs, content)
             }
@@ -452,8 +412,18 @@ impl Tabs {
 
     /// Render the tabs
     pub fn render(&self, frame: &mut Frame, area: Rect, profile: &ColorProfile) {
+        // Check if area is valid before rendering
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let (tabs_area, _) = self.layout(area);
-        
+
+        // Check if tabs area is valid
+        if !super::utils::is_valid_area(tabs_area) {
+            return;
+        }
+
         match self.position {
             TabPosition::Top | TabPosition::Bottom => {
                 self.render_horizontal(frame, tabs_area, profile);
@@ -490,7 +460,7 @@ impl Tabs {
 
             // Build tab content
             let mut tab_text = String::new();
-            
+
             if is_selected && self.style == TabStyle::Box {
                 tab_text.push_str("[ ");
             } else {
@@ -553,7 +523,7 @@ impl Tabs {
 
             // Build tab content
             let mut tab_text = String::new();
-            
+
             if is_selected {
                 tab_text.push_str("▶ ");
             } else {

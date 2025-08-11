@@ -350,5 +350,5 @@ fn count_priority_events<M: Clone + Send + 'static>(
 #[test]
 fn test_property_tests_compile() {
     // This ensures the property tests compile
-    assert!(true);
+    // Test passes if no panic occurs
 }

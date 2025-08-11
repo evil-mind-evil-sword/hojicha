@@ -14,19 +14,28 @@ use ratatui::{
 /// Button variant/style
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ButtonVariant {
+    /// Primary action button (highest emphasis)
     Primary,
+    /// Secondary action button (medium emphasis)
     Secondary,
+    /// Success/positive action button
     Success,
+    /// Warning/caution action button
     Warning,
+    /// Danger/destructive action button
     Danger,
+    /// Ghost button (minimal emphasis, no background)
     Ghost,
 }
 
 /// Button size
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ButtonSize {
+    /// Small button size
     Small,
+    /// Medium button size (default)
     Medium,
+    /// Large button size
     Large,
 }
 
@@ -223,12 +232,16 @@ impl Button {
     }
 
     /// Apply a theme to this button
-    pub fn apply_theme(&mut self, theme: &Theme) {
+    pub fn apply_theme(&mut self, _theme: &Theme) {
         // Theme is applied dynamically in get_style
     }
 
     /// Render the button
     pub fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme, profile: &ColorProfile) {
+        if !super::utils::is_valid_area(area) {
+            return;
+        }
+
         let style = self.get_style(theme);
 
         // Calculate button width
