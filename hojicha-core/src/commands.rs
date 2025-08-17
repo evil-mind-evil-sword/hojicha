@@ -56,6 +56,13 @@ use crate::event::WindowSize;
 use std::process::Command;
 use std::time::Duration;
 
+// Import panic recovery utilities from runtime crate
+// These are used to wrap Model methods for safe execution
+#[cfg(feature = "panic-recovery")]
+pub use hojicha_runtime::panic_recovery::{
+    safe_init, safe_update, safe_view, PanicRecoveryStrategy
+};
+
 /// Default maximum batch size
 /// 
 /// Batches larger than this will trigger a warning in debug mode.
@@ -364,32 +371,40 @@ pub fn interrupt<M: Message>() -> Cmd<M> {
     })
 }
 
-/// Hide the terminal cursor
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::hide_cursor};
-/// # enum Msg {}
-/// // Hide the terminal cursor
-/// let cmd: Cmd<Msg> = hide_cursor();
-/// ```
-pub fn hide_cursor<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
+/// Macro to generate simple terminal control commands
+/// 
+/// This reduces code duplication for commands that just signal
+/// the runtime to perform a terminal operation.
+macro_rules! terminal_cmd {
+    ($(
+        $(#[$attr:meta])*
+        $vis:vis fn $name:ident() -> $doc:literal;
+    )+) => {
+        $(
+            $(#[$attr])*
+            #[doc = $doc]
+            #[doc = ""]
+            #[doc = "This command signals the runtime to perform the operation."]
+            $vis fn $name<M: Message>() -> Cmd<M> {
+                Cmd::new(|| None)
+            }
+        )+
+    };
 }
 
-/// Show the terminal cursor
-pub fn show_cursor<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Enter alternate screen buffer
-pub fn enter_alt_screen<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Exit alternate screen buffer
-pub fn exit_alt_screen<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
+// Generate all the simple terminal control commands
+terminal_cmd! {
+    /// Hide the terminal cursor
+    pub fn hide_cursor() -> "Hide the terminal cursor from view";
+    
+    /// Show the terminal cursor
+    pub fn show_cursor() -> "Show the terminal cursor";
+    
+    /// Enter alternate screen buffer
+    pub fn enter_alt_screen() -> "Enter the alternate screen buffer (like vim/less use)";
+    
+    /// Exit alternate screen buffer
+    pub fn exit_alt_screen() -> "Exit the alternate screen buffer and return to main screen";
 }
 
 /// Create a custom command from an async function
@@ -573,74 +588,33 @@ where
     })
 }
 
-/// Enable mouse cell motion tracking
-///
-/// This enables mouse events only when a button is pressed.
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::enable_mouse_cell_motion};
-/// # enum Msg {}
-/// // Enable mouse tracking for cell motion (button pressed)
-/// let cmd: Cmd<Msg> = enable_mouse_cell_motion();
-/// ```
-pub fn enable_mouse_cell_motion<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Enable mouse all motion tracking
-///
-/// This enables mouse movement events regardless of whether a button is pressed,
-/// allowing for hover interactions.
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::enable_mouse_all_motion};
-/// # enum Msg {}
-/// // Enable mouse tracking for all motion (including hover)
-/// let cmd: Cmd<Msg> = enable_mouse_all_motion();
-/// ```
-pub fn enable_mouse_all_motion<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Disable mouse tracking
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::disable_mouse};
-/// # enum Msg {}
-/// // Disable all mouse tracking
-/// let cmd: Cmd<Msg> = disable_mouse();
-/// ```
-pub fn disable_mouse<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Clear the entire screen
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::clear_screen};
-/// # enum Msg {}
-/// // Clear the entire screen
-/// let cmd: Cmd<Msg> = clear_screen();
-/// ```
-pub fn clear_screen<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
-}
-
-/// Clear the current line
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::clear_line};
-/// # enum Msg {}
-/// // Clear the current line
-/// let cmd: Cmd<Msg> = clear_line();
-/// ```
-pub fn clear_line<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
+// Generate mouse and screen control commands
+terminal_cmd! {
+    /// Enable mouse cell motion tracking
+    /// 
+    /// This enables mouse events only when a button is pressed.
+    pub fn enable_mouse_cell_motion() -> "Enable mouse tracking for cell motion (only when button pressed)";
+    
+    /// Enable mouse all motion tracking
+    /// 
+    /// This enables mouse movement events regardless of whether a button is pressed,
+    /// allowing for hover interactions.
+    pub fn enable_mouse_all_motion() -> "Enable mouse tracking for all motion events (including hover)";
+    
+    /// Disable mouse tracking
+    pub fn disable_mouse() -> "Disable all mouse tracking";
+    
+    /// Clear the entire screen
+    pub fn clear_screen() -> "Clear the entire screen";
+    
+    /// Clear the current line
+    pub fn clear_line() -> "Clear the current line";
+    
+    /// Suspend the program (Ctrl+Z)
+    /// 
+    /// This will suspend the program and return control to the shell.
+    /// When the program is resumed, a Resume event will be sent.
+    pub fn suspend() -> "Suspend the program (Ctrl+Z)";
 }
 
 /// Quit the program gracefully
@@ -674,109 +648,53 @@ pub fn quit<M: Message>() -> Cmd<M> {
     Cmd::quit()
 }
 
-/// Suspend the program (Ctrl+Z)
-///
-/// This will suspend the program and return control to the shell.
-/// When the program is resumed, a Resume event will be sent.
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::suspend};
-/// # enum Msg {}
-/// // Suspend the program (Ctrl+Z)
-/// let cmd: Cmd<Msg> = suspend();
-/// ```
-pub fn suspend<M: Message>() -> Cmd<M> {
-    Cmd::new(|| None) // This will be handled by the runtime
+
+/// Macro to generate crossterm commands that execute terminal sequences
+/// 
+/// This reduces duplication for commands that use crossterm to send
+/// control sequences to the terminal.
+macro_rules! crossterm_cmd {
+    ($(
+        $(#[$attr:meta])*
+        $vis:vis fn $name:ident($cmd_type:path) -> $doc:literal;
+    )+) => {
+        $(
+            $(#[$attr])*
+            #[doc = $doc]
+            #[doc = ""]
+            #[doc = "This command sends a control sequence to the terminal."]
+            $vis fn $name<M: Message>() -> Cmd<M> {
+                Cmd::new(|| {
+                    use crossterm::execute;
+                    use std::io;
+                    let _ = execute!(io::stdout(), $cmd_type);
+                    None
+                })
+            }
+        )+
+    };
 }
 
-/// Enable bracketed paste mode
-///
-/// When enabled, pasted text will be delivered as a single Event::Paste(String)
-/// instead of individual key events. This prevents pasted text from
-/// accidentally triggering keyboard shortcuts.
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::enable_bracketed_paste};
-/// # enum Msg {}
-/// // Enable bracketed paste mode
-/// let cmd: Cmd<Msg> = enable_bracketed_paste();
-/// // Now pasted text will be delivered as Event::Paste(String)
-/// ```
-pub fn enable_bracketed_paste<M: Message>() -> Cmd<M> {
-    Cmd::new(|| {
-        use crossterm::{event::EnableBracketedPaste, execute};
-        use std::io;
-
-        // Send the enable bracketed paste sequence to the terminal
-        let _ = execute!(io::stdout(), EnableBracketedPaste);
-        None
-    })
-}
-
-/// Disable bracketed paste mode
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::disable_bracketed_paste};
-/// # enum Msg {}
-/// // Disable bracketed paste mode
-/// let cmd: Cmd<Msg> = disable_bracketed_paste();
-/// ```
-pub fn disable_bracketed_paste<M: Message>() -> Cmd<M> {
-    Cmd::new(|| {
-        use crossterm::{event::DisableBracketedPaste, execute};
-        use std::io;
-
-        // Send the disable bracketed paste sequence to the terminal
-        let _ = execute!(io::stdout(), DisableBracketedPaste);
-        None
-    })
-}
-
-/// Enable focus change reporting
-///
-/// When enabled, the program will receive Event::Focus when the terminal
-/// gains focus and Event::Blur when it loses focus.
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::enable_focus_change};
-/// # enum Msg {}
-/// // Enable focus change reporting
-/// let cmd: Cmd<Msg> = enable_focus_change();
-/// // Now the program will receive Event::Focus and Event::Blur
-/// ```
-pub fn enable_focus_change<M: Message>() -> Cmd<M> {
-    Cmd::new(|| {
-        use crossterm::{event::EnableFocusChange, execute};
-        use std::io;
-
-        // Send the enable focus change sequence to the terminal
-        let _ = execute!(io::stdout(), EnableFocusChange);
-        None
-    })
-}
-
-/// Disable focus change reporting
-///
-/// # Example
-/// ```
-/// # use hojicha_core::{Cmd, commands::disable_focus_change};
-/// # enum Msg {}
-/// // Disable focus change reporting
-/// let cmd: Cmd<Msg> = disable_focus_change();
-/// ```
-pub fn disable_focus_change<M: Message>() -> Cmd<M> {
-    Cmd::new(|| {
-        use crossterm::{event::DisableFocusChange, execute};
-        use std::io;
-
-        // Send the disable focus change sequence to the terminal
-        let _ = execute!(io::stdout(), DisableFocusChange);
-        None
-    })
+// Generate crossterm-based commands
+crossterm_cmd! {
+    /// Enable bracketed paste mode
+    /// 
+    /// When enabled, pasted text will be delivered as a single Event::Paste(String)
+    /// instead of individual key events. This prevents pasted text from
+    /// accidentally triggering keyboard shortcuts.
+    pub fn enable_bracketed_paste(crossterm::event::EnableBracketedPaste) -> "Enable bracketed paste mode";
+    
+    /// Disable bracketed paste mode
+    pub fn disable_bracketed_paste(crossterm::event::DisableBracketedPaste) -> "Disable bracketed paste mode";
+    
+    /// Enable focus change reporting
+    /// 
+    /// When enabled, the program will receive Event::Focus when the terminal
+    /// gains focus and Event::Blur when it loses focus.
+    pub fn enable_focus_change(crossterm::event::EnableFocusChange) -> "Enable focus change reporting";
+    
+    /// Disable focus change reporting
+    pub fn disable_focus_change(crossterm::event::DisableFocusChange) -> "Disable focus change reporting";
 }
 
 #[cfg(test)]
@@ -958,21 +876,16 @@ mod tests {
     }
 
     #[test]
-    fn test_bracketed_paste_commands() {
-        let enable: Cmd<TestMsg> = enable_bracketed_paste();
-        let disable: Cmd<TestMsg> = disable_bracketed_paste();
+    fn test_crossterm_commands() {
+        let enable_paste: Cmd<TestMsg> = enable_bracketed_paste();
+        let disable_paste: Cmd<TestMsg> = disable_bracketed_paste();
+        let enable_focus: Cmd<TestMsg> = enable_focus_change();
+        let disable_focus: Cmd<TestMsg> = disable_focus_change();
 
-        assert!(enable.test_execute().is_ok());
-        assert!(disable.test_execute().is_ok());
-    }
-
-    #[test]
-    fn test_focus_change_commands() {
-        let enable: Cmd<TestMsg> = enable_focus_change();
-        let disable: Cmd<TestMsg> = disable_focus_change();
-
-        assert!(enable.test_execute().is_ok());
-        assert!(disable.test_execute().is_ok());
+        assert!(enable_paste.test_execute().is_ok());
+        assert!(disable_paste.test_execute().is_ok());
+        assert!(enable_focus.test_execute().is_ok());
+        assert!(disable_focus.test_execute().is_ok());
     }
 
     #[test]

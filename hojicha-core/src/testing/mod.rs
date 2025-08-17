@@ -7,11 +7,14 @@ pub mod event_test_harness;
 pub mod mock_terminal;
 pub mod test_backend;
 pub mod time_control;
+pub mod unified_harness;
 
 pub use event_recorder::{EventRecorder, RecordedEvent};
 pub use event_test_harness::{EventTestHarness, PriorityEventTestHarness};
 pub use mock_terminal::MockTerminal;
 pub use test_backend::TestBackend;
+pub use time_control::*;
+pub use unified_harness::*;
 
 use crate::{
     core::{Cmd, Model},
