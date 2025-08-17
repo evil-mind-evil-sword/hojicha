@@ -60,6 +60,7 @@
 // Core TEA abstractions
 pub mod async_helpers;
 pub mod commands;
+pub mod concurrency;
 pub mod core;
 pub mod debug;
 pub mod error;
@@ -68,7 +69,7 @@ pub mod fallible;
 pub mod logging;
 
 // Testing utilities (only in tests)
-#[cfg(test)]
+// Testing utilities (exported for use in tests and examples)
 pub mod testing;
 
 // Re-export core types
@@ -127,6 +128,12 @@ pub mod prelude {
     pub use crate::commands::{
         batch, custom, custom_async, custom_fallible, every, none, quit, sequence, spawn, tick,
     };
+    
+    // Concurrency utilities  
+    pub use crate::concurrency::{RequestId, RequestTracker, StateMachine};
+    
+    // Testing utilities
+    pub use crate::testing::{UnifiedTestHarness, HarnessConfig, ScenarioBuilder};
     
     // Error handling
     pub use crate::error::{Error, Result};

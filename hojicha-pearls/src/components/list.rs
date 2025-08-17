@@ -1,5 +1,9 @@
 //! Scrollable list component with selection support
 //!
+//! **DEPRECATED**: This component has been superseded by `unified_list::UnifiedList`.
+//! Use `UnifiedList` for new code as it provides all the functionality of both
+//! `List` and `StyledList` in a single, configurable component.
+//!
 //! A list provides navigation through a collection of items with keyboard and mouse support.
 
 use hojicha_core::event::{Key, KeyEvent, MouseEvent, MouseEventKind};

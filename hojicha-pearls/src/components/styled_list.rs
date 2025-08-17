@@ -1,5 +1,9 @@
 //! Styled list component with theme support
 //!
+//! **DEPRECATED**: This component has been superseded by `unified_list::UnifiedList`.
+//! Use `UnifiedList` for new code as it provides all the functionality of both
+//! `List` and `StyledList` in a single, configurable component.
+//!
 //! A scrollable list with selection, filtering, and rich styling options.
 
 use crate::style::{ColorProfile, Style, Theme};
