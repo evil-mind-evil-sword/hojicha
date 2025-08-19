@@ -33,7 +33,7 @@ hdrhistogram = "7.5"
 libc = "0.2"
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.7", features = ["html_reports"] }
 pretty_assertions = "1.4"
 proptest = "1.4"
 tempfile = "3.8"
