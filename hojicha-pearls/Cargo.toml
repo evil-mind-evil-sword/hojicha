@@ -18,7 +18,7 @@ ratatui = { version = "0.29", features = ["all-widgets"] }
 
 # Utilities
 crossterm = { workspace = true }
-unicode-width = "0.1"
+unicode-width = "0.2"
 unicode-segmentation = "1.10"
 
 # Logging
